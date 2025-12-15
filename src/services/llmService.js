@@ -18,7 +18,13 @@
 require('dotenv').config();
 
 const performanceTrackingService = require('./performanceTrackingService');
-const aiGMMemoryService = require('./aiGMMemoryService');
+// Optional - only for game features, not needed for Code Roach
+let aiGMMemoryService = null;
+try {
+    aiGMMemoryService = require('./aiGMMemoryService');
+} catch (err) {
+    // Not available - Code Roach doesn't need this
+}
 
 const GAME_STATE_INSTRUCTIONS = `### THE GAME STATE BLOCK
 
@@ -475,7 +481,7 @@ class LLMService {
         let memoryContext = '';
         if (userId) {
             try {
-                const memories = await aiGMMemoryService.getEnhancedMemoryContext(
+                const memories = aiGMMemoryService ? await aiGMMemoryService.getEnhancedMemoryContext(
                     userId,
                     userMessage + ' ' + gameStateContext,
                     { days: 30, limit: 5, includeEmotions: true }
@@ -567,7 +573,7 @@ class LLMService {
             this.updateCacheMetrics();
 
             // SPRINT 5: Store narrative as memory for future reference
-            if (userId && result.narrative) {
+            if (userId && result.narrative && aiGMMemoryService) {
                 aiGMMemoryService.storeNarrativeMemory(userId, {
                     narrative: result.narrative,
                     sessionId: sessionId,
