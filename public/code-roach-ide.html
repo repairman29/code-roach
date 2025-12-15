@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Roach IDE Integration</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: #4ec9b0;
+            margin-bottom: 20px;
+        }
+
+        .section {
+            background: #252526;
+            border: 1px solid #3e3e42;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+
+        .section h2 {
+            color: #4ec9b0;
+            margin-bottom: 15px;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-size: 0.9em;
+            margin-left: 10px;
+        }
+
+        .status.connected {
+            background: #0e639c;
+            color: white;
+        }
+
+        .status.disconnected {
+            background: #a1260d;
+            color: white;
+        }
+
+        button {
+            background: #0e639c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: inherit;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        button:hover {
+            background: #1177bb;
+        }
+
+        button:disabled {
+            background: #3e3e42;
+            cursor: not-allowed;
+        }
+
+        .code-block {
+            background: #1e1e1e;
+            border: 1px solid #3e3e42;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+
+        .health-score {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: #1e1e1e;
+            border-radius: 4px;
+            margin: 5px 0;
+        }
+
+        .health-bar {
+            flex: 1;
+            height: 20px;
+            background: #3e3e42;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .health-fill {
+            height: 100%;
+            background: #4ec9b0;
+            transition: width 0.3s;
+        }
+
+        .health-fill.low {
+            background: #f48771;
+        }
+
+        .health-fill.medium {
+            background: #dcdcaa;
+        }
+
+        input[type="text"] {
+            background: #3e3e42;
+            border: 1px solid #3e3e42;
+            color: #d4d4d4;
+            padding: 8px;
+            border-radius: 4px;
+            font-family: inherit;
+            width: 300px;
+        }
+
+        .query-result {
+            background: #1e1e1e;
+            border-left: 3px solid #4ec9b0;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+
+        .error {
+            color: #f48771;
+        }
+
+        .success {
+            color: #4ec9b0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🪳 Code Roach IDE Integration</h1>
+        <p>Connect Code Roach to your IDE (VS Code / Cursor)</p>
+
+        <div class="section">
+            <h2>Connection Status <span id="status" class="status disconnected">Disconnected</span></h2>
+            <div>
+                <label>Server URL: </label>
+                <input type="text" id="serverUrl" value="http://localhost:3000" />
+                <button onclick="testConnection()">Test Connection</button>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Code Health Score</h2>
+            <div>
+                <label>File Path: </label>
+                <input type="text" id="filePath" placeholder="server/routes/api.js" />
+                <button onclick="getHealthScore()">Get Health Score</button>
+            </div>
+            <div id="healthResult"></div>
+        </div>
+
+        <div class="section">
+            <h2>Natural Language Query</h2>
+            <div>
+                <label>Ask Code Roach: </label>
+                <input type="text" id="query" placeholder="Explain this error: Cannot read property 'x' of undefined" />
+                <button onclick="askQuery()">Ask</button>
+            </div>
+            <div id="queryResult"></div>
+        </div>
+
+        <div class="section">
+            <h2>Code Review</h2>
+            <div>
+                <label>Code to Review: </label>
+                <textarea id="codeToReview" style="width: 100%; height: 200px; background: #1e1e1e; color: #d4d4d4; border: 1px solid #3e3e42; padding: 10px; font-family: 'Courier New', monospace;" placeholder="Paste code here..."></textarea>
+                <button onclick="reviewCode()">Review Code</button>
+            </div>
+            <div id="reviewResult"></div>
+        </div>
+
+        <div class="section">
+            <h2>VS Code / Cursor Extension Setup</h2>
+            <div class="code-block">
+                <p><strong>1. Install Extension:</strong></p>
+                <p>Open VS Code / Cursor → Extensions → Search "Code Roach" → Install</p>
+                
+                <p style="margin-top: 15px;"><strong>2. Configure Settings:</strong></p>
+                <p>Add to your settings.json:</p>
+                <pre>{
+  "codeRoach.serverUrl": "http://localhost:3000",
+  "codeRoach.autoFix": true,
+  "codeRoach.showHealthScores": true
+}</pre>
+
+                <p style="margin-top: 15px;"><strong>3. Use Commands:</strong></p>
+                <p>Press Cmd+Shift+P (Mac) or Ctrl+Shift+P (Windows/Linux)</p>
+                <p>Type "Code Roach" to see available commands:</p>
+                <ul style="margin-left: 20px; margin-top: 10px;">
+                    <li>Code Roach: Analyze File</li>
+                    <li>Code Roach: Show Health Score</li>
+                    <li>Code Roach: Auto-Fix Errors</li>
+                    <li>Code Roach: Ask Question</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function testConnection() {
+            const serverUrl = document.getElementById('serverUrl').value;
+            const statusEl = document.getElementById('status');
+            
+            statusEl.textContent = 'Testing...';
+            statusEl.className = 'status';
+            
+            try {
+                const response = await fetch(`${serverUrl}/api/health`);
+                if (response.ok) {
+                    statusEl.textContent = 'Connected';
+                    statusEl.className = 'status connected';
+                    localStorage.setItem('codeRoachServerUrl', serverUrl);
+                } else {
+                    throw new Error('Connection failed');
+                }
+            } catch (error) {
+                statusEl.textContent = 'Disconnected';
+                statusEl.className = 'status disconnected';
+                alert('Connection failed: ' + error.message);
+            }
+        }
+
+        async function getHealthScore() {
+            const serverUrl = localStorage.getItem('codeRoachServerUrl') || document.getElementById('serverUrl').value;
+            const filePath = document.getElementById('filePath').value;
+            const resultEl = document.getElementById('healthResult');
+            
+            if (!filePath) {
+                resultEl.innerHTML = '<p class="error">Please enter a file path</p>';
+                return;
+            }
+            
+            resultEl.innerHTML = '<p>Loading...</p>';
+            
+            try {
+                const response = await fetch(`${serverUrl}/api/code-roach/health-score?filePath=${encodeURIComponent(filePath)}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const score = data.score;
+                    const className = score.overall >= 80 ? '' : score.overall >= 60 ? 'medium' : 'low';
+                    
+                    resultEl.innerHTML = `
+                        <div class="health-score">
+                            <div style="min-width: 200px;">${filePath}</div>
+                            <div class="health-bar">
+                                <div class="health-fill ${className}" style="width: ${score.overall}%"></div>
+                            </div>
+                            <div style="min-width: 100px;">${score.overall}/100 (${score.grade})</div>
+                        </div>
+                        <div style="margin-top: 10px;">
+                            <p>Error Rate: ${score.components.errorRate}/100</p>
+                            <p>Complexity: ${score.components.complexity}/100</p>
+                            <p>Security: ${score.components.security}/100</p>
+                            <p>Performance: ${score.components.performance}/100</p>
+                        </div>
+                    `;
+                } else {
+                    resultEl.innerHTML = `<p class="error">Error: ${data.error}</p>`;
+                }
+            } catch (error) {
+                resultEl.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+            }
+        }
+
+        async function askQuery() {
+            const serverUrl = localStorage.getItem('codeRoachServerUrl') || document.getElementById('serverUrl').value;
+            const query = document.getElementById('query').value;
+            const resultEl = document.getElementById('queryResult');
+            
+            if (!query) {
+                resultEl.innerHTML = '<p class="error">Please enter a question</p>';
+                return;
+            }
+            
+            resultEl.innerHTML = '<p>Asking Code Roach...</p>';
+            
+            try {
+                const response = await fetch(`${serverUrl}/api/code-roach/nl-query`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query })
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultEl.innerHTML = `
+                        <div class="query-result">
+                            <h3>${data.response.title || 'Answer'}</h3>
+                            <p>${data.response.answer || data.response}</p>
+                            ${data.response.code ? `<pre class="code-block">${data.response.code}</pre>` : ''}
+                        </div>
+                    `;
+                } else {
+                    resultEl.innerHTML = `<p class="error">Error: ${data.error}</p>`;
+                }
+            } catch (error) {
+                resultEl.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+            }
+        }
+
+        async function reviewCode() {
+            const serverUrl = localStorage.getItem('codeRoachServerUrl') || document.getElementById('serverUrl').value;
+            const code = document.getElementById('codeToReview').value;
+            const resultEl = document.getElementById('reviewResult');
+            
+            if (!code) {
+                resultEl.innerHTML = '<p class="error">Please enter code to review</p>';
+                return;
+            }
+            
+            resultEl.innerHTML = '<p>Reviewing code...</p>';
+            
+            try {
+                const response = await fetch(`${serverUrl}/api/code-roach/code-review`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code, filePath: 'review.js' })
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    const review = data.review;
+                    let html = `
+                        <div class="query-result">
+                            <h3>Code Review</h3>
+                            <p><strong>Score:</strong> ${review.score}/100</p>
+                            <p><strong>Issues Found:</strong> ${review.issues.length}</p>
+                    `;
+                    
+                    if (review.issues.length > 0) {
+                        html += '<h4>Issues:</h4><ul>';
+                        review.issues.forEach(issue => {
+                            html += `<li><strong>Line ${issue.line}:</strong> ${issue.message} (${issue.severity})</li>`;
+                        });
+                        html += '</ul>';
+                    }
+                    
+                    if (review.suggestions && review.suggestions.length > 0) {
+                        html += '<h4>Suggestions:</h4><ul>';
+                        review.suggestions.forEach(suggestion => {
+                            html += `<li>${suggestion}</li>`;
+                        });
+                        html += '</ul>';
+                    }
+                    
+                    html += '</div>';
+                    resultEl.innerHTML = html;
+                } else {
+                    resultEl.innerHTML = `<p class="error">Error: ${data.error}</p>`;
+                }
+            } catch (error) {
+                resultEl.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+            }
+        }
+
+        // Test connection on load
+        window.addEventListener('load', () => {
+            const savedUrl = localStorage.getItem('codeRoachServerUrl');
+            if (savedUrl) {
+                document.getElementById('serverUrl').value = savedUrl;
+                testConnection();
+            }
+        });
+    </script>
+</body>
+</html>
+

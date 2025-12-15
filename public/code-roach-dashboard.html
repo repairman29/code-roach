@@ -1,0 +1,1137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Roach Analytics Dashboard</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🪳</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Roboto+Mono:wght@300;400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto Mono', monospace;
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .dashboard-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(0, 255, 255, 0.1);
+            border: 2px solid #00ffff;
+            border-radius: 8px;
+        }
+
+        .dashboard-header h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.5em;
+            color: #00ffff;
+            text-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+            margin-bottom: 10px;
+        }
+
+        .dashboard-header p {
+            color: #a0a0a0;
+            font-size: 1.1em;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: rgba(20, 25, 45, 0.8);
+            border: 1px solid #00ffff;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+        }
+
+        .stat-card h3 {
+            color: #00ffff;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .stat-card .value {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #ffffff;
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .stat-card .label {
+            color: #a0a0a0;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        .chart-container {
+            background: rgba(20, 25, 45, 0.8);
+            border: 1px solid #00ffff;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .chart-container h2 {
+            color: #00ffff;
+            margin-bottom: 20px;
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .patterns-list {
+            background: rgba(20, 25, 45, 0.8);
+            border: 1px solid #00ffff;
+            border-radius: 8px;
+            padding: 20px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .improvement-suggestions {
+            background: rgba(20, 25, 45, 0.8);
+            border: 1px solid #00ffff;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 30px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .improvement-suggestions h2 {
+            color: #00ffff;
+            margin-bottom: 20px;
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .ip-innovations-section,
+        .roi-section {
+            margin-top: 40px;
+            padding: 20px;
+            background: rgba(20, 25, 45, 0.5);
+            border: 1px solid #00ffff;
+            border-radius: 8px;
+        }
+
+        .ip-innovations-section h2,
+        .roi-section h2 {
+            color: #00ffff;
+            font-family: 'Orbitron', sans-serif;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+
+        #improvement-suggestions-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .patterns-list h2 {
+            color: #00ffff;
+            margin-bottom: 20px;
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .pattern-item {
+            padding: 15px;
+            margin-bottom: 10px;
+            background: rgba(0, 255, 255, 0.05);
+            border-left: 3px solid #00ffff;
+            border-radius: 4px;
+        }
+
+        .pattern-item h4 {
+            color: #00ffff;
+            margin-bottom: 5px;
+        }
+
+        .pattern-item .pattern-stats {
+            display: flex;
+            gap: 20px;
+            margin-top: 10px;
+            font-size: 0.9em;
+        }
+
+        .pattern-item .stat {
+            color: #a0a0a0;
+        }
+
+        .pattern-item .stat strong {
+            color: #00ffff;
+        }
+
+        .refresh-btn,
+        .start-crawl-btn {
+            position: fixed;
+            bottom: 30px;
+            background: #00ffff;
+            color: #0a0e27;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 50px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+            transition: transform 0.3s;
+        }
+
+        .refresh-btn {
+            right: 30px;
+        }
+
+        .start-crawl-btn {
+            right: 200px;
+            background: #00ff00;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
+        }
+
+
+        .start-crawl-btn:hover,
+        .refresh-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .start-crawl-btn:disabled {
+            background: #666;
+            cursor: not-allowed;
+            box-shadow: none;
+            opacity: 0.6;
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .header-btn {
+            background: rgba(0, 255, 255, 0.2);
+            color: #00ffff;
+            border: 2px solid #00ffff;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .header-btn:hover {
+            background: rgba(0, 255, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.4);
+        }
+
+        .header-btn.start {
+            background: rgba(0, 255, 0, 0.2);
+            border-color: #00ff00;
+            color: #00ff00;
+        }
+
+        .header-btn.start:hover {
+            background: rgba(0, 255, 0, 0.3);
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.4);
+        }
+
+        .header-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .header-btn {
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .crawl-select {
+            background: rgba(20, 25, 45, 0.9);
+            color: #00ffff;
+            border: 2px solid #00ffff;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 1em;
+            cursor: pointer;
+            min-width: 200px;
+            transition: all 0.3s;
+        }
+
+        .crawl-select:hover {
+            background: rgba(20, 25, 45, 1);
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.4);
+        }
+
+        .crawl-select:focus {
+            outline: none;
+            border-color: #00ff00;
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.4);
+        }
+
+        .crawl-select:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .crawl-select option {
+            background: rgba(20, 25, 45, 0.95);
+            color: #00ffff;
+            padding: 10px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #00ffff;
+            font-size: 1.2em;
+        }
+
+        .error-message {
+            background: rgba(255, 0, 0, 0.2);
+            border: 1px solid #ff0000;
+            color: #ff6666;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="dashboard-header">
+            <h1>🪳 Code Roach Analytics Dashboard</h1>
+            <p>Real-time error tracking, fix analytics, and insights</p>
+            <div class="header-controls" style="margin-bottom: 15px;">
+                <a href="/code-roach-projects.html" class="header-btn">📁 Projects</a>
+                <a href="/code-roach-issues.html" class="header-btn">🐛 Issues</a>
+                <a href="/code-roach-dashboard.html" class="header-btn">📊 Dashboard</a>
+            </div>
+            <div class="header-controls">
+                <select id="projectSelect" class="crawl-select" style="min-width: 200px;">
+                    <option value="">All Projects</option>
+                </select>
+                <select id="crawlTypeSelect" class="crawl-select">
+                    <option value="optimized">⚡ Optimized (Smart Selection)</option>
+                    <option value="full">🌐 Full Scan (All Files)</option>
+                    <option value="changed">📝 Changed Files Only (Git Diff)</option>
+                    <option value="priority">🔥 High Priority (Issues/Low Health)</option>
+                    <option value="quick">⚡ Quick (50 Files, Optimized)</option>
+                </select>
+                <button class="header-btn start" id="startCrawlBtn" onclick="startCrawl()">🚀 Start Crawl</button>
+                <button class="header-btn" onclick="loadDashboard()">🔄 Refresh</button>
+            </div>
+        </div>
+
+        <div id="error-message" class="error-message" style="display: none;"></div>
+
+        <div id="loading" class="loading">
+            <div class="pulse">Loading dashboard data...</div>
+        </div>
+
+        <div id="dashboard-content" style="display: none;">
+            <div class="stats-grid" id="stats-grid"></div>
+
+            <div class="charts-grid">
+                <div class="chart-container">
+                    <h2>Errors Over Time</h2>
+                    <canvas id="errorsChart"></canvas>
+                </div>
+
+                <div class="chart-container">
+                    <h2>Fix Success Rate</h2>
+                    <canvas id="successChart"></canvas>
+                </div>
+
+                <div class="chart-container">
+                    <h2>Error Types Distribution</h2>
+                    <canvas id="typesChart"></canvas>
+                </div>
+
+                <div class="chart-container">
+                    <h2>Fix Quality Scores</h2>
+                    <canvas id="qualityChart"></canvas>
+                </div>
+            </div>
+
+            <div class="patterns-list">
+                <h2>Top Error Patterns</h2>
+                <div id="patterns-list"></div>
+            </div>
+
+            <div class="improvement-suggestions">
+                <h2>Improvement Suggestions</h2>
+                <div id="improvement-suggestions-list"></div>
+            </div>
+
+            <div class="ip-innovations-section">
+                <h2>🧠 IP Innovations Analytics</h2>
+                <div id="ip-analytics-grid" class="stats-grid"></div>
+            </div>
+
+            <div class="roi-section">
+                <h2>💰 ROI & Impact Metrics</h2>
+                <div id="roi-metrics-grid" class="stats-grid"></div>
+            </div>
+        </div>
+    </div>
+
+    <button class="start-crawl-btn" id="startCrawlBtnFixed" onclick="startCrawl()">🚀 Start Crawl</button>
+
+    <script src="/js/supabaseClient.js"></script>
+    <script src="/js/codeRoachAuth.js"></script>
+    <script src="/js/codeRoachApiClient.js"></script>
+    <script>
+        const api = new CodeRoachApiClient();
+        
+        // Initialize auth and check authentication
+        (async () => {
+            await window.codeRoachAuth.initialize();
+            await api.initializeAuth();
+            
+            // Check if authentication is required (can be disabled for development)
+            const requireAuth = window.REQUIRE_AUTH !== 'false';
+            if (requireAuth && !window.codeRoachAuth.isAuthenticated()) {
+                // Redirect to login if not authenticated
+                window.location.href = '/code-roach-login.html?redirect=' + encodeURIComponent(window.location.pathname);
+                return;
+            }
+        })();
+        let charts = {};
+        let consecutiveFailures = 0;
+        let autoRefreshInterval = null;
+        const MAX_CONSECUTIVE_FAILURES = 3;
+        let currentProjectId = null;
+        let projects = [];
+
+        // Load projects for selector
+        async function loadProjects() {
+            try {
+                const response = await api.getProjects();
+                projects = response.projects || [];
+                const select = document.getElementById('projectSelect');
+                select.innerHTML = '<option value="">All Projects</option>';
+                projects.forEach(project => {
+                    const option = document.createElement('option');
+                    option.value = project.id;
+                    option.textContent = project.name;
+                    select.appendChild(option);
+                });
+                
+                // Restore selected project from localStorage
+                const savedProject = localStorage.getItem('codeRoachSelectedProject');
+                if (savedProject && projects.find(p => p.id === savedProject)) {
+                    select.value = savedProject;
+                    currentProjectId = savedProject;
+                }
+            } catch (error) {
+                console.warn('Failed to load projects:', error);
+            }
+        }
+
+        // Handle project selection change
+        document.addEventListener('DOMContentLoaded', () => {
+            const projectSelect = document.getElementById('projectSelect');
+            if (projectSelect) {
+                projectSelect.addEventListener('change', (e) => {
+                    currentProjectId = e.target.value || null;
+                    localStorage.setItem('codeRoachSelectedProject', currentProjectId || '');
+                    loadDashboard();
+                });
+            }
+            loadProjects();
+        });
+
+        // Helper function to safely fetch with error handling
+        async function safeFetch(url, fallback = { success: false }) {
+            try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    console.warn(`[Dashboard] ${url} returned ${response.status}`);
+                    return fallback;
+                }
+                return await response.json();
+            } catch (error) {
+                // Only log if it's not a connection refused (server down)
+                if (error.message && !error.message.includes('ERR_CONNECTION_REFUSED') && !error.message.includes('ERR_EMPTY_RESPONSE')) {
+                    console.warn(`[Dashboard] Error fetching ${url}:`, error.message);
+                }
+                return fallback;
+            }
+        }
+
+        // Start crawl function
+        async function startCrawl() {
+            const startBtn = document.getElementById('startCrawlBtn');
+            const startBtnFixed = document.getElementById('startCrawlBtnFixed');
+            const crawlTypeSelect = document.getElementById('crawlTypeSelect');
+            
+            // Get selected crawl type
+            const crawlType = crawlTypeSelect ? crawlTypeSelect.value : 'optimized';
+            
+            // Disable buttons and select
+            if (startBtn) startBtn.disabled = true;
+            if (startBtnFixed) startBtnFixed.disabled = true;
+            if (crawlTypeSelect) crawlTypeSelect.disabled = true;
+            
+            try {
+                // Show loading message
+                const loadingDiv = document.getElementById('loading');
+                if (loadingDiv) {
+                    loadingDiv.style.display = 'block';
+                    const typeNames = {
+                        'optimized': 'Optimized (Smart Selection)',
+                        'full': 'Full Scan (All Files)',
+                        'changed': 'Changed Files Only',
+                        'priority': 'High Priority Files',
+                        'quick': 'Quick Scan (50 Files)'
+                    };
+                    loadingDiv.innerHTML = `<div class="pulse">🚀 Starting ${typeNames[crawlType] || crawlType} crawl... This may take a few moments.</div>`;
+                }
+                
+                // Build options based on crawl type
+                let options = {
+                    autoFix: true,
+                    useMultiAgentTeams: true
+                };
+                
+                switch (crawlType) {
+                    case 'optimized':
+                        // Smart file selection (default)
+                        options.useOptimizations = true;
+                        break;
+                    case 'full':
+                        // Full scan - disable optimizations
+                        options.useOptimizations = false;
+                        options.maxFiles = null; // No limit
+                        break;
+                    case 'changed':
+                        // Only changed files from git
+                        options.useOptimizations = true;
+                        options.prioritizeChanged = true;
+                        break;
+                    case 'priority':
+                        // High priority files (issues, low health)
+                        options.useOptimizations = true;
+                        options.prioritizeIssues = true;
+                        options.prioritizeLowHealth = true;
+                        break;
+                    case 'quick':
+                        // Quick scan - limited files
+                        options.useOptimizations = true;
+                        options.maxFiles = 50;
+                        break;
+                }
+                
+                const response = await fetch('/api/code-roach/crawl', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        options: options
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Show success message
+                    if (loadingDiv) {
+                        loadingDiv.innerHTML = '<div style="color: #00ff00;">✅ Crawl started successfully! Refreshing dashboard...</div>';
+                    }
+                    
+                    // Wait a moment then refresh dashboard
+                    setTimeout(() => {
+                        loadDashboard();
+                    }, 2000);
+                } else {
+                    throw new Error(result.error || 'Failed to start crawl');
+                }
+            } catch (error) {
+                console.error('Error starting crawl:', error);
+                const errorDiv = document.getElementById('error-message');
+                if (errorDiv) {
+                    errorDiv.style.display = 'block';
+                    errorDiv.innerHTML = `<strong>❌ Error starting crawl:</strong><br>${error.message}`;
+                }
+                
+                const loadingDiv = document.getElementById('loading');
+                if (loadingDiv) {
+                    loadingDiv.style.display = 'none';
+                }
+            } finally {
+                // Re-enable buttons and select after a delay
+                setTimeout(() => {
+                    if (startBtn) startBtn.disabled = false;
+                    if (startBtnFixed) startBtnFixed.disabled = false;
+                    if (crawlTypeSelect) crawlTypeSelect.disabled = false;
+                }, 3000);
+            }
+        }
+
+        async function loadDashboard() {
+            try {
+                document.getElementById('loading').style.display = 'block';
+                document.getElementById('dashboard-content').style.display = 'none';
+                document.getElementById('error-message').style.display = 'none';
+
+                // Build query params for project filtering
+                const projectParam = currentProjectId ? `?projectId=${currentProjectId}` : '';
+                
+                // Load all data in parallel with proper error handling
+                const [historyStats, patterns, learningStats, crawlStatus, ipAnalytics, roiMetrics, issuesData, statsData] = await Promise.all([
+                    safeFetch('/api/error-history/stats' + projectParam, { success: false, stats: {} }),
+                    safeFetch('/api/error-history/patterns' + projectParam, { success: false, patterns: [] }),
+                    safeFetch('/api/fix-learning/stats' + projectParam, { success: false, stats: {} }),
+                    safeFetch('/api/code-roach/crawl/status', { success: false, stats: {} }),
+                    safeFetch('/api/code-roach/ip-analytics' + projectParam, { success: false }),
+                    safeFetch('/api/code-roach/ip-analytics/roi' + projectParam, { success: false }),
+                    safeFetch('/api/code-roach/issues' + projectParam + (projectParam ? '&' : '?') + 'limit=1000', { success: false, issues: [] }),
+                    safeFetch('/api/code-roach/stats' + projectParam, { success: false, statistics: {} })
+                ]);
+
+                // Check if we got any successful responses
+                const hasAnySuccess = historyStats.success || patterns.success || learningStats.success || crawlStatus.success;
+                
+                if (!hasAnySuccess) {
+                    consecutiveFailures++;
+                    if (consecutiveFailures >= MAX_CONSECUTIVE_FAILURES) {
+                        // Show helpful error message
+                        document.getElementById('error-message').style.display = 'block';
+                        document.getElementById('error-message').innerHTML = `
+                            <strong>⚠️ Server Connection Issue</strong><br>
+                            The Code Roach server is not responding. Please ensure the server is running:<br>
+                            <code>npm run dev</code> or <code>node server/server.js</code><br>
+                            <small>Error: All API endpoints failed to connect</small>
+                        `;
+                        // Stop auto-refresh if too many failures
+                        if (autoRefreshInterval) {
+                            clearInterval(autoRefreshInterval);
+                            autoRefreshInterval = null;
+                        }
+                        document.getElementById('error-message').textContent = 
+                            'Unable to connect to server. Auto-refresh disabled. Please refresh manually.';
+                        document.getElementById('error-message').style.display = 'block';
+                        document.getElementById('loading').style.display = 'none';
+                        return;
+                    }
+                    // Show error but continue trying
+                    document.getElementById('error-message').textContent = 
+                        `Connection issues (${consecutiveFailures}/${MAX_CONSECUTIVE_FAILURES}). Retrying...`;
+                    document.getElementById('error-message').style.display = 'block';
+                } else {
+                    consecutiveFailures = 0; // Reset on success
+                }
+
+                // Extract crawl stats (handle both direct stats and nested stats)
+                const crawlStats = (crawlStatus && crawlStatus.stats) || crawlStatus || {};
+                console.log('Crawl status:', crawlStatus);
+                console.log('Crawl stats:', crawlStats);
+
+                // Safely extract nested stats with defaults
+                const historyStatsData = (historyStats && historyStats.stats) ? historyStats.stats : (historyStats || {});
+                const learningStatsData = (learningStats && learningStats.stats) ? learningStats.stats : (learningStats || {});
+                const patternsData = (patterns && patterns.patterns) ? patterns.patterns : (Array.isArray(patterns) ? patterns : []);
+
+                // Update stats (include crawl stats)
+                updateStats(historyStatsData, learningStatsData, crawlStats);
+
+                // Update charts (include crawl stats) - use safe data
+                updateCharts(historyStatsData, patternsData, learningStatsData, crawlStats);
+
+                // Update patterns list - use safe data
+                updatePatternsList(patternsData);
+
+                // Update improvement suggestions - use safe data
+                updateImprovementSuggestions(learningStatsData);
+
+                // Update IP analytics section
+                if (ipAnalytics.success) {
+                    updateIPAnalytics(ipAnalytics);
+                }
+
+                // Update ROI metrics
+                if (roiMetrics.success) {
+                    updateROIMetrics(roiMetrics);
+                }
+
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('dashboard-content').style.display = 'block';
+            } catch (error) {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('error-message').style.display = 'block';
+                document.getElementById('error-message').textContent = `Error loading dashboard: ${error.message}`;
+            }
+        }
+
+        function updateStats(historyStats, learningStats, crawlStats = {}) {
+            const statsGrid = document.getElementById('stats-grid');
+            statsGrid.innerHTML = '';
+
+            // Handle null/undefined values from API with safe access
+            const filesScanned = (crawlStats && crawlStats.filesScanned !== null && crawlStats.filesScanned !== undefined) ? crawlStats.filesScanned : 0;
+            const issuesFound = (crawlStats && crawlStats.issuesFound !== null && crawlStats.issuesFound !== undefined) ? crawlStats.issuesFound : ((historyStats && historyStats.totalErrors) || 0);
+            const issuesAutoFixed = (crawlStats && crawlStats.issuesAutoFixed !== null && crawlStats.issuesAutoFixed !== undefined) ? crawlStats.issuesAutoFixed : ((historyStats && historyStats.successfulFixes) || 0);
+            const issuesNeedingReview = (crawlStats && crawlStats.issuesNeedingReview !== null && crawlStats.issuesNeedingReview !== undefined) ? crawlStats.issuesNeedingReview : 0;
+            const successRate = (historyStats && historyStats.successRate !== null && historyStats.successRate !== undefined) ? historyStats.successRate : 0;
+            const uniquePatterns = (historyStats && historyStats.uniquePatterns !== null && historyStats.uniquePatterns !== undefined) ? historyStats.uniquePatterns : 0;
+            const avgQuality = (learningStats && learningStats.averageQuality !== null && learningStats.averageQuality !== undefined) ? learningStats.averageQuality : 0;
+            const improvements = (learningStats && learningStats.improvementSuggestions !== null && learningStats.improvementSuggestions !== undefined) ? learningStats.improvementSuggestions : 0;
+
+            // Format improvement suggestions count (handle object/array)
+            let improvementsCount = 0;
+            if (typeof improvements === 'number') {
+                improvementsCount = improvements;
+            } else if (Array.isArray(improvements)) {
+                improvementsCount = improvements.length;
+            } else if (improvements && typeof improvements === 'object') {
+                improvementsCount = Object.keys(improvements).length;
+            }
+
+            const stats = [
+                { label: 'Files Scanned', value: filesScanned, color: '#00ffff' },
+                { label: 'Issues Found', value: issuesFound, color: '#ff8800' },
+                { label: 'Auto-Fixed', value: issuesAutoFixed, color: '#00ff00' },
+                { label: 'Needs Review', value: issuesNeedingReview, color: '#ff0000' },
+                { label: 'Success Rate', value: `${successRate.toFixed(1)}%`, color: '#ffff00' },
+                { label: 'Unique Patterns', value: uniquePatterns, color: '#ff00ff' },
+                { label: 'Average Quality', value: `${(avgQuality * 100).toFixed(1)}%`, color: '#00ffff' },
+                { label: 'Improvement Suggestions', value: improvementsCount, color: '#ff8800' }
+            ];
+
+            stats.forEach(stat => {
+                const card = document.createElement('div');
+                card.className = 'stat-card';
+                card.innerHTML = `
+                    <h3>${stat.label}</h3>
+                    <div class="value" style="color: ${stat.color}">${stat.value}</div>
+                `;
+                statsGrid.appendChild(card);
+            });
+        }
+
+        function updateCharts(historyStats, patterns, learningStats, crawlStats = {}) {
+            // Errors over time (simplified - would need time-series data)
+            updateErrorsChart(historyStats, crawlStats);
+            updateSuccessChart(historyStats, crawlStats);
+            updateTypesChart(patterns);
+            updateQualityChart(learningStats);
+        }
+
+        function updateErrorsChart(stats, crawlStats = {}) {
+            const ctx = document.getElementById('errorsChart').getContext('2d');
+            if (charts.errors) charts.errors.destroy();
+
+            // Use crawl stats if available, otherwise use history stats with safe access
+            const safeStats = stats || {};
+            const safeCrawlStats = crawlStats || {};
+            const totalIssues = safeCrawlStats.issuesFound || safeStats.totalErrors || 0;
+            const fixedIssues = safeCrawlStats.issuesAutoFixed || safeStats.successfulFixes || 0;
+            const needsReview = safeCrawlStats.issuesNeedingReview || 0;
+
+            charts.errors = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Total Issues', 'Auto-Fixed', 'Needs Review'],
+                    datasets: [{
+                        label: 'Issues',
+                        data: [
+                            totalIssues,
+                            fixedIssues,
+                            needsReview
+                        ],
+                        borderColor: '#00ffff',
+                        backgroundColor: 'rgba(0, 255, 255, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { labels: { color: '#e0e0e0' } }
+                    },
+                    scales: {
+                        y: { ticks: { color: '#a0a0a0' }, grid: { color: 'rgba(0, 255, 255, 0.1)' } },
+                        x: { ticks: { color: '#a0a0a0' }, grid: { color: 'rgba(0, 255, 255, 0.1)' } }
+                    }
+                }
+            });
+        }
+
+        function updateSuccessChart(stats, crawlStats = {}) {
+            const ctx = document.getElementById('successChart').getContext('2d');
+            if (charts.success) charts.success.destroy();
+
+            // Calculate success rate from crawl stats or history stats with safe access
+            const safeStats = stats || {};
+            const safeCrawlStats = crawlStats || {};
+            const totalIssues = safeCrawlStats.issuesFound || safeStats.totalErrors || 0;
+            const fixedIssues = safeCrawlStats.issuesAutoFixed || safeStats.successfulFixes || 0;
+            const successRate = totalIssues > 0 ? (fixedIssues / totalIssues) * 100 : (safeStats.successRate || 0);
+            
+            charts.success = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Fixed', 'Needs Review'],
+                    datasets: [{
+                        data: [successRate, Math.max(0, 100 - successRate)],
+                        backgroundColor: ['#00ff00', '#ff8800']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { labels: { color: '#e0e0e0' } }
+                    }
+                }
+            });
+        }
+
+        function updateTypesChart(patterns) {
+            const ctx = document.getElementById('typesChart').getContext('2d');
+            if (charts.types) charts.types.destroy();
+
+            // Group by error type with safe access
+            const typeCounts = {};
+            if (Array.isArray(patterns)) {
+                patterns.forEach(p => {
+                    if (p) {
+                        const type = (p.errorPattern && p.errorPattern.type) || 'Unknown';
+                        typeCounts[type] = (typeCounts[type] || 0) + ((p.stats && p.stats.occurrences) || 0);
+                    }
+                });
+            }
+
+            charts.types = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(typeCounts),
+                    datasets: [{
+                        label: 'Occurrences',
+                        data: Object.values(typeCounts),
+                        backgroundColor: '#00ffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { labels: { color: '#e0e0e0' } }
+                    },
+                    scales: {
+                        y: { ticks: { color: '#a0a0a0' }, grid: { color: 'rgba(0, 255, 255, 0.1)' } },
+                        x: { ticks: { color: '#a0a0a0' }, grid: { color: 'rgba(0, 255, 255, 0.1)' } }
+                    }
+                }
+            });
+        }
+
+        function updateQualityChart(learningStats) {
+            const ctx = document.getElementById('qualityChart').getContext('2d');
+            if (charts.quality) charts.quality.destroy();
+
+            const safeLearningStats = learningStats || {};
+            const typeScores = safeLearningStats.fixTypeScores || {};
+            charts.quality = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(typeScores),
+                    datasets: [{
+                        label: 'Quality Score',
+                        data: Object.values(typeScores).map(s => s * 100),
+                        backgroundColor: '#ffff00'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { labels: { color: '#e0e0e0' } }
+                    },
+                    scales: {
+                        y: { 
+                            ticks: { color: '#a0a0a0', callback: v => v + '%' }, 
+                            grid: { color: 'rgba(0, 255, 255, 0.1)' },
+                            max: 100
+                        },
+                        x: { ticks: { color: '#a0a0a0' }, grid: { color: 'rgba(0, 255, 255, 0.1)' } }
+                    }
+                }
+            });
+        }
+
+        function updatePatternsList(patterns) {
+            const list = document.getElementById('patterns-list');
+            list.innerHTML = '';
+
+            // Sort by occurrences with safe access
+            if (!Array.isArray(patterns)) {
+                list.innerHTML = '<p style="color: #a0a0a0; text-align: center; padding: 20px;">No error patterns yet. Errors will appear here as they occur.</p>';
+                return;
+            }
+
+            const sorted = patterns
+                .filter(p => p && p.stats && p.stats.occurrences > 0)
+                .sort((a, b) => (b.stats.occurrences || 0) - (a.stats.occurrences || 0))
+                .slice(0, 10);
+
+            if (sorted.length === 0) {
+                list.innerHTML = '<p style="color: #a0a0a0; text-align: center; padding: 20px;">No error patterns yet. Errors will appear here as they occur.</p>';
+                return;
+            }
+
+            sorted.forEach(pattern => {
+                if (!pattern) return;
+                const errorPattern = pattern.errorPattern || {};
+                const patternStats = pattern.stats || {};
+                const item = document.createElement('div');
+                item.className = 'pattern-item';
+                item.innerHTML = `
+                    <h4>${errorPattern.message || 'Unknown Error'}</h4>
+                    <div style="color: #a0a0a0; font-size: 0.9em; margin-top: 5px;">
+                        Type: ${errorPattern.type || 'Unknown'} | 
+                        Source: ${errorPattern.source || 'Unknown'}
+                    </div>
+                    <div class="pattern-stats">
+                        <div class="stat">
+                            <strong>Occurrences:</strong> ${patternStats.occurrences || 0}
+                        </div>
+                        <div class="stat">
+                            <strong>Success Rate:</strong> ${((patternStats.successRate || 0) * 100).toFixed(1)}%
+                        </div>
+                        <div class="stat">
+                            <strong>Fixes:</strong> ${pattern.fixes?.length || 0}
+                        </div>
+                    </div>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        function updateImprovementSuggestions(learningStats) {
+            const list = document.getElementById('improvement-suggestions-list');
+            if (!list) return;
+
+            list.innerHTML = '';
+
+            const suggestions = learningStats?.improvementSuggestions || [];
+            
+            if (!Array.isArray(suggestions) || suggestions.length === 0) {
+                list.innerHTML = '<p style="color: #a0a0a0; text-align: center; padding: 20px;">No improvement suggestions yet. Suggestions will appear as the system learns.</p>';
+                return;
+            }
+
+            suggestions.forEach((suggestion, index) => {
+                const item = document.createElement('div');
+                item.className = 'pattern-item';
+                
+                const priorityColor = {
+                    'high': '#ff0000',
+                    'medium': '#ff8800',
+                    'low': '#ffff00'
+                }[suggestion.priority || 'medium'] || '#ff8800';
+
+                item.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: start;">
+                        <div style="flex: 1;">
+                            <h4 style="color: ${priorityColor}; margin-bottom: 5px;">
+                                ${suggestion.title || suggestion.type || 'Improvement'} 
+                                <span style="font-size: 0.8em; color: #a0a0a0;">(${suggestion.priority || 'medium'} priority)</span>
+                            </h4>
+                            <p style="color: #e0e0e0; margin: 5px 0;">${suggestion.message || suggestion.description || 'No description'}</p>
+                            ${suggestion.recommendation ? `<p style="color: #a0a0a0; font-size: 0.9em; margin-top: 5px;"><strong>Recommendation:</strong> ${suggestion.recommendation}</p>` : ''}
+                        </div>
+                    </div>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        function updateIPAnalytics(ipAnalytics) {
+            const grid = document.getElementById('ip-analytics-grid');
+            if (!grid) return;
+            grid.innerHTML = '';
+
+            const stats = [
+                {
+                    label: 'Tests Generated',
+                    value: ipAnalytics.testGeneration?.testsGenerated || 0,
+                    sublabel: `${ipAnalytics.testGeneration?.coverage || 0}% coverage`,
+                    color: '#00ff00'
+                },
+                {
+                    label: 'Refactoring Candidates',
+                    value: ipAnalytics.refactoring?.refactoringCandidates || 0,
+                    sublabel: `${ipAnalytics.refactoring?.averageHealth || 0} avg health`,
+                    color: '#ff8800'
+                },
+                {
+                    label: 'Code Smells Detected',
+                    value: ipAnalytics.codeSmells?.total || 0,
+                    sublabel: `${ipAnalytics.codeSmells?.bySeverity?.critical || 0} critical`,
+                    color: '#ff0000'
+                },
+                {
+                    label: 'Cross-Project Patterns',
+                    value: ipAnalytics.crossProject?.patternsLearned || 0,
+                    sublabel: `from ${ipAnalytics.crossProject?.projectsLearnedFrom || 0} projects`,
+                    color: '#00ffff'
+                }
+            ];
+
+            stats.forEach(stat => {
+                const card = document.createElement('div');
+                card.className = 'stat-card';
+                card.innerHTML = `
+                    <h3>${stat.label}</h3>
+                    <div class="value" style="color: ${stat.color}">${stat.value}</div>
+                    <div class="label">${stat.sublabel}</div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function updateROIMetrics(roiMetrics) {
+            const grid = document.getElementById('roi-metrics-grid');
+            if (!grid) return;
+            grid.innerHTML = '';
+
+            const timeSaved = roiMetrics.timeSaved || {};
+            const costSavings = roiMetrics.costSavings || {};
+
+            const stats = [
+                {
+                    label: 'Time Saved',
+                    value: `${timeSaved.hours || 0} hours`,
+                    sublabel: `${timeSaved.days || 0} days / ${timeSaved.weeks || 0} weeks`,
+                    color: '#00ff00'
+                },
+                {
+                    label: 'Estimated Value',
+                    value: `$${parseInt(costSavings.estimatedValue || 0).toLocaleString()}`,
+                    sublabel: `${costSavings.developerHours || 0} developer hours`,
+                    color: '#ffff00'
+                },
+                {
+                    label: 'Fix Success Rate',
+                    value: `${roiMetrics.qualityImprovement?.fixSuccessRate || 0}%`,
+                    sublabel: 'Quality improvement',
+                    color: '#00ffff'
+                },
+                {
+                    label: 'Issues Prevented',
+                    value: roiMetrics.issuesPrevented || 0,
+                    sublabel: 'Predictive detection',
+                    color: '#ff00ff'
+                }
+            ];
+
+            stats.forEach(stat => {
+                const card = document.createElement('div');
+                card.className = 'stat-card';
+                card.innerHTML = `
+                    <h3>${stat.label}</h3>
+                    <div class="value" style="color: ${stat.color}">${stat.value}</div>
+                    <div class="label">${stat.sublabel}</div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // Calculate real stats from issues data
+        function calculateRealStats(issues, statistics) {
+            const historyStats = {
+                totalErrors: issues.length,
+                successfulFixes: issues.filter(i => i.review_status === 'resolved' && i.fix_applied).length,
+                successRate: issues.length > 0 ? (issues.filter(i => i.review_status === 'resolved' && i.fix_applied).length / issues.length) * 100 : 0,
+                uniquePatterns: new Set(issues.map(i => i.error_type)).size
+            };
+
+            const learningStats = {
+                averageQuality: issues.filter(i => i.fix_confidence).length > 0 
+                    ? issues.filter(i => i.fix_confidence).reduce((sum, i) => sum + (i.fix_confidence || 0), 0) / issues.filter(i => i.fix_confidence).length
+                    : 0,
+                improvementSuggestions: []
+            };
+
+            return { historyStats, learningStats };
+        }
+
+        // Load dashboard on page load
+        loadDashboard();
+
+        // Auto-refresh every 30 seconds
+        // Auto-refresh every 30 seconds (only if server is responding)
+        function startAutoRefresh() {
+            if (autoRefreshInterval) {
+                clearInterval(autoRefreshInterval);
+            }
+            autoRefreshInterval = setInterval(() => {
+                // Only refresh if we haven't hit max failures
+                if (consecutiveFailures < MAX_CONSECUTIVE_FAILURES) {
+                    loadDashboard();
+                }
+            }, 30000);
+        }
+        
+        // Start auto-refresh
+        startAutoRefresh();
+        
+        // Clean up on page unload
+        window.addEventListener('beforeunload', () => {
+            if (autoRefreshInterval) {
+                clearInterval(autoRefreshInterval);
+            }
+        });
+    </script>
+</body>
+</html>
+
