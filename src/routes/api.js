@@ -17,7 +17,7 @@ module.exports = function setupAPIRoutes(app, options = {}) {
     // Enhanced health check endpoint for 99.99% uptime monitoring
     app.get('/api/health', async (req, res) => {
         try {
-            const healthCheckService = require('../services/healthCheckService');
+            const healthCheckService = require('../src/services/healthCheckService');
             const health = await healthCheckService.getHealth();
             
             // Return 503 if degraded, 200 if healthy
@@ -41,7 +41,7 @@ module.exports = function setupAPIRoutes(app, options = {}) {
     // Readiness probe - checks if ready to serve traffic
     app.get('/api/health/ready', async (req, res) => {
         try {
-            const healthCheckService = require('../services/healthCheckService');
+            const healthCheckService = require('../src/services/healthCheckService');
             const isReady = await healthCheckService.isHealthy();
             const statusCode = isReady ? 200 : 503;
             res.status(statusCode).json({ 
