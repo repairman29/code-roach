@@ -1,5 +1,5 @@
 {
-  "lastSync": "2025-12-16T00:49:53.651Z",
+  "lastSync": "2025-12-16T01:02:25.343Z",
   "files": [
     {
       "source": "/Users/jeffadkins/Smugglers/smugglers/cli/code-roach.js",
@@ -1386,14 +1386,196 @@
       "size": 10141,
       "modified": "2025-12-16T00:47:23.946Z",
       "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/docs/CODE-ROACH-MIGRATION-COMPLETE.md",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/docs/CODE-ROACH-MIGRATION-COMPLETE.md",
+      "size": 2771,
+      "modified": "2025-12-16T00:50:15.275Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/docs/CODE-ROACH-ROADMAP-PROGRESS.md",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/docs/CODE-ROACH-ROADMAP-PROGRESS.md",
+      "size": 10454,
+      "modified": "2025-12-16T00:50:07.745Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/docs/CODE-ROACH-MIGRATION-COMPLETE.md",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/docs/CODE-ROACH-MIGRATION-COMPLETE.md",
+      "size": 2771,
+      "modified": "2025-12-16T00:50:47.791Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/docs/CODE-ROACH-MIGRATION-GUIDE.md",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/docs/CODE-ROACH-MIGRATION-GUIDE.md",
+      "size": 3369,
+      "modified": "2025-12-16T00:50:47.786Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/docs/CODE-ROACH-MIGRATION-QUICK-START.md",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/docs/CODE-ROACH-MIGRATION-QUICK-START.md",
+      "size": 1281,
+      "modified": "2025-12-16T00:50:47.786Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/docs/CODE-ROACH-RECENT-UPDATES.md",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/docs/CODE-ROACH-RECENT-UPDATES.md",
+      "size": 4075,
+      "modified": "2025-12-16T00:50:21.456Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/docs/CODE-ROACH-ROADMAP-PROGRESS.md",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/docs/CODE-ROACH-ROADMAP-PROGRESS.md",
+      "size": 10454,
+      "modified": "2025-12-16T00:51:00.793Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/docs/CODE-ROACH-RECENT-UPDATES.md",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/docs/CODE-ROACH-RECENT-UPDATES.md",
+      "size": 4075,
+      "modified": "2025-12-16T00:51:45.341Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/docs/CODE-ROACH-ROADMAP-PROGRESS.md",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/docs/CODE-ROACH-ROADMAP-PROGRESS.md",
+      "size": 10769,
+      "modified": "2025-12-16T00:53:21.939Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/docs/CODE-ROACH-TESTING-GUIDE.md",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/docs/CODE-ROACH-TESTING-GUIDE.md",
+      "size": 4284,
+      "modified": "2025-12-16T00:53:08.483Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/docs/CODE-ROACH-100-PERCENT-COMPLETE.md",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/docs/CODE-ROACH-100-PERCENT-COMPLETE.md",
+      "size": 7483,
+      "modified": "2025-12-16T00:54:18.993Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/docs/CODE-ROACH-ROADMAP-PROGRESS.md",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/docs/CODE-ROACH-ROADMAP-PROGRESS.md",
+      "size": 10987,
+      "modified": "2025-12-16T00:54:22.245Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/server/services/codebaseCrawlerFixApplication.js",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/src/services/codebaseCrawlerFixApplication.js",
+      "size": 20272,
+      "modified": "2025-12-15T23:52:37.529Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/server/services/validatedFixApplication.js",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/src/services/validatedFixApplication.js",
+      "size": 11183,
+      "modified": "2025-12-14T09:28:57.910Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/server/services/enhancedFixValidation.js",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/src/services/enhancedFixValidation.js",
+      "size": 17883,
+      "modified": "2025-12-15T02:38:00.144Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/server/services/multiAgentFixTeam.js",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/src/services/multiAgentFixTeam.js",
+      "size": 7157,
+      "modified": "2025-12-15T02:34:22.582Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/tests/e2e/code-roach-e2e-test.js",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/tests/e2e/code-roach-e2e-test.js",
+      "size": 11694,
+      "modified": "2025-12-15T02:50:26.648Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/tests/integration/api-auth-test.js",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/tests/integration/api-auth-test.js",
+      "size": 8426,
+      "modified": "2025-12-16T00:54:39.755Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/tests/integration/github-webhook-test.js",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/tests/integration/github-webhook-test.js",
+      "size": 9346,
+      "modified": "2025-12-16T00:54:39.755Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/tests/integration/orchestration-pipeline-test.js",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/tests/integration/orchestration-pipeline-test.js",
+      "size": 6852,
+      "modified": "2025-12-16T00:54:39.755Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/tests/integration/frontend-ui-test.js",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/tests/integration/frontend-ui-test.js",
+      "size": 7629,
+      "modified": "2025-12-16T00:54:39.755Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/tests/integration/run-all-tests.js",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/tests/integration/run-all-tests.js",
+      "size": 2966,
+      "modified": "2025-12-16T00:54:39.755Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/docs/CODE-ROACH-100-PERCENT-COMPLETE.md",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/docs/CODE-ROACH-100-PERCENT-COMPLETE.md",
+      "size": 7483,
+      "modified": "2025-12-16T00:54:39.755Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/docs/CODE-ROACH-ROADMAP-PROGRESS.md",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/docs/CODE-ROACH-ROADMAP-PROGRESS.md",
+      "size": 10987,
+      "modified": "2025-12-16T00:54:59.727Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/docs/CODE-ROACH-TESTING-GUIDE.md",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/docs/CODE-ROACH-TESTING-GUIDE.md",
+      "size": 4284,
+      "modified": "2025-12-16T00:54:39.755Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/server/services/fixDocumentationService.js",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/src/services/fixDocumentationService.js",
+      "size": 17651,
+      "modified": "2025-12-15T23:52:37.529Z",
+      "success": true
     }
   ],
   "stats": {
-    "copied": 198,
-    "skipped": 4759,
+    "copied": 224,
+    "skipped": 7172,
     "errors": 0
   },
-  "lastSyncTimestamp": 1765846193651,
-  "lastSyncHuman": "12/15/2025, 5:49:53 PM",
-  "syncCount": 26
+  "lastSyncTimestamp": 1765846945343,
+  "lastSyncHuman": "12/15/2025, 6:02:25 PM",
+  "syncCount": 37
 }
