@@ -141,37 +141,57 @@ class HealthCheckService {
             
             // Simple connectivity check - verify we can reach Supabase API
             // Don't require specific tables to exist (they might not be migrated yet)
-            try {
-                const response = await fetch(`${config.supabase.url}/rest/v1/`, {
+            const https = require('https');
+            const url = require('url');
+            const supabaseUrl = new URL(config.supabase.url);
+            
+            return new Promise((resolve) => {
+                const options = {
+                    hostname: supabaseUrl.hostname,
+                    path: '/rest/v1/',
+                    method: 'GET',
                     headers: {
                         'apikey': config.supabase.serviceRoleKey,
                         'Authorization': `Bearer ${config.supabase.serviceRoleKey}`
                     },
-                    signal: AbortSignal.timeout(5000) // 5 second timeout
+                    timeout: 5000
+                };
+                
+                const req = https.request(options, (res) => {
+                    // Any response (even 404) means API is reachable
+                    if (res.statusCode === 404 || res.statusCode === 200) {
+                        resolve({
+                            status: 'ok',
+                            response_time_ms: Date.now()
+                        });
+                    } else {
+                        resolve({
+                            status: 'degraded',
+                            error: `Supabase API returned status ${res.statusCode}`,
+                            code: 'HTTP_ERROR'
+                        });
+                    }
                 });
                 
-                // Any response (even 404) means API is reachable
-                if (response.status === 404 || response.ok) {
-                    return {
-                        status: 'ok',
-                        response_time_ms: Date.now()
-                    };
-                }
+                req.on('error', (err) => {
+                    resolve({
+                        status: 'error',
+                        error: err.message || 'Cannot connect to Supabase API',
+                        code: 'CONNECTION_ERROR'
+                    });
+                });
                 
-                // Other status codes might indicate issues
-                return {
-                    status: 'degraded',
-                    error: `Supabase API returned status ${response.status}`,
-                    code: 'HTTP_ERROR'
-                };
-            } catch (fetchErr) {
-                // Connection failed
-                return {
-                    status: 'error',
-                    error: fetchErr.message || 'Cannot connect to Supabase API',
-                    code: 'CONNECTION_ERROR'
-                };
-            }
+                req.on('timeout', () => {
+                    req.destroy();
+                    resolve({
+                        status: 'error',
+                        error: 'Connection timeout',
+                        code: 'TIMEOUT'
+                    });
+                });
+                
+                req.end();
+            });
 
             return {
                 status: 'ok',

@@ -418,6 +418,33 @@
                 <h2>💰 ROI & Impact Metrics</h2>
                 <div id="roi-metrics-grid" class="stats-grid"></div>
             </div>
+
+            <!-- New Services Sections -->
+            <div class="quality-metrics-section" style="margin-top: 40px; padding: 20px; background: rgba(20, 25, 45, 0.5); border: 1px solid #00ffff; border-radius: 8px;">
+                <h2 style="color: #00ffff; font-family: 'Orbitron', sans-serif; margin-bottom: 20px; font-size: 1.8em;">📊 Quality Metrics & SLAs</h2>
+                <div id="quality-metrics-grid" class="stats-grid"></div>
+                <div id="sla-compliance" style="margin-top: 20px;"></div>
+            </div>
+
+            <div class="monitoring-section" style="margin-top: 40px; padding: 20px; background: rgba(20, 25, 45, 0.5); border: 1px solid #00ffff; border-radius: 8px;">
+                <h2 style="color: #00ffff; font-family: 'Orbitron', sans-serif; margin-bottom: 20px; font-size: 1.8em;">🔍 Fix Monitoring Dashboard</h2>
+                <div id="monitoring-dashboard" class="stats-grid"></div>
+            </div>
+
+            <div class="pipeline-section" style="margin-top: 40px; padding: 20px; background: rgba(20, 25, 45, 0.5); border: 1px solid #00ffff; border-radius: 8px;">
+                <h2 style="color: #00ffff; font-family: 'Orbitron', sans-serif; margin-bottom: 20px; font-size: 1.8em;">⚙️ Fix Orchestration Pipelines</h2>
+                <div id="pipelines-list" style="max-height: 400px; overflow-y: auto;"></div>
+            </div>
+
+            <div class="marketplace-section" style="margin-top: 40px; padding: 20px; background: rgba(20, 25, 45, 0.5); border: 1px solid #00ffff; border-radius: 8px;">
+                <h2 style="color: #00ffff; font-family: 'Orbitron', sans-serif; margin-bottom: 20px; font-size: 1.8em;">🏪 Fix Marketplace</h2>
+                <div style="display: flex; gap: 15px; margin-bottom: 20px;">
+                    <a href="code-roach-marketplace.html" class="header-btn">Browse Marketplace</a>
+                    <button class="header-btn" onclick="loadFeaturedPatterns()">Featured Patterns</button>
+                    <button class="header-btn" onclick="loadTrendingPatterns()">Trending</button>
+                </div>
+                <div id="marketplace-preview" class="stats-grid"></div>
+            </div>
         </div>
     </div>
 
@@ -700,6 +727,12 @@
                 if (roiMetrics.success) {
                     updateROIMetrics(roiMetrics);
                 }
+
+                // Load new services data
+                loadQualityMetrics(currentProjectId);
+                loadMonitoringDashboard();
+                loadPipelines();
+                loadFeaturedPatterns();
 
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('dashboard-content').style.display = 'block';
@@ -1122,6 +1155,262 @@
             }, 30000);
         }
         
+        // Load Quality Metrics & SLAs
+        async function loadQualityMetrics(projectId = null) {
+            try {
+                const api = new CodeRoachApiClient();
+                await api.initializeAuth();
+                
+                const metrics = await api.getQualityMetrics(projectId, 30);
+                const slaReport = await api.getSLAReport(projectId, 30);
+                
+                if (metrics.success) {
+                    updateQualityMetrics(metrics.metrics);
+                }
+                if (slaReport.success) {
+                    updateSLACompliance(slaReport.report.slaCompliance);
+                }
+            } catch (error) {
+                console.warn('[Dashboard] Error loading quality metrics:', error);
+            }
+        }
+
+        function updateQualityMetrics(metrics) {
+            const grid = document.getElementById('quality-metrics-grid');
+            if (!grid) return;
+            grid.innerHTML = '';
+
+            const stats = [
+                {
+                    label: 'Fix Success Rate',
+                    value: `${(metrics.fixSuccessRate * 100).toFixed(1)}%`,
+                    color: metrics.fixSuccessRate >= 0.95 ? '#00ff00' : metrics.fixSuccessRate >= 0.90 ? '#ffaa00' : '#ff0000'
+                },
+                {
+                    label: 'Time to Fix',
+                    value: metrics.timeToFix ? `${metrics.timeToFix.toFixed(1)}h` : 'N/A',
+                    color: metrics.timeToFix && metrics.timeToFix <= 24 ? '#00ff00' : '#ffaa00'
+                },
+                {
+                    label: 'Fix Accuracy',
+                    value: `${(metrics.fixAccuracy * 100).toFixed(1)}%`,
+                    color: metrics.fixAccuracy >= 0.90 ? '#00ff00' : '#ffaa00'
+                },
+                {
+                    label: 'False Positive Rate',
+                    value: `${(metrics.falsePositiveRate * 100).toFixed(1)}%`,
+                    color: metrics.falsePositiveRate <= 0.05 ? '#00ff00' : '#ffaa00'
+                }
+            ];
+
+            stats.forEach(stat => {
+                const card = document.createElement('div');
+                card.className = 'stat-card';
+                card.innerHTML = `
+                    <h3>${stat.label}</h3>
+                    <div class="value" style="color: ${stat.color}">${stat.value}</div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function updateSLACompliance(compliance) {
+            const container = document.getElementById('sla-compliance');
+            if (!container || !compliance) return;
+
+            const overallStatus = compliance.overall?.status || 'unknown';
+            const statusColor = {
+                'healthy': '#00ff00',
+                'warning': '#ffaa00',
+                'critical': '#ff0000',
+                'unknown': '#a0a0a0'
+            }[overallStatus] || '#a0a0a0';
+
+            container.innerHTML = `
+                <div style="padding: 15px; background: rgba(0, 255, 255, 0.05); border-radius: 8px; border-left: 4px solid ${statusColor};">
+                    <h3 style="color: #00ffff; margin-bottom: 10px;">Overall SLA Status: <span style="color: ${statusColor};">${overallStatus.toUpperCase()}</span></h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px;">
+                        ${Object.entries(compliance).filter(([key]) => key !== 'overall').map(([key, value]) => `
+                            <div>
+                                <strong style="color: #00ffff;">${key.replace(/([A-Z])/g, ' $1').trim()}:</strong>
+                                <span style="color: ${value.status === 'healthy' ? '#00ff00' : value.status === 'warning' ? '#ffaa00' : '#ff0000'};">
+                                    ${value.status} (${value.compliance ? value.compliance.toFixed(1) : 0}%)
+                                </span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        // Load Monitoring Dashboard
+        async function loadMonitoringDashboard() {
+            try {
+                const api = new CodeRoachApiClient();
+                await api.initializeAuth();
+                
+                const dashboard = await api.getMonitoringDashboard();
+                
+                if (dashboard) {
+                    updateMonitoringDashboard(dashboard);
+                }
+            } catch (error) {
+                console.warn('[Dashboard] Error loading monitoring dashboard:', error);
+            }
+        }
+
+        function updateMonitoringDashboard(dashboard) {
+            const container = document.getElementById('monitoring-dashboard');
+            if (!container) return;
+
+            const stats = [
+                {
+                    label: 'Active Monitors',
+                    value: dashboard.totalMonitors || 0,
+                    color: '#00ffff'
+                },
+                {
+                    label: 'Healthy',
+                    value: dashboard.healthy || 0,
+                    color: '#00ff00'
+                },
+                {
+                    label: 'Degraded',
+                    value: dashboard.degraded || 0,
+                    color: '#ffaa00'
+                },
+                {
+                    label: 'Critical',
+                    value: dashboard.critical || 0,
+                    color: '#ff0000'
+                },
+                {
+                    label: 'Total Alerts',
+                    value: dashboard.totalAlerts || 0,
+                    color: dashboard.totalAlerts > 0 ? '#ff0000' : '#00ff00'
+                },
+                {
+                    label: 'Avg Health Score',
+                    value: dashboard.avgHealthScore ? dashboard.avgHealthScore.toFixed(1) : 'N/A',
+                    color: dashboard.avgHealthScore >= 70 ? '#00ff00' : dashboard.avgHealthScore >= 50 ? '#ffaa00' : '#ff0000'
+                }
+            ];
+
+            container.innerHTML = '';
+            stats.forEach(stat => {
+                const card = document.createElement('div');
+                card.className = 'stat-card';
+                card.innerHTML = `
+                    <h3>${stat.label}</h3>
+                    <div class="value" style="color: ${stat.color}">${stat.value}</div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // Load Pipelines
+        async function loadPipelines() {
+            try {
+                const api = new CodeRoachApiClient();
+                await api.initializeAuth();
+                
+                const pipelines = await api.getAllPipelines();
+                
+                if (pipelines && pipelines.length > 0) {
+                    updatePipelinesList(pipelines);
+                } else {
+                    const container = document.getElementById('pipelines-list');
+                    if (container) {
+                        container.innerHTML = '<p style="color: #a0a0a0; text-align: center; padding: 20px;">No active pipelines</p>';
+                    }
+                }
+            } catch (error) {
+                console.warn('[Dashboard] Error loading pipelines:', error);
+            }
+        }
+
+        function updatePipelinesList(pipelines) {
+            const container = document.getElementById('pipelines-list');
+            if (!container) return;
+
+            container.innerHTML = '';
+            pipelines.slice(0, 10).forEach(pipeline => {
+                const statusColor = {
+                    'completed': '#00ff00',
+                    'running': '#00ffff',
+                    'failed': '#ff0000'
+                }[pipeline.status] || '#a0a0a0';
+
+                const item = document.createElement('div');
+                item.className = 'pattern-item';
+                item.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <h4 style="color: #00ffff;">Pipeline ${pipeline.id.substring(0, 8)}...</h4>
+                            <div style="color: #a0a0a0; font-size: 0.9em; margin-top: 5px;">
+                                Status: <span style="color: ${statusColor};">${pipeline.status}</span> | 
+                                Duration: ${pipeline.duration ? (pipeline.duration / 1000).toFixed(1) + 's' : 'N/A'}
+                            </div>
+                        </div>
+                        <div style="color: #a0a0a0; font-size: 0.8em;">
+                            ${pipeline.startedAt ? new Date(pipeline.startedAt).toLocaleString() : 'N/A'}
+                        </div>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        // Load Featured Patterns
+        async function loadFeaturedPatterns() {
+            try {
+                const api = new CodeRoachApiClient();
+                await api.initializeAuth();
+                
+                const result = await api.getFeaturedPatterns(6);
+                
+                if (result.success && result.patterns) {
+                    updateMarketplacePreview(result.patterns);
+                }
+            } catch (error) {
+                console.warn('[Dashboard] Error loading featured patterns:', error);
+            }
+        }
+
+        async function loadTrendingPatterns() {
+            try {
+                const api = new CodeRoachApiClient();
+                await api.initializeAuth();
+                
+                const result = await api.getTrendingPatterns(6);
+                
+                if (result.success && result.patterns) {
+                    updateMarketplacePreview(result.patterns);
+                }
+            } catch (error) {
+                console.warn('[Dashboard] Error loading trending patterns:', error);
+            }
+        }
+
+        function updateMarketplacePreview(patterns) {
+            const container = document.getElementById('marketplace-preview');
+            if (!container) return;
+
+            container.innerHTML = '';
+            patterns.forEach(pattern => {
+                const card = document.createElement('div');
+                card.className = 'stat-card';
+                card.style.cursor = 'pointer';
+                card.onclick = () => window.location.href = `code-roach-marketplace.html?pattern=${pattern.fingerprint}`;
+                card.innerHTML = `
+                    <h3 style="font-size: 0.8em;">${pattern.error_pattern?.type || 'Pattern'}</h3>
+                    <div class="value" style="font-size: 1.5em; color: #00ffff;">⭐ ${(pattern.rating * 100).toFixed(0)}</div>
+                    <div class="label">${pattern.usageCount || 0} uses | ${((pattern.successRate || 0) * 100).toFixed(0)}% success</div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
         // Start auto-refresh
         startAutoRefresh();
         

@@ -1,5 +1,5 @@
 {
-  "lastSync": "2025-12-16T00:26:16.351Z",
+  "lastSync": "2025-12-16T00:36:51.455Z",
   "files": [
     {
       "source": "/Users/jeffadkins/Smugglers/smugglers/cli/code-roach.js",
@@ -1183,14 +1183,21 @@
       "size": 3493,
       "modified": "2025-12-15T16:07:35.500Z",
       "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/public/code-roach-dashboard.html",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/public/code-roach-dashboard.html",
+      "size": 59995,
+      "modified": "2025-12-16T00:36:02.993Z",
+      "success": true
     }
   ],
   "stats": {
-    "copied": 169,
-    "skipped": 3519,
+    "copied": 170,
+    "skipped": 3711,
     "errors": 0
   },
-  "lastSyncTimestamp": 1765844776351,
-  "lastSyncHuman": "12/15/2025, 5:26:16 PM",
-  "syncCount": 20
+  "lastSyncTimestamp": 1765845411455,
+  "lastSyncHuman": "12/15/2025, 5:36:51 PM",
+  "syncCount": 21
 }
