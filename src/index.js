@@ -114,17 +114,29 @@ try {
 
 // API Routes
 try {
-    // Code Roach API routes
-    const codeRoachAPI = require('./routes/api');
-    app.use('/api', codeRoachAPI);
+    // Code Roach API routes - check if it's a function or router
+    const apiRoutes = require('./routes/api');
+    if (typeof apiRoutes === 'function') {
+        // It's a setup function, call it with app
+        apiRoutes(app, {});
+        console.log('✅ Code Roach API routes loaded (function)');
+    } else {
+        // It's a router, use it directly
+        app.use('/api', apiRoutes);
+        console.log('✅ Code Roach API routes loaded (router)');
+    }
     
     // Code Roach specific routes
-    const codeRoachRoutes = require('./routes/codeRoachAPI');
-    app.use('/api/code-roach', codeRoachRoutes);
-    
-    console.log('✅ Code Roach API routes loaded');
+    try {
+        const codeRoachRoutes = require('./routes/codeRoachAPI');
+        app.use('/api/code-roach', codeRoachRoutes);
+        console.log('✅ Code Roach specific routes loaded');
+    } catch (err) {
+        console.warn('⚠️ Code Roach specific routes not available:', err.message);
+    }
 } catch (err) {
     console.warn('⚠️ Code Roach API routes not available:', err.message);
+    console.error('Error details:', err);
 }
 
 // Serve static files (if public directory exists)
