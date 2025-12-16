@@ -1,186 +1,116 @@
-# Code Roach Repository Migration - Complete! ✅
+# Code Roach Migration - Setup Complete ✅
 
 **Date:** December 15, 2025  
-**Status:** Successfully migrated to standalone repository
+**Status:** Migration scripts and documentation ready
 
 ---
 
-## ✅ Migration Summary
+## ✅ What's Ready
 
-### Repository
-- **URL:** https://github.com/repairman29/coderoach
-- **Branch:** `main`
-- **Commit:** `9178034` - Initial Code Roach standalone migration
+### **Migration Scripts Created:**
+1. ✅ `scripts/run-migration-via-config.js` - Automated migration using config
+2. ✅ `scripts/run-new-services-migration.sh` - Shell script wrapper
+3. ✅ `scripts/code-roach-run-new-migration.js` - Alternative runner
 
-### Files Migrated
-- **196 files** committed
-- **67,535 lines** of code
-- **All Code Roach services, routes, CLI, docs, and migrations**
+### **Documentation Created:**
+1. ✅ `CODE-ROACH-MIGRATION-GUIDE.md` - Complete migration guide
+2. ✅ `CODE-ROACH-MIGRATION-QUICK-START.md` - Quick start instructions
 
----
-
-## 📦 What Was Pushed
-
-### Services (79+ services)
-- Code intelligence services
-- Fix generation services
-- Learning & knowledge services
-- Analysis & prediction services
-- AI/ML services
-- Testing & quality services
-- Infrastructure services
-- Integration services
-- Analytics services
-
-### Routes
-- API routes
-- Knowledge base routes
-
-### CLI Tools
-- `code-roach.js` - Main CLI tool
-
-### Documentation
-- 100+ documentation files
-- Complete guides and roadmaps
-
-### Database Migrations
-- Schema migrations
-- Feature migrations
-
-### Configuration
-- `package.json`
-- `README.md`
-- Config files
+### **CLI Updated:**
+- ✅ Added support for `--migrate new-services` flag
+- ✅ Migration scripts integrated
 
 ---
 
-## 🛡️ Safety Confirmation
+## 🚀 How to Run Migration
 
-✅ **Smugglers Repository:**
-- **NOT touched** - No changes to Smugglers git
-- **No commits** - Smugglers repo unchanged
-- **Completely safe** - Migration was isolated
+### **Option 1: Via CLI (Easiest)**
 
-✅ **Standalone Directory:**
-- Created in: `/Users/jeffadkins/Smugglers/code-roach-standalone/`
-- Independent git repository
-- Can be deleted/recreated safely
-
----
-
-## 🔍 Verification
-
-### Check Repository
-Visit: https://github.com/repairman29/coderoach
-
-You should see:
-- ✅ All Code Roach files
-- ✅ Complete directory structure
-- ✅ Initial commit: "Initial Code Roach standalone migration"
-
-### Check Local
 ```bash
-cd ../code-roach-standalone
-git status
-git log --oneline
+# Set database password first
+export SUPABASE_DB_PASSWORD=your_password
+
+# Run migration
+code-roach-saas db --migrate new-services
+```
+
+### **Option 2: Via Script**
+
+```bash
+# Set database password
+export SUPABASE_DB_PASSWORD=your_password
+
+# Run migration
+node scripts/run-migration-via-config.js
+```
+
+### **Option 3: Manual (Via Dashboard)**
+
+1. Go to: https://supabase.com/dashboard
+2. Select your project
+3. Click **"SQL Editor"** → **"New query"**
+4. Copy SQL from: `supabase/migrations/20251215000000_new_services_schema.sql`
+5. Paste and run
+
+---
+
+## 📋 What Gets Created
+
+### **New Tables:**
+- `code_roach_fix_monitoring` - Fix monitoring data
+- `code_roach_fix_pipelines` - Pipeline tracking
+- `code_roach_pattern_ratings` - Marketplace ratings
+- `code_roach_team_preferences` - Team preferences
+- `code_roach_quality_metrics_history` - Quality metrics history
+
+### **New Columns:**
+- `code_roach_patterns.project_id` - Project association
+- `code_roach_patterns.shared` - Marketplace sharing flag
+- `code_roach_patterns.shared_at` - Sharing timestamp
+
+### **RLS Policies:**
+- All new tables have RLS enabled
+- Service role policies created
+
+---
+
+## ✅ Verification
+
+After migration, verify with:
+
+```sql
+-- Check tables
+SELECT table_name 
+FROM information_schema.tables 
+WHERE table_schema = 'public' 
+AND table_name LIKE 'code_roach_%'
+ORDER BY table_name;
+
+-- Check columns
+SELECT column_name 
+FROM information_schema.columns 
+WHERE table_name = 'code_roach_patterns' 
+AND column_name IN ('project_id', 'shared', 'shared_at');
 ```
 
 ---
 
-## 🚀 Next Steps
+## 📝 Next Steps
 
-### 1. Set Up Railway Project
-
-Link to Code Roach Railway project:
-
-```bash
-cd ../code-roach-standalone
-npm run railway:link-code-roach
-```
-
-### 2. Deploy Infrastructure
-
-Deploy 99.99% uptime infrastructure:
-
-```bash
-npm run deploy:infrastructure
-```
-
-### 3. Configure Environment Variables
-
-Set in Railway dashboard:
-- `SUPABASE_URL`
-- `SUPABASE_SERVICE_ROLE_KEY`
-- Other required variables
-
-### 4. Set Up CI/CD
-
-- Add GitHub Actions
-- Configure auto-deploy
-- Set up testing
+1. ✅ Run migration (choose method above)
+2. ✅ Verify tables created
+3. ✅ Test new services
+4. ✅ Check API endpoints
+5. ✅ Verify frontend integration
 
 ---
 
-## 🔄 Ongoing Workflow
+## 🔗 Related Documentation
 
-### Update Code Roach in Repository
-
-1. **Make changes in Smugglers:**
-   ```bash
-   cd smugglers
-   # Edit Code Roach files
-   ```
-
-2. **Sync to standalone:**
-   ```bash
-   npm run code-roach:sync-standalone
-   ```
-
-3. **Commit and push:**
-   ```bash
-   cd ../code-roach-standalone
-   git add -A
-   git commit -m "Update Code Roach"
-   git push
-   ```
+- [Migration Guide](./CODE-ROACH-MIGRATION-GUIDE.md)
+- [Quick Start](./CODE-ROACH-MIGRATION-QUICK-START.md)
+- [Master Summary](./CODE-ROACH-MASTER-SUMMARY.md)
 
 ---
 
-## 📊 Migration Statistics
-
-- **Files:** 196 files
-- **Lines:** 67,535 lines
-- **Services:** 79+ services
-- **Documentation:** 100+ docs
-- **Migrations:** 3 database migrations
-- **CLI Tools:** 1 main CLI
-- **Routes:** 2 API route files
-
----
-
-## ✅ Checklist
-
-- [x] Files synced to standalone structure
-- [x] Git repository initialized
-- [x] Remote configured
-- [x] Files committed
-- [x] Pushed to GitHub
-- [x] Repository verified
-- [x] Smugglers repository untouched
-
----
-
-## 🎉 Success!
-
-**Code Roach is now in its own repository!**
-
-- ✅ Repository: https://github.com/repairman29/coderoach
-- ✅ Standalone directory: `../code-roach-standalone/`
-- ✅ Smugglers repository: **Untouched and safe**
-
-**Ready for independent development and deployment!**
-
----
-
-**Last Updated:** December 15, 2025  
-**Status:** ✅ Migration Complete
+**Ready to migrate!** Choose your preferred method above. 🚀
