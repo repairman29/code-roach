@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/codebaseCrawler.js
- * Last Sync: 2025-12-16T00:42:37.836Z
+ * Last Sync: 2025-12-16T02:13:23.391Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -1231,7 +1231,10 @@ class CodebaseCrawler {
                     const shouldAutoFix = fixHelpers.shouldAutoFix(issue, autoFix);
 
                     if (shouldAutoFix) {
-                        // NEW: Try orchestration service first if enabled (December 2025)
+                        // INTEGRATION: Use orchestration service by default (System Architecture Expert - 2025-01-15)
+                        // Orchestration coordinates all 12+ services through unified pipeline
+                        let orchestrationUsed = false;
+                        
                         if (fixOrchestrationService && options.useOrchestration !== false) {
                             try {
                                 const context = {
@@ -1253,6 +1256,7 @@ class CodebaseCrawler {
                                     
                                     if (applyStage && applyStage.result && applyStage.result.success) {
                                         // Fix was applied successfully
+                                        orchestrationUsed = true;
                                         this.stats.issuesAutoFixed++;
                                         fileResult.autoFixed++;
                                         code = applyStage.result.fixedCode || code;
@@ -1286,29 +1290,42 @@ class CodebaseCrawler {
                                         console.log(`[Codebase Crawler] ✅ Orchestrated fix applied: ${filePath}:${issue.line} (pipeline: ${orchestrationResult.pipelineId})`);
                                         continue; // Skip to next issue
                                     }
+                                } else if (orchestrationResult.success && orchestrationResult.decision.action === 'skip') {
+                                    // Orchestration decided to skip this fix
+                                    console.log(`[Codebase Crawler] ⏭️ Orchestration skipped fix: ${filePath}:${issue.line} - ${orchestrationResult.decision.reason || 'Low priority'}`);
+                                    continue; // Skip to next issue
                                 }
                             } catch (err) {
                                 // Orchestration failed, fall through to regular fix flow
-                                console.warn(`[Codebase Crawler] Orchestration failed, using regular fix flow:`, err.message);
+                                console.warn(`[Codebase Crawler] ⚠️ Orchestration failed, falling back to legacy fix flow:`, err.message);
                             }
+                        } else if (options.useOrchestration === false) {
+                            // Explicitly disabled, use legacy path
+                            console.log(`[Codebase Crawler] 📋 Using legacy fix flow (orchestration disabled)`);
+                        } else if (!fixOrchestrationService) {
+                            // Orchestration service not available
+                            console.warn(`[Codebase Crawler] ⚠️ Orchestration service not available, using legacy fix flow`);
                         }
-                        // ENHANCED: Special handling for critical security issues
-                        const isCriticalSecurity = issue.type === 'security' && issue.severity === 'critical';
                         
-                        // ROUND 10: Notify on critical issue found
-                        if (isCriticalSecurity || (issue.severity === 'critical')) {
+                        // Legacy fix flow (fallback if orchestration not used or failed)
+                        if (!orchestrationUsed) {
+                            // ENHANCED: Special handling for critical security issues
+                            const isCriticalSecurity = issue.type === 'security' && issue.severity === 'critical';
+                            
+                            // ROUND 10: Notify on critical issue found
+                            if (isCriticalSecurity || (issue.severity === 'critical')) {
+                                try {
+                                    const notificationService = require('./notificationService');
+                                    await notificationService.notifyCriticalIssue(issue, filePath).catch(() => {});
+                                } catch (err) {
+                                    // Notifications are optional
+                                }
+                            }
+                            
+                            if (this.stats.issuesAutoFixed <= 10 || isCriticalSecurity) {
+                                console.log(`[Codebase Crawler] 🔧 Attempting auto-fix: ${filePath}:${issue.line} - ${issue.type}/${issue.severity} - ${issue.message.substring(0, 60)}${isCriticalSecurity ? ' [CRITICAL SECURITY]' : ''}`);
+                            }
                             try {
-                                const notificationService = require('./notificationService');
-                                await notificationService.notifyCriticalIssue(issue, filePath).catch(() => {});
-                            } catch (err) {
-                                // Notifications are optional
-                            }
-                        }
-                        
-                        if (this.stats.issuesAutoFixed <= 10 || isCriticalSecurity) {
-                            console.log(`[Codebase Crawler] 🔧 Attempting auto-fix: ${filePath}:${issue.line} - ${issue.type}/${issue.severity} - ${issue.message.substring(0, 60)}${isCriticalSecurity ? ' [CRITICAL SECURITY]' : ''}`);
-                        }
-                        try {
                             // SPRINT 20: Use helper functions to reduce nesting complexity
                             // Get meta-learning insights
                             const insights = await fixHelpers.getMetaLearningInsights(issue);
@@ -2058,6 +2075,7 @@ class CodebaseCrawler {
                                     );
                                 }
                             }
+                            } // End of legacy fix flow (if (!orchestrationUsed))
                         } catch (fixErr) {
                             console.warn(`[Codebase Crawler] Failed to auto-fix ${filePath}:${issue.line}:`, fixErr.message);
                             // Mark for review if auto-fix fails

@@ -1,5 +1,5 @@
 {
-  "lastSync": "2025-12-16T01:07:15.502Z",
+  "lastSync": "2025-12-16T02:13:23.431Z",
   "files": [
     {
       "source": "/Users/jeffadkins/Smugglers/smugglers/cli/code-roach.js",
@@ -1575,14 +1575,42 @@
       "size": 5465,
       "modified": "2025-12-16T01:03:51.586Z",
       "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/server/services/codebaseCrawler.js",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/src/services/codebaseCrawler.js",
+      "size": 134897,
+      "modified": "2025-12-16T02:04:52.843Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/docs/CODE-ROACH-CURSOR-WORKFLOW.md",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/docs/CODE-ROACH-CURSOR-WORKFLOW.md",
+      "size": 9219,
+      "modified": "2025-12-16T01:39:43.796Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/docs/CODE-ROACH-ENHANCED-FEATURES-TESTING.md",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/docs/CODE-ROACH-ENHANCED-FEATURES-TESTING.md",
+      "size": 4725,
+      "modified": "2025-12-16T01:28:41.658Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/docs/CODE-ROACH-ROADMAP-PROGRESS.md",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/docs/CODE-ROACH-ROADMAP-PROGRESS.md",
+      "size": 11060,
+      "modified": "2025-12-16T02:13:22.499Z",
+      "success": true
     }
   ],
   "stats": {
-    "copied": 225,
-    "skipped": 7858,
+    "copied": 229,
+    "skipped": 8083,
     "errors": 0
   },
-  "lastSyncTimestamp": 1765847235502,
-  "lastSyncHuman": "12/15/2025, 6:07:15 PM",
-  "syncCount": 40
+  "lastSyncTimestamp": 1765851203431,
+  "lastSyncHuman": "12/15/2025, 7:13:23 PM",
+  "syncCount": 41
 }

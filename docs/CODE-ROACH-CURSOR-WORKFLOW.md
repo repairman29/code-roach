@@ -32,6 +32,11 @@ This will:
 npm run code-roach issues --review --open --cursor
 
 # Step 2: Fix issues in Cursor (files are already open at the right lines)
+# Step 2a: Debug with Chrome DevTools (if needed)
+#   - Open DevTools (F12)
+#   - Check Console for errors (use 💡 AI insights)
+#   - Use Network panel to verify API calls
+#   - Use Sources panel for breakpoints if needed
 
 # Step 3: Review and approve fixes
 npm run code-roach issues --review <issue-id> --action approve --notes "Fixed in Cursor"
@@ -216,11 +221,73 @@ Always test after applying fixes:
 npm test
 ```
 
-### 5. Commit Meaningfully
+### 5. Debug with Browser Debugging Service
+
+When fixing issues, use automated browser debugging:
+
+```javascript
+const browserDebuggingService = require('./server/services/browserDebuggingService');
+
+// Debug before fixing
+const result = await browserDebuggingService.autoDebugAndDocument('http://localhost:3000', {
+    headless: true,
+    captureConsole: true,
+    captureNetwork: true,
+    documentFixes: true
+});
+
+// Check for errors
+if (result.analysis.totalErrors > 0) {
+    console.log('Errors found:', result.analysis.errorCategories);
+    // Fix issues based on analysis
+}
+```
+
+**CLI Alternative**:
+```bash
+npm run debug:browser http://localhost:3000 --headless --json
+```
+
+**API Alternative**:
+```bash
+curl -X POST http://localhost:3000/api/browser-debug/auto-debug \
+  -H "Content-Type: application/json" \
+  -d '{"url": "http://localhost:3000", "options": {"documentFixes": true}}'
+```
+
+**Full Guide**: See `docs/DEVTOOLS-PROGRAMMATIC-GUIDE.md`
+
+### 6. Commit Meaningfully
 
 Use descriptive commit messages:
 ```bash
 git commit -m "Code Roach: Fix console.log statements and line length issues"
+```
+
+### 7. Verify with Automated Debugging Before Committing
+
+Before committing, verify fixes work programmatically:
+
+```javascript
+// Automated verification
+const result = await browserDebuggingService.autoDebugAndDocument('http://localhost:3000', {
+    headless: true,
+    captureConsole: true,
+    captureNetwork: true
+});
+
+if (result.analysis.totalErrors > 0) {
+    throw new Error(`Found ${result.analysis.totalErrors} errors - fix before committing`);
+}
+```
+
+**CLI Alternative**:
+```bash
+npm run debug:browser http://localhost:3000 --headless --json > debug-report.json
+if [ $(cat debug-report.json | jq '.analysis.totalErrors') -gt 0 ]; then
+    echo "Errors found, fix before committing"
+    exit 1
+fi
 ```
 
 ---
