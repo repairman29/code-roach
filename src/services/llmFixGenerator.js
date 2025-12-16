@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/llmFixGenerator.js
- * Last Sync: 2025-12-16T00:26:16.152Z
+ * Last Sync: 2025-12-16T04:06:34.037Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -20,6 +20,9 @@ const agentSessionService = require('./agentSessionService');
 const agentKnowledgeService = require('./agentKnowledgeService');
 const fixSuccessTracker = require('./fixSuccessTracker');
 const developerMetricsService = require('./developerMetricsService');
+const customerExpertHelper = require('./customerExpertHelper');
+const expertLearningService = require('./expertLearningService');
+const expertUsageTracker = require('./expertUsageTracker');
 
 class LLMFixGenerator {
     constructor() {
@@ -67,11 +70,32 @@ class LLMFixGenerator {
             // Get similar fixes from history
             const similarFixes = await this.getSimilarFixes(issue);
 
+            // Get customer expert context if project_id is available
+            let customerExpertContext = '';
+            let expertTypeUsed = null;
+            if (context.project_id) {
+                try {
+                    expertTypeUsed = customerExpertHelper.determineExpertType(issue);
+                    customerExpertContext = await customerExpertHelper.buildExpertContext(
+                        context.project_id,
+                        issue
+                    );
+                    
+                    // Track expert usage
+                    if (expertTypeUsed && customerExpertContext) {
+                        await expertUsageTracker.trackUsage(context.project_id, expertTypeUsed);
+                    }
+                } catch (err) {
+                    console.warn('[LLM Fix Generator] Failed to get customer expert context:', err.message);
+                }
+            }
+
             // Merge context-aware data if provided
             const enhancedContext = {
                 ...context,
                 codebaseContext,
                 similarFixes,
+                customerExpertContext,
                 conventions: context.conventions || null,
                 similarPatterns: context.similarPatterns || null,
                 existingFixes: context.existingFixes || null,
@@ -261,6 +285,12 @@ ${similarPatterns.slice(0, 3).map(p => `File: ${p.file}\n\`\`\`javascript\n${p.c
 - Max line length: ${codeStyle.lineLength || 120} chars
 
 `;
+        }
+
+        // Add customer expert context if available
+        const customerExpertContext = context.customerExpertContext || '';
+        if (customerExpertContext) {
+            prompt += customerExpertContext;
         }
 
         prompt += `REQUIREMENTS:

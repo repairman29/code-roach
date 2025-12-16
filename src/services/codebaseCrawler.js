@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/codebaseCrawler.js
- * Last Sync: 2025-12-16T02:13:23.391Z
+ * Last Sync: 2025-12-16T03:17:15.002Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -52,25 +52,14 @@ try {
     // Notification service optional
 }
 
-// New Services (December 2025)
-let fixOrchestrationService = null;
-let fixImpactPredictionService = null;
-let fixConfidenceCalibrationService = null;
-let fixCostBenefitAnalysisService = null;
-let fixMonitoringService = null;
-let fixDocumentationGenerationService = null;
-
-try {
-    fixOrchestrationService = require('./fixOrchestrationService');
-    fixImpactPredictionService = require('./fixImpactPredictionService');
-    fixConfidenceCalibrationService = require('./fixConfidenceCalibrationService');
-    fixCostBenefitAnalysisService = require('./fixCostBenefitAnalysisService');
-    fixMonitoringService = require('./fixMonitoringService');
-    fixDocumentationGenerationService = require('./fixDocumentationGenerationService');
-} catch (err) {
-    // New services optional - will use fallback if not available
-    console.warn('[Codebase Crawler] Some new services not available:', err.message);
-}
+// New Services (December 2025) - System Architecture Expert Integration
+// These services are now always available and integrated into the crawler workflow
+const fixOrchestrationService = require('./fixOrchestrationService');
+const fixImpactPredictionService = require('./fixImpactPredictionService');
+const fixConfidenceCalibrationService = require('./fixConfidenceCalibrationService');
+const fixCostBenefitAnalysisService = require('./fixCostBenefitAnalysisService');
+const fixMonitoringService = require('./fixMonitoringService');
+const fixDocumentationGenerationService = require('./fixDocumentationGenerationService');
 
 // Path for persisting crawler stats
 const STATS_FILE = path.join(__dirname, '../../data/crawler-stats.json');
@@ -1231,11 +1220,14 @@ class CodebaseCrawler {
                     const shouldAutoFix = fixHelpers.shouldAutoFix(issue, autoFix);
 
                     if (shouldAutoFix) {
+                        try {
                         // INTEGRATION: Use orchestration service by default (System Architecture Expert - 2025-01-15)
                         // Orchestration coordinates all 12+ services through unified pipeline
+                        // Services are now always available - orchestration is the default path
                         let orchestrationUsed = false;
                         
-                        if (fixOrchestrationService && options.useOrchestration !== false) {
+                        // Use orchestration unless explicitly disabled
+                        if (options.useOrchestration !== false) {
                             try {
                                 const context = {
                                     filePath,
@@ -1261,31 +1253,8 @@ class CodebaseCrawler {
                                         fileResult.autoFixed++;
                                         code = applyStage.result.fixedCode || code;
                                         
-                                        // Start monitoring
-                                        if (fixMonitoringService && applyStage.result.fixId) {
-                                            try {
-                                                await fixMonitoringService.startMonitoring(
-                                                    applyStage.result.fixId,
-                                                    { code: applyStage.result.fixedCode },
-                                                    context
-                                                );
-                                            } catch (err) {
-                                                // Monitoring optional
-                                            }
-                                        }
-                                        
-                                        // Generate documentation
-                                        if (fixDocumentationGenerationService) {
-                                            try {
-                                                const docs = await fixDocumentationGenerationService.generateDocumentation(
-                                                    { code: applyStage.result.fixedCode },
-                                                    context
-                                                );
-                                                // Documentation generated, could be stored or logged
-                                            } catch (err) {
-                                                // Documentation optional
-                                            }
-                                        }
+                                        // Monitoring is handled by orchestration pipeline
+                                        // Documentation is handled by orchestration pipeline
                                         
                                         console.log(`[Codebase Crawler] ✅ Orchestrated fix applied: ${filePath}:${issue.line} (pipeline: ${orchestrationResult.pipelineId})`);
                                         continue; // Skip to next issue
@@ -1296,15 +1265,12 @@ class CodebaseCrawler {
                                     continue; // Skip to next issue
                                 }
                             } catch (err) {
-                                // Orchestration failed, fall through to regular fix flow
+                                // Orchestration failed, fall through to legacy fix flow
                                 console.warn(`[Codebase Crawler] ⚠️ Orchestration failed, falling back to legacy fix flow:`, err.message);
                             }
-                        } else if (options.useOrchestration === false) {
+                        } else {
                             // Explicitly disabled, use legacy path
                             console.log(`[Codebase Crawler] 📋 Using legacy fix flow (orchestration disabled)`);
-                        } else if (!fixOrchestrationService) {
-                            // Orchestration service not available
-                            console.warn(`[Codebase Crawler] ⚠️ Orchestration service not available, using legacy fix flow`);
                         }
                         
                         // Legacy fix flow (fallback if orchestration not used or failed)
@@ -2075,8 +2041,12 @@ class CodebaseCrawler {
                                     );
                                 }
                             }
-                            } // End of legacy fix flow (if (!orchestrationUsed))
-                        } catch (fixErr) {
+                            } catch (legacyFixErr) {
+                                // Legacy fix flow error - log and continue
+                                console.warn(`[Codebase Crawler] Legacy fix flow error: ${filePath}:${issue.line}:`, legacyFixErr.message);
+                            } // End of try block for legacy fix flow
+                        } // End of if (!orchestrationUsed)
+                    } catch (fixErr) {
                             console.warn(`[Codebase Crawler] Failed to auto-fix ${filePath}:${issue.line}:`, fixErr.message);
                             // Mark for review if auto-fix fails
                             // ROUND 7: Calculate priority before adding to review queue

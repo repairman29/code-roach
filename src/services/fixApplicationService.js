@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/fixApplicationService.js
- * Last Sync: 2025-12-14T07:30:45.547Z
+ * Last Sync: 2025-12-16T04:06:34.038Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -15,6 +15,8 @@
 
 const fixSuccessTracker = require('./fixSuccessTracker');
 const agentSessionService = require('./agentSessionService');
+const expertLearningService = require('./expertLearningService');
+const expertUsageTracker = require('./expertUsageTracker');
 
 class FixApplicationService {
     constructor() {
@@ -271,6 +273,34 @@ class FixApplicationService {
             // Update knowledge base usage if fix came from knowledge base
             if (metadata.knowledgeId) {
                 await fixSuccessTracker.recordFixApplication(metadata.knowledgeId, success);
+            }
+
+            // Record expert learning outcome if expert was used
+            if (fix.expertTypeUsed && fix.projectId) {
+                const outcome = success ? 'success' : 'failure';
+                await expertLearningService.recordFixOutcome(
+                    fix.projectId,
+                    fix.expertTypeUsed,
+                    {
+                        issue: error,
+                        fix: fix,
+                        outcome: outcome,
+                        confidence: fix.confidence,
+                        applied: success,
+                        reverted: !success
+                    }
+                ).catch(err => {
+                    console.warn('[Fix Application] Failed to record expert learning:', err.message);
+                });
+
+                // Track usage outcome
+                await expertUsageTracker.trackOutcome(
+                    fix.projectId,
+                    fix.expertTypeUsed,
+                    success
+                ).catch(() => {
+                    // Silently fail - tracking is non-critical
+                });
             }
         } catch (err) {
             console.warn('[FixApplication] Failed to record to Supabase:', err.message);

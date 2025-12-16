@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/llmService.js
- * Last Sync: 2025-12-14T16:32:56.762Z
+ * Last Sync: 2025-12-16T03:10:22.241Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -18,12 +18,19 @@
 require('dotenv').config();
 
 const performanceTrackingService = require('./performanceTrackingService');
-// Optional - only for game features, not needed for Code Roach
-let aiGMMemoryService = null;
+const aiGMMemoryService = require('./aiGMMemoryService');
+const responseVarietyService = require('./responseVarietyService');
+const aiGMExplainabilityService = require('./aiGMExplainabilityService');
+const aiGMConfidenceCalibrationService = require('./aiGMConfidenceCalibrationService');
+const narrativeProgressionService = require('./narrativeProgressionService');
+const enhancedContextAwarenessService = require('./enhancedContextAwarenessService');
+
+// Event Bus for quality improvement events (optional, graceful fallback)
+let eventBus = null;
 try {
-    aiGMMemoryService = require('./aiGMMemoryService');
+    eventBus = require('./eventBus');
 } catch (err) {
-    // Not available - Code Roach doesn't need this
+    // Event Bus not available, continue without it
 }
 
 const GAME_STATE_INSTRUCTIONS = `### THE GAME STATE BLOCK
@@ -74,24 +81,38 @@ Every user message will be preceded by a hidden block formatted as \`[GAME_STATE
 const BASE_SYSTEM_PROMPT = `You are an AI Game Master for SMUGGLER, a fast-paced, rules-light tabletop RPG about running illegal cargo across a dangerous galaxy.
 
 Your role:
-- Generate vivid, immersive narrative descriptions
-- React to player actions with appropriate consequences
-- Maintain the tone: dangerous, desperate, and cinematic
-- Keep descriptions concise but evocative (100-300 words)
-- Use the game state to inform your narration style
+- Generate vivid, immersive narrative descriptions that bring the world to life
+- React to player actions with appropriate consequences that feel meaningful
+- Maintain the tone: dangerous, desperate, and cinematic - like a space western
+- Keep descriptions concise but evocative (100-300 words) - every word should count
+- Use the game state to inform your narration style - wounded characters feel pain, panicked characters are frantic
 - Reference available game systems when relevant to create dynamic, interactive narratives
+- Create variety - avoid repeating the same phrases or structures
+- Build narrative momentum - connect events to create a sense of progression
+- Show character through action - let the player's choices and outcomes reveal who they are
 
 Game Setting:
 - Sci-fi space setting with a gritty, dangerous atmosphere
-- Players are smugglers taking on risky jobs
-- Every decision matters, death is real
-- Focus on narrative over rules
+- Players are smugglers taking on risky jobs in a lawless galaxy
+- Every decision matters, death is real, but so is triumph
+- Focus on narrative over rules - make the story compelling
+- The galaxy is vast, dangerous, and full of opportunity for those brave enough
+
+Narrative Quality Guidelines:
+- Use specific, concrete details instead of vague descriptions
+- Vary sentence structure and length to create rhythm
+- Include sensory details (sights, sounds, smells, textures) to immerse the player
+- Create emotional beats - moments of tension, relief, triumph, or despair
+- Reference past events naturally to build continuity
+- Make failures interesting - they should create new opportunities, not just block progress
+- Make successes feel earned - describe the skill, luck, or cleverness that made it work
 
 System Integration:
 - The game has various systems (stealth, combat, NPCs, factions, etc.) that can enhance narratives
 - When systems are mentioned in the context, you can reference their capabilities to create richer descriptions
 - For example, if stealth systems are active, you can describe detection levels, noise, hiding spots, etc.
-- Use system information to make narratives more interactive and mechanically grounded`;
+- Use system information to make narratives more interactive and mechanically grounded
+- Don't just mention systems - weave them into the narrative naturally`;
 
 class LLMService {
     constructor() {
@@ -477,27 +498,120 @@ class LLMService {
             };
         }
 
-        // SPRINT 5: Get memory context for personalized narrative
+        // Get enhanced context awareness (includes memory, progression, emotional, environmental)
+        const scenarioId = params.scenarioId || 'default';
+        let enhancedContext = null;
         let memoryContext = '';
+        let progressionContext = '';
+        
         if (userId) {
             try {
-                const memories = aiGMMemoryService ? await aiGMMemoryService.getEnhancedMemoryContext(
+                // Get enhanced context (includes memory, progression, emotional, environmental)
+                enhancedContext = await enhancedContextAwarenessService.getEnhancedContext(
                     userId,
-                    userMessage + ' ' + gameStateContext,
-                    { days: 30, limit: 5, includeEmotions: true }
+                    scenarioId,
+                    {
+                        location: params.location || null,
+                        actionType: rollData ? `${rollData.statName || 'unknown'}-${rollData.rollType || 'roll'}` : 'action',
+                        rollData: rollData,
+                        emotionalState: params.emotionalState || {},
+                        gameState: params.gameState || {}
+                    }
                 );
-                
-                if (memories && memories.length > 0) {
-                    const memoryTexts = memories.map(m => {
-                        let text = `- ${m.type}: ${JSON.stringify(m.event)}`;
-                        if (m.narrative) text += ` (Narrative: ${m.narrative.substring(0, 100)}...)`;
-                        return text;
-                    }).join('\n');
+
+                // Build memory context from enhanced context
+                if (enhancedContext.narrativeMemory?.memories?.length > 0) {
+                    const highPriority = enhancedContext.narrativeMemory.highPriority || [];
+                    const mediumPriority = enhancedContext.narrativeMemory.mediumPriority || [];
                     
-                    memoryContext = `\n\n[PLAYER MEMORY CONTEXT - Reference these past events naturally in your narrative:]\n${memoryTexts}\n`;
+                    const relevantMemories = [...highPriority, ...mediumPriority].slice(0, 5);
+                    
+                    if (relevantMemories.length > 0) {
+                        const memoryTexts = relevantMemories.map(m => {
+                            let text = `- ${m.event_type || 'event'}: `;
+                            if (m.narrative) {
+                                text += m.narrative.substring(0, 150);
+                            } else if (m.event_data) {
+                                text += JSON.stringify(m.event_data).substring(0, 150);
+                            }
+                            if (m.recency) {
+                                text += ` [${m.recency}]`;
+                            }
+                            return text;
+                        }).join('\n');
+                        
+                        memoryContext = `\n\n[PLAYER MEMORY CONTEXT - Reference these past events naturally in your narrative:]\n${memoryTexts}\n`;
+                        
+                        // Add emotional context if available
+                        if (enhancedContext.emotional?.category !== 'neutral') {
+                            memoryContext += `\n[EMOTIONAL CONTEXT - Player's emotional state: ${enhancedContext.emotional.category} (${enhancedContext.emotional.trajectory} trajectory)]\n`;
+                            if (enhancedContext.emotional.recommendations?.length > 0) {
+                                memoryContext += `Recommendations: ${enhancedContext.emotional.recommendations.join('; ')}\n`;
+                            }
+                        }
+                        
+                        // Add environmental context if available
+                        if (enhancedContext.environmental?.location) {
+                            const env = enhancedContext.environmental;
+                            memoryContext += `\n[ENVIRONMENTAL CONTEXT - Location: ${env.location}]\n`;
+                            memoryContext += `Atmosphere: ${env.atmosphere}\n`;
+                            if (env.sensoryDetails) {
+                                const sensory = env.sensoryDetails;
+                                if (sensory.visual?.length > 0) {
+                                    memoryContext += `Visual details: ${sensory.visual.join(', ')}\n`;
+                                }
+                                if (sensory.auditory?.length > 0) {
+                                    memoryContext += `Sounds: ${sensory.auditory.join(', ')}\n`;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Get progression context
+                if (enhancedContext.progression?.storyStage) {
+                    const progression = enhancedContext.progression;
+                    progressionContext = `\n\n[NARRATIVE PROGRESSION - Use this to maintain story coherence:]\n`;
+                    progressionContext += `Story Stage: ${progression.storyStage} (${(progression.storyProgress * 100).toFixed(0)}% complete)\n`;
+                    progressionContext += `Player Journey: ${progression.playerJourney.stage} (${progression.playerJourney.totalActions} actions, ${(progression.playerJourney.successRate * 100).toFixed(0)}% success rate)\n`;
+                    
+                    if (progression.relationships && progression.relationships.length > 0) {
+                        progressionContext += `Relationships: ${progression.relationships.map(r => `${r.entity} (${r.relationship})`).join(', ')}\n`;
+                    }
+                    
+                    if (progression.recentEvents && progression.recentEvents.length > 0) {
+                        progressionContext += `Recent Events: ${progression.recentEvents.map(e => e.type).join(', ')}\n`;
+                    }
+                    
+                    if (progression.milestones && progression.milestones.length > 0) {
+                        progressionContext += `Milestones: ${progression.milestones.map(m => m.description || m).join(', ')}\n`;
+                    }
+                    
+                    progressionContext += `\nAdjust your narrative tone and content to match this story stage. `;
+                    progressionContext += `If in ${progression.storyStage}, use appropriate pacing and tension.\n`;
                 }
             } catch (err) {
-                console.warn('[LLM Service] Failed to get memory context:', err.message);
+                console.warn('[LLM Service] Failed to get enhanced context:', err.message);
+                // Fallback to basic memory context
+                try {
+                    const memories = await aiGMMemoryService.getEnhancedMemoryContext(
+                        userId,
+                        userMessage + ' ' + gameStateContext,
+                        { days: 30, limit: 5, includeEmotions: true }
+                    );
+                    
+                    if (memories && memories.length > 0) {
+                        const memoryTexts = memories.map(m => {
+                            let text = `- ${m.type}: ${JSON.stringify(m.event)}`;
+                            if (m.narrative) text += ` (Narrative: ${m.narrative.substring(0, 100)}...)`;
+                            return text;
+                        }).join('\n');
+                        
+                        memoryContext = `\n\n[PLAYER MEMORY CONTEXT - Reference these past events naturally in your narrative:]\n${memoryTexts}\n`;
+                    }
+                } catch (fallbackErr) {
+                    console.warn('[LLM Service] Failed to get fallback memory context:', fallbackErr.message);
+                }
             }
         }
 
@@ -506,13 +620,18 @@ class LLMService {
         const userPrompt = gameStateContext 
             ? `[GAME_STATE: ${gameStateContext}]\n\nUser Action: ${userMessage}`
             : `User Action: ${userMessage}`;
+        
+        // Add progression context to user prompt
+        const userPromptWithContext = progressionContext 
+            ? `${progressionContext}\n\n${userPrompt}`
+            : userPrompt;
 
         // Add roll context if available
-        let enhancedUserPrompt = userPrompt;
+        let enhancedUserPrompt = userPromptWithContext;
         if (rollData) {
             const rollInfo = `Roll: ${rollData.roll || 'N/A'} vs ${rollData.statValue || 'N/A'} on 
                 ${rollData.statName || 'N/A'} (${rollData.rollType || 'N/A'})`;
-            enhancedUserPrompt = `${rollInfo}\n\n${userPrompt}`;
+            enhancedUserPrompt = `${rollInfo}\n\n${userPromptWithContext}`;
         }
 
         // SPRINT 5: Add memory context to prompt
@@ -552,13 +671,95 @@ class LLMService {
                 this.qualityScores.shift(); // Keep only last 100 scores
             }
             
+            // Check response variety (scenarioId already defined above)
+            const actionType = rollData ? `${rollData.statName || 'unknown'}-${rollData.rollType || 'roll'}` : 'action';
+            const varietyCheck = responseVarietyService.checkVariety(scenarioId, actionType, result.narrative);
+            
+            // Adjust quality score based on variety (penalize repetition)
+            let adjustedQualityScore = qualityScore;
+            if (varietyCheck.isSimilar) {
+                // Reduce quality score if response is too similar to recent ones
+                const varietyPenalty = varietyCheck.similarityScore * 0.2; // Up to 0.2 penalty
+                adjustedQualityScore = Math.max(0, qualityScore - varietyPenalty);
+                
+                if (varietyCheck.similarityScore > 0.85) {
+                    console.warn(`[LLM Service] Response is ${(varietyCheck.similarityScore * 100).toFixed(0)}% similar to recent responses - high repetition risk`);
+                }
+            }
+            
             // Filter response for safety
             result.narrative = this.filterResponse(result.narrative);
             
-            // Check quality threshold
-            if (qualityScore < this.minQualityScore && this.fallbackEnabled) {
-                console.warn(`[LLM Service] Low quality score (${qualityScore}), using fallback`);
+            // Check quality threshold (use adjusted score)
+            if (adjustedQualityScore < this.minQualityScore && this.fallbackEnabled) {
+                console.warn(`[LLM Service] Low quality score (${adjustedQualityScore.toFixed(2)}, base: ${qualityScore.toFixed(2)}), using fallback`);
                 return this.getFallbackResponse(rollData);
+            }
+            
+            // Calibrate confidence for quality prediction
+            const calibratedConfidence = await aiGMConfidenceCalibrationService.calibrateConfidence(
+                adjustedQualityScore,
+                {
+                    scenarioId: scenarioId,
+                    actionType: actionType,
+                    provider: selectedProvider,
+                    model: selectedModel,
+                    qualityScore: adjustedQualityScore
+                }
+            );
+
+            // Generate explanation and track response (only if quality is acceptable)
+            let explanation = null;
+            if (adjustedQualityScore >= this.minQualityScore) {
+                // Track response for variety checking
+                responseVarietyService.trackResponse(scenarioId, actionType, result.narrative, {
+                    rollData: rollData,
+                    qualityScore: qualityScore,
+                    varietyScore: varietyCheck.varietyScore
+                });
+                
+                // Generate explanation for this narrative
+                try {
+                    const explainResult = await aiGMExplainabilityService.explainNarrative(result.narrative, {
+                        narrative: result.narrative,
+                        qualityScore: adjustedQualityScore,
+                        baseQualityScore: qualityScore,
+                        varietyScore: varietyCheck.varietyScore,
+                        isRepetitive: varietyCheck.isSimilar,
+                        scenarioId: scenarioId,
+                        actionType: actionType,
+                        rollData: rollData,
+                        gameStateContext: gameStateContext,
+                        promptUsed: enhancedUserPrompt,
+                        provider: selectedProvider,
+                        model: selectedModel,
+                        cached: false,
+                        responseTime: responseTime,
+                        tokensUsed: result.tokensUsed || 0
+                    });
+                    explanation = explainResult.explanation;
+                } catch (err) {
+                    console.warn('[LLM Service] Failed to generate explanation:', err.message);
+                }
+                
+                // Emit quality improvement event if Event Bus available
+                if (eventBus && typeof eventBus.emit === 'function') {
+                    eventBus.emit('game:ai:response-generated', {
+                        qualityScore: adjustedQualityScore,
+                        calibratedQualityScore: calibratedConfidence.calibrated,
+                        baseQualityScore: qualityScore,
+                        varietyScore: varietyCheck.varietyScore,
+                        isRepetitive: varietyCheck.isSimilar,
+                        scenarioId: scenarioId,
+                        actionType: actionType,
+                        responseLength: result.narrative.length,
+                        explanationId: explanation?.responseId || null,
+                        confidenceReliability: calibratedConfidence.reliability
+                    }, { source: 'llmService' }).catch(err => {
+                        // Don't block on event emission errors
+                        console.warn('[LLM Service] Failed to emit quality event:', err.message);
+                    });
+                }
             }
 
             // Cache result
@@ -572,20 +773,39 @@ class LLMService {
             // SPRINT 4: Update cache metrics
             this.updateCacheMetrics();
 
-            // SPRINT 5: Store narrative as memory for future reference
-            if (userId && result.narrative && aiGMMemoryService) {
+            // Track narrative progression (after narrative is generated)
+            if (userId && result.narrative) {
+                // Track progression event
+                try {
+                    const progressionResult = await narrativeProgressionService.trackEvent(userId, scenarioId, {
+                        narrative: result.narrative,
+                        actionType: rollData ? `${rollData.statName || 'unknown'}-${rollData.rollType || 'roll'}` : 'action',
+                        rollData: rollData,
+                        outcome: rollData?.success ? 'success' : (rollData?.failure ? 'failure' : 'partial'),
+                        emotionalState: params.emotionalState || {},
+                        relationships: params.relationships || {},
+                        location: params.location || null,
+                        timestamp: new Date().toISOString()
+                    });
+
+                // SPRINT 5: Store narrative as memory for future reference
                 aiGMMemoryService.storeNarrativeMemory(userId, {
                     narrative: result.narrative,
                     sessionId: sessionId,
                     eventData: {
                         userMessage,
                         gameState: gameStateContext,
-                        rollData: rollData
+                        rollData: rollData,
+                        progression: progressionResult?.progression || null,
+                        storyStage: progressionResult?.storyStage || null
                     },
                     importance: 'normal'
                 }).catch(err => {
                     console.warn('[LLM Service] Failed to store narrative memory:', err.message);
                 });
+                } catch (err) {
+                    console.warn('[LLM Service] Failed to track progression:', err.message);
+                }
             }
 
             return {
@@ -593,7 +813,15 @@ class LLMService {
                 provider: selectedProvider,
                 model: selectedModel,
                 cached: false,
-                qualityScore: qualityScore,
+                qualityScore: adjustedQualityScore,
+                calibratedQualityScore: calibratedConfidence.calibrated,
+                baseQualityScore: qualityScore,
+                varietyScore: varietyCheck.varietyScore,
+                isRepetitive: varietyCheck.isSimilar,
+                confidenceInterval: calibratedConfidence.interval,
+                confidenceReliability: calibratedConfidence.reliability,
+                explanation: explanation,
+                explanationId: explanation?.responseId || null,
                 responseTime: responseTime,
                 tokensUsed: result.tokensUsed || 0,
                 cost: result.cost || 0
@@ -858,7 +1086,7 @@ class LLMService {
     }
     
     /**
-     * Score response quality
+     * Score response quality - Enhanced for better quality assessment
      */
     scoreQuality(narrative, originalMessage) {
         let score = 0.5; // Base score
@@ -868,6 +1096,8 @@ class LLMService {
             score += 0.1;
         } else if (narrative.length < 50) {
             score -= 0.2;
+        } else if (narrative.length > 800) {
+            score -= 0.05; // Too long can be overwhelming
         }
         
         // Relevance check (contains keywords from original message)
@@ -876,9 +1106,9 @@ class LLMService {
         const relevance = messageWords.filter(word => 
             word.length > 3 && narrativeLower.includes(word)
         ).length / Math.max(1, messageWords.length);
-        score += relevance * 0.2;
+        score += relevance * 0.15; // Slightly reduced weight
         
-        // Narrative quality (has action, description, etc.)
+        // Narrative quality indicators
         if (narrative.includes('You') || narrative.includes('you')) {
             score += 0.1; // Second person narrative
         }
@@ -887,10 +1117,64 @@ class LLMService {
             score += 0.05; // Proper punctuation
         }
         
-        // Check for generic responses
-        const genericPhrases = ['you succeed', 'you fail', 'it works', 'it doesn\'t work'];
-        if (genericPhrases.some(phrase => narrative.toLowerCase().includes(phrase))) {
-            score -= 0.1;
+        // Check for specific, concrete details (quality indicator)
+        const specificDetails = [
+            /\d+/, // Numbers
+            /[A-Z][a-z]+ (ship|station|planet|weapon|tool)/, // Specific objects
+            /(red|blue|green|dark|bright|dim|glowing|flickering)/, // Visual details
+            /(hum|buzz|roar|whisper|clang|hiss)/, // Sound details
+            /(smell|scent|odor|aroma)/, // Smell details
+            /(rough|smooth|cold|hot|wet|dry)/ // Texture/temperature
+        ];
+        const detailCount = specificDetails.filter(regex => regex.test(narrative)).length;
+        score += Math.min(0.15, detailCount * 0.03); // Up to 0.15 for rich details
+        
+        // Check for variety (avoid repetition)
+        const sentences = narrative.split(/[.!?]+/).filter(s => s.trim().length > 0);
+        const uniqueStarts = new Set(sentences.map(s => s.trim().substring(0, 10).toLowerCase()));
+        const varietyScore = uniqueStarts.size / Math.max(1, sentences.length);
+        score += varietyScore * 0.1; // Reward variety
+        
+        // Check for emotional engagement
+        const emotionalWords = [
+            'desperate', 'triumph', 'relief', 'tension', 'fear', 'excitement',
+            'despair', 'hope', 'dread', 'elation', 'panic', 'calm', 'urgent',
+            'frantic', 'confident', 'uncertain', 'desperate', 'determined'
+        ];
+        const hasEmotion = emotionalWords.some(word => narrative.toLowerCase().includes(word));
+        if (hasEmotion) {
+            score += 0.1; // Emotional engagement
+        }
+        
+        // Check for narrative progression (references to past/future)
+        const progressionIndicators = [
+            /(before|after|earlier|later|now|then|finally|suddenly)/,
+            /(remember|recall|forget|remind)/,
+            /(continue|proceed|next|then)/
+        ];
+        const hasProgression = progressionIndicators.some(regex => regex.test(narrative.toLowerCase()));
+        if (hasProgression) {
+            score += 0.05; // Narrative continuity
+        }
+        
+        // Check for generic responses (penalty)
+        const genericPhrases = [
+            'you succeed', 'you fail', 'it works', 'it doesn\'t work',
+            'you manage to', 'you try to', 'you attempt to', 'you decide to'
+        ];
+        const genericCount = genericPhrases.filter(phrase => 
+            narrative.toLowerCase().includes(phrase)
+        ).length;
+        score -= Math.min(0.2, genericCount * 0.05); // Penalty for generic language
+        
+        // Check for action verbs (quality indicator)
+        const actionVerbs = [
+            'dash', 'leap', 'dive', 'sprint', 'stumble', 'weave', 'navigate',
+            'hack', 'negotiate', 'persuade', 'threaten', 'evade', 'confront'
+        ];
+        const hasActionVerb = actionVerbs.some(verb => narrative.toLowerCase().includes(verb));
+        if (hasActionVerb) {
+            score += 0.05; // Dynamic action
         }
         
         return Math.max(0, Math.min(1, score));

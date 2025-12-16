@@ -16,6 +16,16 @@ This document outlines the complete execution plan to transform Code Roach from 
 4. **Resource Planning** - Team, timeline, milestones
 5. **Go-to-Market Execution** - Launch strategy and operations
 
+### 🆕 Expert Training System (NEW)
+
+Code Roach now includes an **Expert Training System** that automatically trains AI agents to be experts on each customer's tech stack. This enables:
+- **Automatic Onboarding**: Analyzes customer codebase and generates expert guides
+- **Context-Aware Fixes**: Fixes respect customer patterns and architecture
+- **Self-Learning**: System improves experts based on fix outcomes
+- **Quality Monitoring**: Track expert performance and effectiveness
+
+**See**: `docs/CODE-ROACH-EXPERT-SYSTEM-MASTER.md` for complete documentation.
+
 ---
 
 ## 📅 Product Roadmap

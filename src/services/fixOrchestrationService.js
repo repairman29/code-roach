@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/fixOrchestrationService.js
- * Last Sync: 2025-12-16T00:42:39.834Z
+ * Last Sync: 2025-12-16T03:55:33.881Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -13,6 +13,7 @@
  * Coordinates all fix services into a unified pipeline
  * 
  * Improvement #1: Integration & Orchestration
+ * System Architecture Expert - 2025-01-15 - Added Event Bus integration
  */
 
 const fixImpactPredictionService = require('./fixImpactPredictionService');
@@ -23,6 +24,14 @@ const fixRollbackIntelligenceService = require('./fixRollbackIntelligenceService
 const explainabilityService = require('./explainabilityService');
 const fixCostBenefitAnalysisService = require('./fixCostBenefitAnalysisService');
 const issuePrioritizationService = require('./issuePrioritizationService');
+
+// Event Bus integration - System Architecture Expert - 2025-01-15
+let eventBus = null;
+try {
+    eventBus = require('./eventBus');
+} catch (err) {
+    console.warn('[Fix Orchestration] Event Bus not available:', err.message);
+}
 
 class FixOrchestrationService {
     constructor() {
@@ -35,6 +44,22 @@ class FixOrchestrationService {
      */
     async orchestrateFix(issue, context = {}) {
         const pipelineId = `pipeline-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        
+        // Emit pipeline started event - System Architecture Expert - 2025-01-15
+        if (eventBus) {
+            await eventBus.emit('code-roach:pipeline:started', {
+                pipelineId,
+                issue: {
+                    file: issue.file || context.filePath,
+                    line: issue.line,
+                    type: issue.type
+                },
+                context: {
+                    method: context.method || 'orchestration',
+                    projectId: context.projectId
+                }
+            }, { source: 'fixOrchestrationService' }).catch(() => {});
+        }
         
         try {
             // Initialize pipeline
@@ -88,6 +113,17 @@ class FixOrchestrationService {
             pipeline.completedAt = Date.now();
             pipeline.result = decision;
 
+            // Emit pipeline completed event - System Architecture Expert - 2025-01-15
+            if (eventBus) {
+                await eventBus.emit('code-roach:pipeline:completed', {
+                    pipelineId,
+                    status: 'completed',
+                    decision: decision.action,
+                    duration: Date.now() - pipeline.startedAt,
+                    stages: pipeline.stages.length
+                }, { source: 'fixOrchestrationService' }).catch(() => {});
+            }
+
             return {
                 success: true,
                 pipelineId,
@@ -101,6 +137,16 @@ class FixOrchestrationService {
                 pipeline.status = 'failed';
                 pipeline.error = error.message;
             }
+
+            // Emit pipeline failed event - System Architecture Expert - 2025-01-15
+            if (eventBus) {
+                await eventBus.emit('code-roach:pipeline:failed', {
+                    pipelineId,
+                    error: error.message,
+                    duration: pipeline ? Date.now() - pipeline.startedAt : 0
+                }, { source: 'fixOrchestrationService' }).catch(() => {});
+            }
+
             return {
                 success: false,
                 pipelineId,
@@ -506,4 +552,37 @@ class FixOrchestrationService {
     }
 }
 
-module.exports = new FixOrchestrationService();
+// Create singleton instance
+const fixOrchestrationService = new FixOrchestrationService();
+
+// Add metadata for auto-registration - System Architecture Expert - 2025-01-15
+fixOrchestrationService.capabilities = ['fix-orchestration', 'pipeline-coordination', 'fix-decision'];
+fixOrchestrationService.dependencies = [
+    'fixImpactPredictionService',
+    'fixConfidenceCalibrationService',
+    'fixVerificationService',
+    'fixApplicationService',
+    'fixRollbackIntelligenceService',
+    'explainabilityService',
+    'fixCostBenefitAnalysisService',
+    'issuePrioritizationService'
+];
+fixOrchestrationService.version = '1.0.0';
+fixOrchestrationService.description = 'Coordinates all fix services into a unified pipeline';
+fixOrchestrationService.category = 'code-roach';
+
+// Register with Service Registry if available
+try {
+    const serviceRegistry = require('./serviceRegistry');
+    serviceRegistry.register('fixOrchestrationService', fixOrchestrationService, {
+        capabilities: fixOrchestrationService.capabilities,
+        dependencies: fixOrchestrationService.dependencies,
+        version: fixOrchestrationService.version,
+        description: fixOrchestrationService.description,
+        category: fixOrchestrationService.category
+    });
+} catch (err) {
+    // Service Registry not available - will be auto-registered
+}
+
+module.exports = fixOrchestrationService;

@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/cursorRulesLearningService.js
- * Last Sync: 2025-12-14T07:30:45.590Z
+ * Last Sync: 2025-12-16T03:10:22.239Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.

@@ -14,10 +14,126 @@ module.exports = function setupAPIRoutes(app, options = {}) {
         sessionManager = null
     } = options;
 
+    // API Gateway - System Architecture Expert - 2025-01-15
+    // Register routes with API Gateway
+    let apiGateway = null;
+    let serviceRegistryAPI = null;
+    try {
+        apiGateway = require('../services/apiGateway');
+        serviceRegistryAPI = require('../services/serviceRegistryAPI');
+        
+        // Register Service Registry API routes with API Gateway
+        apiGateway.registerRoute(
+            '/api/services',
+            'serviceRegistryAPI',
+            'listAll',
+            {
+                requireAuth: false,
+                rateLimit: 120, // 120 requests per minute
+                cacheTTL: 30, // Cache for 30 seconds
+                description: 'List all registered services'
+            }
+        );
+        
+        apiGateway.registerRoute(
+            '/api/services/dependencies',
+            'serviceRegistryAPI',
+            'getDependencyGraph',
+            {
+                requireAuth: false,
+                rateLimit: 60, // 60 requests per minute
+                cacheTTL: 60, // Cache for 60 seconds (dependency graph changes less frequently)
+                description: 'Get complete service dependency graph'
+            }
+        );
+        
+        apiGateway.registerRoute(
+            '/api/services/discover/:capability',
+            'serviceRegistryAPI',
+            'discoverByCapability',
+            {
+                requireAuth: false,
+                rateLimit: 120,
+                cacheTTL: 30,
+                description: 'Discover services by capability'
+            }
+        );
+        
+        apiGateway.registerRoute(
+            '/api/services/dependencies/:serviceName',
+            'serviceRegistryAPI',
+            'getServiceDependenciesByParam',
+            {
+                requireAuth: false,
+                rateLimit: 120,
+                cacheTTL: 30,
+                description: 'Get dependencies for a specific service'
+            }
+        );
+        
+        // Update existing routes to use API Gateway
+        app.get('/api/services', (req, res) => {
+            apiGateway.handleRequest(req, res, '/api/services');
+        });
+        
+        app.get('/api/services/dependencies', (req, res) => {
+            apiGateway.handleRequest(req, res, '/api/services/dependencies');
+        });
+        
+        app.get('/api/services/dependencies/:serviceName', (req, res) => {
+            apiGateway.handleRequest(req, res, '/api/services/dependencies/:serviceName');
+        });
+        
+        app.get('/api/services/discover/:capability', (req, res) => {
+            apiGateway.handleRequest(req, res, '/api/services/discover/:capability');
+        });
+        
+        // API Gateway routes endpoint
+        app.get('/api/gateway/routes', (req, res) => {
+            try {
+                const routes = apiGateway.listRoutes();
+                const stats = apiGateway.getStats();
+                res.json({
+                    routes,
+                    stats,
+                    timestamp: Date.now()
+                });
+            } catch (err) {
+                res.status(500).json({
+                    error: 'Failed to get gateway routes',
+                    message: err.message
+                });
+            }
+        });
+        
+        // API Gateway stats endpoint
+        app.get('/api/gateway/stats', (req, res) => {
+            try {
+                const stats = apiGateway.getStats();
+                res.json(stats);
+            } catch (err) {
+                res.status(500).json({
+                    error: 'Failed to get gateway stats',
+                    message: err.message
+                });
+            }
+        });
+    } catch (err) {
+        console.warn('⚠️ API Gateway not available:', err.message);
+    }
+
+    // Performance & Cost Tracking API - Performance & Scale Expert
+    try {
+        const performanceRoutes = require('./apiPerformance');
+        app.use('/api/performance', performanceRoutes);
+    } catch (err) {
+        console.warn('⚠️ Performance API routes not available:', err.message);
+    }
+
     // Enhanced health check endpoint for 99.99% uptime monitoring
     app.get('/api/health', async (req, res) => {
         try {
-            const healthCheckService = require('../src/services/healthCheckService');
+            const healthCheckService = require('../services/healthCheckService');
             const health = await healthCheckService.getHealth();
             
             // Return 503 if degraded, 200 if healthy
@@ -41,7 +157,7 @@ module.exports = function setupAPIRoutes(app, options = {}) {
     // Readiness probe - checks if ready to serve traffic
     app.get('/api/health/ready', async (req, res) => {
         try {
-            const healthCheckService = require('../src/services/healthCheckService');
+            const healthCheckService = require('../services/healthCheckService');
             const isReady = await healthCheckService.isHealthy();
             const statusCode = isReady ? 200 : 503;
             res.status(statusCode).json({ 
@@ -53,6 +169,250 @@ module.exports = function setupAPIRoutes(app, options = {}) {
                 ready: false, 
                 error: err.message,
                 timestamp: new Date().toISOString() 
+            });
+        }
+    });
+
+    // Service Registry Health Monitoring - System Architecture Expert - 2025-01-15
+    app.get('/api/services/health', async (req, res) => {
+        try {
+            const serviceRegistry = require('../services/serviceRegistry');
+            const eventBus = require('../services/eventBus');
+            const gameSystemsIntegration = require('../services/gameSystemsIntegration');
+            const healthHistoryService = require('../services/healthHistoryService');
+            
+            const services = serviceRegistry.listAll();
+            const registryStats = serviceRegistry.getStats();
+            const eventBusStats = eventBus.getStats();
+            const integrationStats = gameSystemsIntegration.getStats();
+            
+            // Calculate overall health
+            const healthyServices = services.filter(s => 
+                s.health.status === 'healthy' || s.health.status === 'degraded'
+            ).length;
+            const totalServices = services.length;
+            const healthPercentage = totalServices > 0 ? (healthyServices / totalServices) * 100 : 100;
+            
+            const overallHealth = healthPercentage >= 80 ? 'healthy' : 
+                                 healthPercentage >= 50 ? 'degraded' : 'unhealthy';
+            
+            const healthData = {
+                status: overallHealth,
+                healthPercentage: Math.round(healthPercentage),
+                services: {
+                    total: totalServices,
+                    healthy: healthyServices,
+                    degraded: services.filter(s => s.health.status === 'degraded').length,
+                    unhealthy: services.filter(s => s.health.status === 'unhealthy').length,
+                    unknown: services.filter(s => s.health.status === 'unknown').length
+                },
+                registry: registryStats,
+                eventBus: eventBusStats,
+                gameSystems: integrationStats,
+                timestamp: new Date().toISOString(),
+                serviceDetails: services.map(s => ({
+                    name: s.name,
+                    health: s.health
+                }))
+            };
+            
+            // Record health snapshot for history
+            try {
+                await healthHistoryService.recordHealth(healthData);
+            } catch (err) {
+                // History recording is optional, don't fail the request
+                console.warn('[Health API] Failed to record health history:', err.message);
+            }
+            
+            res.json(healthData);
+        } catch (err) {
+            res.status(500).json({
+                status: 'error',
+                error: err.message,
+                timestamp: new Date().toISOString()
+            });
+        }
+    });
+
+    // Health History API - System Architecture Expert - 2025-01-15
+    app.get('/api/services/health/history', async (req, res) => {
+        try {
+            const healthHistoryService = require('../services/healthHistoryService');
+            const hours = parseInt(req.query.hours) || 24;
+            const limit = parseInt(req.query.limit) || 1000;
+            
+            const history = await healthHistoryService.getHistory({ hours, limit });
+            const statistics = await healthHistoryService.getStatistics({ hours });
+            const trends = await healthHistoryService.getTrends({ hours });
+            
+            res.json({
+                history,
+                statistics,
+                trends,
+                timestamp: new Date().toISOString()
+            });
+        } catch (err) {
+            res.status(500).json({
+                error: 'Failed to get health history',
+                message: err.message,
+                timestamp: new Date().toISOString()
+            });
+        }
+    });
+
+    // Service Registry List - System Architecture Expert - 2025-01-15
+    app.get('/api/services', (req, res) => {
+        try {
+            const serviceRegistry = require('../services/serviceRegistry');
+            const services = serviceRegistry.listAll();
+            
+            res.json({
+                services: services,
+                count: services.length,
+                timestamp: new Date().toISOString()
+            });
+        } catch (err) {
+            res.status(500).json({
+                error: err.message,
+                timestamp: new Date().toISOString()
+            });
+        }
+    });
+
+    // Service Dependency Graph - System Architecture Expert - 2025-01-15
+    app.get('/api/services/dependencies', (req, res) => {
+        try {
+            const serviceRegistry = require('../services/serviceRegistry');
+            const services = serviceRegistry.listAll();
+            
+            // Build dependency graph
+            const graph = {
+                nodes: services.map(s => ({
+                    id: s.name,
+                    label: s.name,
+                    category: s.category || 'general',
+                    version: s.version,
+                    capabilities: s.capabilities || [],
+                    health: s.health.status,
+                    metadata: {
+                        description: s.description,
+                        registeredAt: s.registeredAt
+                    }
+                })),
+                edges: [],
+                metadata: {
+                    totalServices: services.length,
+                    totalDependencies: 0,
+                    timestamp: Date.now()
+                }
+            };
+            
+            // Add edges for dependencies
+            services.forEach(service => {
+                const dependencies = serviceRegistry.getDependencies(service.name);
+                dependencies.forEach(dep => {
+                    graph.edges.push({
+                        from: service.name,
+                        to: dep,
+                        type: 'depends-on',
+                        label: 'depends on'
+                    });
+                    graph.metadata.totalDependencies++;
+                });
+            });
+            
+            res.json(graph);
+        } catch (err) {
+            console.error('[API] Error getting dependency graph:', err);
+            res.status(500).json({
+                error: 'Failed to get dependency graph',
+                message: err.message
+            });
+        }
+    });
+
+    // Service Dependencies for Specific Service - System Architecture Expert - 2025-01-15
+    app.get('/api/services/dependencies/:serviceName', (req, res) => {
+        try {
+            const serviceRegistry = require('../services/serviceRegistry');
+            const serviceName = req.params.serviceName;
+            
+            const dependencies = serviceRegistry.getDependencies(serviceName);
+            const dependents = serviceRegistry.getDependents(serviceName);
+            const metadata = serviceRegistry.getMetadata(serviceName);
+            
+            if (!metadata) {
+                return res.status(404).json({
+                    error: 'Service not found',
+                    serviceName
+                });
+            }
+            
+            // Get full dependency tree (recursive)
+            const getDependencyTree = (name, visited = new Set()) => {
+                if (visited.has(name)) return []; // Avoid cycles
+                visited.add(name);
+                
+                const deps = serviceRegistry.getDependencies(name);
+                const tree = [];
+                
+                deps.forEach(dep => {
+                    tree.push({
+                        name: dep,
+                        metadata: serviceRegistry.getMetadata(dep),
+                        health: serviceRegistry.getHealth(dep),
+                        dependencies: getDependencyTree(dep, visited)
+                    });
+                });
+                
+                return tree;
+            };
+            
+            res.json({
+                service: {
+                    name: serviceName,
+                    metadata,
+                    health: serviceRegistry.getHealth(serviceName)
+                },
+                dependencies: dependencies.map(dep => ({
+                    name: dep,
+                    metadata: serviceRegistry.getMetadata(dep),
+                    health: serviceRegistry.getHealth(dep)
+                })),
+                dependents: dependents.map(dep => ({
+                    name: dep,
+                    metadata: serviceRegistry.getMetadata(dep),
+                    health: serviceRegistry.getHealth(dep)
+                })),
+                dependencyTree: getDependencyTree(serviceName),
+                timestamp: Date.now()
+            });
+        } catch (err) {
+            console.error('[API] Error getting service dependencies:', err);
+            res.status(500).json({
+                error: 'Failed to get service dependencies',
+                message: err.message
+            });
+        }
+    });
+
+    // Service Discovery by Capability - System Architecture Expert - 2025-01-15
+    app.get('/api/services/discover/:capability', (req, res) => {
+        try {
+            const serviceRegistry = require('../services/serviceRegistry');
+            const capability = req.params.capability;
+            const services = serviceRegistry.discoverWithMetadata(capability);
+            
+            res.json({
+                capability,
+                services: services,
+                count: services.length,
+                timestamp: new Date().toISOString()
+            });
+        } catch (err) {
+            res.status(500).json({
+                error: err.message,
+                timestamp: new Date().toISOString()
             });
         }
     });

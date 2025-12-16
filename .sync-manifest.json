@@ -1,5 +1,5 @@
 {
-  "lastSync": "2025-12-16T02:13:23.431Z",
+  "lastSync": "2025-12-16T04:14:36.772Z",
   "files": [
     {
       "source": "/Users/jeffadkins/Smugglers/smugglers/cli/code-roach.js",
@@ -1603,14 +1603,308 @@
       "size": 11060,
       "modified": "2025-12-16T02:13:22.499Z",
       "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/server/services/codebaseCrawler.js",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/src/services/codebaseCrawler.js",
+      "size": 135240,
+      "modified": "2025-12-16T02:16:31.900Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/server/services/llmFixGenerator.js",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/src/services/llmFixGenerator.js",
+      "size": 19930,
+      "modified": "2025-12-16T03:00:11.216Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/server/services/cursorRulesLearningService.js",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/src/services/cursorRulesLearningService.js",
+      "size": 17608,
+      "modified": "2025-12-16T03:01:58.630Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/server/services/llmService.js",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/src/services/llmService.js",
+      "size": 51555,
+      "modified": "2025-12-16T03:00:11.212Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/server/routes/api.js",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/src/routes/api.js",
+      "size": 17278,
+      "modified": "2025-12-16T02:36:29.097Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/docs/CODE-ROACH-EXPERT-TRAINING-COMPLETE.md",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/docs/CODE-ROACH-EXPERT-TRAINING-COMPLETE.md",
+      "size": 8281,
+      "modified": "2025-12-16T02:57:21.131Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/docs/CODE-ROACH-EXPERT-TRAINING-INTEGRATION-COMPLETE.md",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/docs/CODE-ROACH-EXPERT-TRAINING-INTEGRATION-COMPLETE.md",
+      "size": 5355,
+      "modified": "2025-12-16T03:00:11.220Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/docs/CODE-ROACH-EXPERT-TRAINING-INTEGRATION.md",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/docs/CODE-ROACH-EXPERT-TRAINING-INTEGRATION.md",
+      "size": 10013,
+      "modified": "2025-12-16T02:57:21.127Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/docs/CODE-ROACH-EXPERT-TRAINING-SYSTEM.md",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/docs/CODE-ROACH-EXPERT-TRAINING-SYSTEM.md",
+      "size": 9456,
+      "modified": "2025-12-16T02:57:21.117Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/docs/CODE-ROACH-ROADMAP-PROGRESS.md",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/docs/CODE-ROACH-ROADMAP-PROGRESS.md",
+      "size": 11060,
+      "modified": "2025-12-16T02:14:22.397Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/server/services/cursorRulesLearningService.js",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/src/services/cursorRulesLearningService.js",
+      "size": 17608,
+      "modified": "2025-12-16T03:05:43.674Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/server/services/llmService.js",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/src/services/llmService.js",
+      "size": 57417,
+      "modified": "2025-12-16T03:07:11.868Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/server/routes/api.js",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/src/routes/api.js",
+      "size": 21793,
+      "modified": "2025-12-16T03:05:43.664Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/server/services/codebaseCrawler.js",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/src/services/codebaseCrawler.js",
+      "size": 133303,
+      "modified": "2025-12-16T03:15:00.492Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/server/routes/api.js",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/src/routes/api.js",
+      "size": 23540,
+      "modified": "2025-12-16T03:12:56.657Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/docs/CODE-ROACH-SERVICES-INTEGRATION-COMPLETE.md",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/docs/CODE-ROACH-SERVICES-INTEGRATION-COMPLETE.md",
+      "size": 6978,
+      "modified": "2025-12-16T03:15:00.492Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/server/services/llmFixGenerator.js",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/src/services/llmFixGenerator.js",
+      "size": 20362,
+      "modified": "2025-12-16T03:55:30.042Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/server/services/fixOrchestrationService.js",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/src/services/fixOrchestrationService.js",
+      "size": 18264,
+      "modified": "2025-12-16T03:19:10.420Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/server/routes/api.js",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/src/routes/api.js",
+      "size": 25222,
+      "modified": "2025-12-16T03:34:55.204Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/server/services/llmFixGenerator.js",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/src/services/llmFixGenerator.js",
+      "size": 20430,
+      "modified": "2025-12-16T03:57:28.919Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/server/services/fixApplicationService.js",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/src/services/fixApplicationService.js",
+      "size": 10209,
+      "modified": "2025-12-16T03:57:28.931Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/server/services/customerCodebaseAnalyzer.js",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/src/services/customerCodebaseAnalyzer.js",
+      "size": 25948,
+      "modified": "2025-12-16T02:57:21.117Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/server/services/expertTrainingService.js",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/src/services/expertTrainingService.js",
+      "size": 25272,
+      "modified": "2025-12-16T03:29:13.664Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/server/services/customerOnboardingService.js",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/src/services/customerOnboardingService.js",
+      "size": 7801,
+      "modified": "2025-12-16T02:57:21.117Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/server/services/customerExpertHelper.js",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/src/services/customerExpertHelper.js",
+      "size": 6500,
+      "modified": "2025-12-16T03:00:11.212Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/server/services/expertLearningService.js",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/src/services/expertLearningService.js",
+      "size": 12465,
+      "modified": "2025-12-16T03:57:28.919Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/server/services/expertUsageTracker.js",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/src/services/expertUsageTracker.js",
+      "size": 4771,
+      "modified": "2025-12-16T03:57:28.919Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/server/routes/api.js",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/src/routes/api.js",
+      "size": 27233,
+      "modified": "2025-12-16T04:14:30.682Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/server/routes/apiExpertTraining.js",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/src/routes/apiExpertTraining.js",
+      "size": 6008,
+      "modified": "2025-12-16T02:57:21.121Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/scripts/test-expert-training-mock.js",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/scripts/test-expert-training-mock.js",
+      "size": 10642,
+      "modified": "2025-12-16T03:07:26.408Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/scripts/expert-training-preview.js",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/scripts/expert-training-preview.js",
+      "size": 11792,
+      "modified": "2025-12-16T03:09:51.104Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/scripts/expert-training-preview-with-llm.js",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/scripts/expert-training-preview-with-llm.js",
+      "size": 14243,
+      "modified": "2025-12-16T03:14:17.998Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/scripts/run-expert-training-onboarding.js",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/scripts/run-expert-training-onboarding.js",
+      "size": 9094,
+      "modified": "2025-12-16T03:29:13.664Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/scripts/verify-expert-system.js",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/scripts/verify-expert-system.js",
+      "size": 7638,
+      "modified": "2025-12-16T03:57:28.919Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/scripts/monitor-expert-system.js",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/scripts/monitor-expert-system.js",
+      "size": 6734,
+      "modified": "2025-12-16T03:57:28.919Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/docs/CODE-ROACH-EXECUTION-ROADMAP.md",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/docs/CODE-ROACH-EXECUTION-ROADMAP.md",
+      "size": 16835,
+      "modified": "2025-12-16T04:08:56.145Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/docs/CODE-ROACH-EXPERT-SYSTEM-MASTER.md",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/docs/CODE-ROACH-EXPERT-SYSTEM-MASTER.md",
+      "size": 12614,
+      "modified": "2025-12-16T04:08:56.154Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/docs/CODE-ROACH-STANDALONE-EXPERT-SYSTEM-UPDATE.md",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/docs/CODE-ROACH-STANDALONE-EXPERT-SYSTEM-UPDATE.md",
+      "size": 3444,
+      "modified": "2025-12-16T04:12:14.121Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/docs/EXPERT-SYSTEM-COMPLETE.md",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/docs/EXPERT-SYSTEM-COMPLETE.md",
+      "size": 6060,
+      "modified": "2025-12-16T03:57:28.935Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/docs/EXPERT-SYSTEM-MONITORING-AND-LEARNING.md",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/docs/EXPERT-SYSTEM-MONITORING-AND-LEARNING.md",
+      "size": 8605,
+      "modified": "2025-12-16T03:57:28.935Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/supabase/migrations/20250115000000_code_roach_expert_training.sql",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/supabase/migrations/20250115000000_code_roach_expert_training.sql",
+      "size": 6155,
+      "modified": "2025-12-16T02:57:21.121Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/supabase/migrations/20250115000001_expert_learning.sql",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/supabase/migrations/20250115000001_expert_learning.sql",
+      "size": 3057,
+      "modified": "2025-12-16T03:57:28.919Z",
+      "success": true
     }
   ],
   "stats": {
-    "copied": 229,
-    "skipped": 8083,
+    "copied": 271,
+    "skipped": 10635,
     "errors": 0
   },
-  "lastSyncTimestamp": 1765851203431,
-  "lastSyncHuman": "12/15/2025, 7:13:23 PM",
-  "syncCount": 41
+  "lastSyncTimestamp": 1765858476772,
+  "lastSyncHuman": "12/15/2025, 9:14:36 PM",
+  "syncCount": 52
 }
