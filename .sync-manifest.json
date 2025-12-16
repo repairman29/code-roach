@@ -1,5 +1,5 @@
 {
-  "lastSync": "2025-12-16T00:42:39.858Z",
+  "lastSync": "2025-12-16T00:44:46.022Z",
   "files": [
     {
       "source": "/Users/jeffadkins/Smugglers/smugglers/cli/code-roach.js",
@@ -1337,14 +1337,28 @@
       "size": 6644,
       "modified": "2025-12-16T00:41:33.973Z",
       "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/docs/CODE-ROACH-MASTER-SUMMARY.md",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/docs/CODE-ROACH-MASTER-SUMMARY.md",
+      "size": 8048,
+      "modified": "2025-12-16T00:44:01.447Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/docs/CODE-ROACH-ROADMAP-PROGRESS.md",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/docs/CODE-ROACH-ROADMAP-PROGRESS.md",
+      "size": 9592,
+      "modified": "2025-12-16T00:44:17.568Z",
+      "success": true
     }
   ],
   "stats": {
-    "copied": 191,
-    "skipped": 3904,
+    "copied": 193,
+    "skipped": 4117,
     "errors": 0
   },
-  "lastSyncTimestamp": 1765845759858,
-  "lastSyncHuman": "12/15/2025, 5:42:39 PM",
-  "syncCount": 22
+  "lastSyncTimestamp": 1765845886022,
+  "lastSyncHuman": "12/15/2025, 5:44:46 PM",
+  "syncCount": 23
 }
