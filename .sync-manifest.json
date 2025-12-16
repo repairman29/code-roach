@@ -1,5 +1,5 @@
 {
-  "lastSync": "2025-12-15T16:06:58.650Z",
+  "lastSync": "2025-12-16T00:26:16.351Z",
   "files": [
     {
       "source": "/Users/jeffadkins/Smugglers/smugglers/cli/code-roach.js",
@@ -1162,14 +1162,35 @@
       "size": 6717,
       "modified": "2025-12-15T02:32:46.373Z",
       "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/server/services/codebaseCrawler.js",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/src/services/codebaseCrawler.js",
+      "size": 118515,
+      "modified": "2025-12-15T23:52:37.538Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/server/services/llmFixGenerator.js",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/src/services/llmFixGenerator.js",
+      "size": 19071,
+      "modified": "2025-12-16T00:02:39.305Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/docs/CODE-ROACH-MIGRATION-COMPLETE.md",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/docs/CODE-ROACH-MIGRATION-COMPLETE.md",
+      "size": 3493,
+      "modified": "2025-12-15T16:07:35.500Z",
+      "success": true
     }
   ],
   "stats": {
-    "copied": 166,
-    "skipped": 3136,
+    "copied": 169,
+    "skipped": 3519,
     "errors": 0
   },
-  "lastSyncTimestamp": 1765814818650,
-  "lastSyncHuman": "12/15/2025, 9:06:58 AM",
-  "syncCount": 18
+  "lastSyncTimestamp": 1765844776351,
+  "lastSyncHuman": "12/15/2025, 5:26:16 PM",
+  "syncCount": 20
 }

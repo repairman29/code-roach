@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/codebaseCrawler.js
- * Last Sync: 2025-12-15T16:06:58.596Z
+ * Last Sync: 2025-12-16T00:26:16.150Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -1279,7 +1279,8 @@ class CodebaseCrawler {
                                             { code: reusedFix.code, method: reusedFix.method, confidence: reusedFix.confidence },
                                             filePath,
                                             languageKnowledge,
-                                            insights.issueDomain
+                                            insights.issueDomain,
+                                            code // Pass original code for documentation
                                         );
                                         continue; // Skip to next issue
                                     }

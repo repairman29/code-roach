@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/llmFixGenerator.js
- * Last Sync: 2025-12-14T16:32:56.760Z
+ * Last Sync: 2025-12-16T00:26:16.152Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -290,6 +290,16 @@ Generate the fix:`;
      */
     parseFixResponse(response, issue, code) {
         try {
+            // Ensure response is a string
+            if (!response || typeof response !== 'string') {
+                console.warn('[LLM Fix Generator] Response is not a string:', typeof response);
+                return {
+                    success: false,
+                    error: 'Invalid response format',
+                    confidence: 0
+                };
+            }
+            
             // Try to extract JSON from response
             let jsonMatch = response.match(/\{[\s\S]*\}/);
             if (!jsonMatch) {
