@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Roach - Fix Marketplace</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🪳</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Roboto+Mono:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto Mono', monospace;
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(0, 255, 255, 0.1);
+            border: 2px solid #00ffff;
+            border-radius: 8px;
+        }
+
+        .header h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.5em;
+            color: #00ffff;
+            text-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+            margin-bottom: 10px;
+        }
+
+        .filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .filter-group label {
+            color: #00ffff;
+            font-size: 0.9em;
+        }
+
+        .filter-select,
+        .filter-input {
+            background: rgba(20, 25, 45, 0.9);
+            color: #00ffff;
+            border: 2px solid #00ffff;
+            padding: 8px 15px;
+            border-radius: 6px;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.9em;
+        }
+
+        .btn {
+            background: rgba(0, 255, 255, 0.2);
+            color: #00ffff;
+            border: 2px solid #00ffff;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            background: rgba(0, 255, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.4);
+        }
+
+        .patterns-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .pattern-card {
+            background: rgba(20, 25, 45, 0.8);
+            border: 1px solid #00ffff;
+            border-radius: 8px;
+            padding: 20px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .pattern-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+        }
+
+        .pattern-card.featured {
+            border-color: #00ff00;
+            border-width: 2px;
+        }
+
+        .pattern-card h3 {
+            color: #00ffff;
+            margin-bottom: 10px;
+        }
+
+        .pattern-card .rating {
+            color: #ffff00;
+            font-size: 1.2em;
+            margin: 10px 0;
+        }
+
+        .pattern-card .stats {
+            display: flex;
+            gap: 15px;
+            margin: 15px 0;
+            font-size: 0.9em;
+            color: #a0a0a0;
+        }
+
+        .pattern-card .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            margin: 5px 5px 5px 0;
+        }
+
+        .badge.featured {
+            background: rgba(0, 255, 0, 0.2);
+            color: #00ff00;
+            border: 1px solid #00ff00;
+        }
+
+        .badge.verified {
+            background: rgba(0, 255, 255, 0.2);
+            color: #00ffff;
+            border: 1px solid #00ffff;
+        }
+
+        .badge.trending {
+            background: rgba(255, 136, 0, 0.2);
+            color: #ffaa00;
+            border: 1px solid #ffaa00;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏪 Fix Marketplace</h1>
+            <p>Browse and share successful fix patterns from the community</p>
+        </div>
+
+        <div class="filters">
+            <div class="filter-group">
+                <label>Search:</label>
+                <input type="text" id="searchInput" class="filter-input" placeholder="Search patterns...">
+            </div>
+            <div class="filter-group">
+                <label>Category:</label>
+                <select id="categoryFilter" class="filter-select">
+                    <option value="">All Categories</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Sort By:</label>
+                <select id="sortBy" class="filter-select">
+                    <option value="rating">Rating</option>
+                    <option value="usage">Usage</option>
+                    <option value="recent">Recent</option>
+                    <option value="success_rate">Success Rate</option>
+                </select>
+            </div>
+            <button class="btn" onclick="loadPatterns()">Search</button>
+            <button class="btn" onclick="loadFeaturedPatterns()">Featured</button>
+            <button class="btn" onclick="loadTrendingPatterns()">Trending</button>
+        </div>
+
+        <div id="patterns-grid" class="patterns-grid"></div>
+    </div>
+
+    <script src="/js/codeRoachApiClient.js"></script>
+    <script>
+        const api = new CodeRoachApiClient();
+        let currentPatterns = [];
+
+        async function init() {
+            await api.initializeAuth();
+            loadPatterns();
+            loadCategories();
+        }
+
+        async function loadPatterns() {
+            try {
+                const search = document.getElementById('searchInput').value;
+                const category = document.getElementById('categoryFilter').value;
+                const sortBy = document.getElementById('sortBy').value;
+
+                const result = await api.listMarketplacePatterns({
+                    limit: 50,
+                    search: search || null,
+                    category: category || null,
+                    sortBy: sortBy
+                });
+
+                if (result.success) {
+                    currentPatterns = result.patterns;
+                    displayPatterns(result.patterns);
+                }
+            } catch (error) {
+                console.error('Error loading patterns:', error);
+            }
+        }
+
+        async function loadFeaturedPatterns() {
+            try {
+                const result = await api.getFeaturedPatterns(50);
+                if (result.success) {
+                    currentPatterns = result.patterns;
+                    displayPatterns(result.patterns);
+                }
+            } catch (error) {
+                console.error('Error loading featured patterns:', error);
+            }
+        }
+
+        async function loadTrendingPatterns() {
+            try {
+                const result = await api.getTrendingPatterns(50);
+                if (result.success) {
+                    currentPatterns = result.patterns;
+                    displayPatterns(result.patterns);
+                }
+            } catch (error) {
+                console.error('Error loading trending patterns:', error);
+            }
+        }
+
+        async function loadCategories() {
+            try {
+                // Would need categories endpoint
+                // For now, use default categories
+            } catch (error) {
+                console.error('Error loading categories:', error);
+            }
+        }
+
+        function displayPatterns(patterns) {
+            const grid = document.getElementById('patterns-grid');
+            grid.innerHTML = '';
+
+            if (patterns.length === 0) {
+                grid.innerHTML = '<p style="color: #a0a0a0; text-align: center; padding: 40px; grid-column: 1 / -1;">No patterns found</p>';
+                return;
+            }
+
+            patterns.forEach(pattern => {
+                const card = document.createElement('div');
+                card.className = 'pattern-card' + (pattern.marketplace?.featured ? ' featured' : '');
+                
+                const badges = [];
+                if (pattern.marketplace?.featured) badges.push('<span class="badge featured">Featured</span>');
+                if (pattern.marketplace?.verified) badges.push('<span class="badge verified">Verified</span>');
+                if (pattern.marketplace?.trending) badges.push('<span class="badge trending">Trending</span>');
+
+                card.innerHTML = `
+                    <h3>${pattern.error_pattern?.type || 'Pattern'}</h3>
+                    ${badges.join('')}
+                    <div class="rating">⭐ ${(pattern.rating * 100).toFixed(0)}</div>
+                    <div style="color: #a0a0a0; margin: 10px 0; font-size: 0.9em;">
+                        ${pattern.error_pattern?.message || 'No description'}
+                    </div>
+                    <div class="stats">
+                        <div><strong>Uses:</strong> ${pattern.usageCount || 0}</div>
+                        <div><strong>Success:</strong> ${((pattern.successRate || 0) * 100).toFixed(0)}%</div>
+                        <div><strong>Projects:</strong> ${pattern.projectsUsed || 1}</div>
+                    </div>
+                    <button class="btn" style="width: 100%; margin-top: 15px;" onclick="viewPattern('${pattern.fingerprint}')">View Details</button>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function viewPattern(patternId) {
+            window.location.href = `code-roach-marketplace.html?pattern=${patternId}`;
+        }
+
+        // Search on Enter
+        document.getElementById('searchInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                loadPatterns();
+            }
+        });
+
+        // Initialize
+        init();
+    </script>
+</body>
+</html>

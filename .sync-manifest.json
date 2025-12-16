@@ -1,5 +1,5 @@
 {
-  "lastSync": "2025-12-16T00:36:51.455Z",
+  "lastSync": "2025-12-16T00:42:39.858Z",
   "files": [
     {
       "source": "/Users/jeffadkins/Smugglers/smugglers/cli/code-roach.js",
@@ -1190,14 +1190,161 @@
       "size": 59995,
       "modified": "2025-12-16T00:36:02.993Z",
       "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/server/services/fixImpactPredictionService.js",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/src/services/fixImpactPredictionService.js",
+      "size": 19880,
+      "modified": "2025-12-15T02:50:26.644Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/server/services/fixConfidenceCalibrationService.js",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/src/services/fixConfidenceCalibrationService.js",
+      "size": 14044,
+      "modified": "2025-12-15T02:50:26.648Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/server/services/fixRollbackIntelligenceService.js",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/src/services/fixRollbackIntelligenceService.js",
+      "size": 19524,
+      "modified": "2025-12-15T02:50:26.648Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/server/services/fixCostBenefitAnalysisService.js",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/src/services/fixCostBenefitAnalysisService.js",
+      "size": 18123,
+      "modified": "2025-12-16T00:26:57.991Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/server/services/fixOrchestrationService.js",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/src/services/fixOrchestrationService.js",
+      "size": 15073,
+      "modified": "2025-12-16T00:26:57.991Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/server/services/fixMonitoringService.js",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/src/services/fixMonitoringService.js",
+      "size": 13916,
+      "modified": "2025-12-16T00:26:57.991Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/server/services/fixMarketplaceService.js",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/src/services/fixMarketplaceService.js",
+      "size": 13255,
+      "modified": "2025-12-16T00:26:57.991Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/server/services/fixQualityMetricsService.js",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/src/services/fixQualityMetricsService.js",
+      "size": 12712,
+      "modified": "2025-12-16T00:26:57.992Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/server/services/fixPersonalizationService.js",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/src/services/fixPersonalizationService.js",
+      "size": 9621,
+      "modified": "2025-12-16T00:26:58.005Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/server/services/fixDocumentationGenerationService.js",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/src/services/fixDocumentationGenerationService.js",
+      "size": 8171,
+      "modified": "2025-12-16T00:28:22.996Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/server/routes/codeRoachAPI.js",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/src/routes/codeRoachAPI.js",
+      "size": 27465,
+      "modified": "2025-12-16T00:32:48.145Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/public/code-roach-issues.html",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/public/code-roach-issues.html",
+      "size": 41577,
+      "modified": "2025-12-16T00:36:02.999Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/public/code-roach-projects.html",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/public/code-roach-projects.html",
+      "size": 17356,
+      "modified": "2025-12-15T02:50:26.648Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/public/code-roach-login.html",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/public/code-roach-login.html",
+      "size": 9325,
+      "modified": "2025-12-15T02:49:08.062Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/public/code-roach-marketplace.html",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/public/code-roach-marketplace.html",
+      "size": 10642,
+      "modified": "2025-12-16T00:36:02.999Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/public/js/codeRoachApiClient.js",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/public/js/codeRoachApiClient.js",
+      "size": 11985,
+      "modified": "2025-12-16T00:32:48.137Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/public/js/codeRoachAuth.js",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/public/js/codeRoachAuth.js",
+      "size": 4823,
+      "modified": "2025-12-14T19:03:32.062Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/docs/CODE-ROACH-ALL-COMPLETE.md",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/docs/CODE-ROACH-ALL-COMPLETE.md",
+      "size": 6015,
+      "modified": "2025-12-16T00:41:33.983Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/docs/CODE-ROACH-COMPLETE-INTEGRATION.md",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/docs/CODE-ROACH-COMPLETE-INTEGRATION.md",
+      "size": 2921,
+      "modified": "2025-12-16T00:41:33.983Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/docs/CODE-ROACH-NEXT-PRIORITIES.md",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/docs/CODE-ROACH-NEXT-PRIORITIES.md",
+      "size": 6694,
+      "modified": "2025-12-16T00:41:33.973Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/docs/CODE-ROACH-STANDALONE-NEXT-STEPS.md",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/docs/CODE-ROACH-STANDALONE-NEXT-STEPS.md",
+      "size": 6644,
+      "modified": "2025-12-16T00:41:33.973Z",
+      "success": true
     }
   ],
   "stats": {
-    "copied": 170,
-    "skipped": 3711,
+    "copied": 191,
+    "skipped": 3904,
     "errors": 0
   },
-  "lastSyncTimestamp": 1765845411455,
-  "lastSyncHuman": "12/15/2025, 5:36:51 PM",
-  "syncCount": 21
+  "lastSyncTimestamp": 1765845759858,
+  "lastSyncHuman": "12/15/2025, 5:42:39 PM",
+  "syncCount": 22
 }

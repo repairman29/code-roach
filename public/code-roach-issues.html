@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Roach - Issues</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🪳</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Roboto+Mono:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto Mono', monospace;
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(0, 255, 255, 0.1);
+            border: 2px solid #00ffff;
+            border-radius: 8px;
+        }
+
+        .header h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.5em;
+            color: #00ffff;
+            text-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+            margin-bottom: 10px;
+        }
+
+        .filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .filter-group label {
+            color: #00ffff;
+            font-size: 0.9em;
+        }
+
+        .filter-select,
+        .filter-input {
+            background: rgba(20, 25, 45, 0.9);
+            color: #00ffff;
+            border: 2px solid #00ffff;
+            padding: 8px 15px;
+            border-radius: 6px;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.9em;
+        }
+
+        .filter-select:focus,
+        .filter-input:focus {
+            outline: none;
+            border-color: #00ff00;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+        }
+
+        .btn {
+            background: rgba(0, 255, 255, 0.2);
+            color: #00ffff;
+            border: 2px solid #00ffff;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            background: rgba(0, 255, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.4);
+        }
+
+        .btn.primary {
+            background: rgba(0, 255, 0, 0.2);
+            border-color: #00ff00;
+            color: #00ff00;
+        }
+
+        .btn.primary:hover {
+            background: rgba(0, 255, 0, 0.3);
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.4);
+        }
+
+        .issues-table {
+            background: rgba(20, 25, 45, 0.8);
+            border: 1px solid #00ffff;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .table-header {
+            display: grid;
+            grid-template-columns: 40px 2fr 1fr 1fr 1fr 1fr 120px;
+            gap: 15px;
+            padding: 15px 20px;
+            background: rgba(0, 255, 255, 0.1);
+            border-bottom: 2px solid #00ffff;
+            font-weight: bold;
+            color: #00ffff;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .issue-row {
+            display: grid;
+            grid-template-columns: 40px 2fr 1fr 1fr 1fr 1fr 120px;
+            gap: 15px;
+            padding: 15px 20px;
+            border-bottom: 1px solid rgba(0, 255, 255, 0.2);
+            transition: background 0.2s;
+            cursor: pointer;
+        }
+
+        .issue-row:hover {
+            background: rgba(0, 255, 255, 0.05);
+        }
+
+        .issue-row:last-child {
+            border-bottom: none;
+        }
+
+        .severity-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .severity-critical {
+            background: rgba(255, 0, 0, 0.3);
+            color: #ff6666;
+            border: 1px solid #ff0000;
+        }
+
+        .severity-high {
+            background: rgba(255, 136, 0, 0.3);
+            color: #ffaa00;
+            border: 1px solid #ff8800;
+        }
+
+        .severity-medium {
+            background: rgba(255, 255, 0, 0.3);
+            color: #ffff00;
+            border: 1px solid #ffff00;
+        }
+
+        .severity-low {
+            background: rgba(0, 255, 255, 0.3);
+            color: #00ffff;
+            border: 1px solid #00ffff;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+
+        .status-pending {
+            background: rgba(255, 136, 0, 0.3);
+            color: #ffaa00;
+        }
+
+        .status-resolved {
+            background: rgba(0, 255, 0, 0.3);
+            color: #00ff00;
+        }
+
+        .status-ignored {
+            background: rgba(128, 128, 128, 0.3);
+            color: #aaaaaa;
+        }
+
+        .file-path {
+            color: #00ffff;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.9em;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .line-number {
+            color: #a0a0a0;
+            font-family: 'Roboto Mono', monospace;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+            align-items: center;
+        }
+
+        .pagination button {
+            min-width: 40px;
+        }
+
+        .pagination .page-info {
+            color: #a0a0a0;
+            padding: 0 15px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #00ffff;
+            font-size: 1.2em;
+        }
+
+        .error-message {
+            background: rgba(255, 0, 0, 0.2);
+            border: 1px solid #ff0000;
+            color: #ff6666;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #a0a0a0;
+        }
+
+        .empty-state h3 {
+            color: #00ffff;
+            margin-bottom: 10px;
+            font-size: 1.5em;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        /* Issue Detail Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .issue-detail-modal {
+            background: rgba(20, 25, 45, 0.95);
+            border: 2px solid #00ffff;
+            border-radius: 8px;
+            max-width: 800px;
+            width: 100%;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 1px solid rgba(0, 255, 255, 0.2);
+        }
+
+        .modal-header h2 {
+            color: #00ffff;
+            font-family: 'Orbitron', sans-serif;
+            margin: 0;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: #00ffff;
+            font-size: 2em;
+            cursor: pointer;
+            padding: 0;
+            width: 40px;
+            height: 40px;
+            line-height: 1;
+            transition: color 0.3s;
+        }
+
+        .modal-close:hover {
+            color: #ff0000;
+        }
+
+        .modal-body {
+            padding: 20px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 10px;
+            padding: 20px;
+            border-top: 1px solid rgba(0, 255, 255, 0.2);
+            justify-content: flex-end;
+        }
+
+        .detail-section {
+            margin-bottom: 25px;
+        }
+
+        .detail-section h3 {
+            color: #00ffff;
+            font-family: 'Orbitron', sans-serif;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .detail-item {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .detail-item label {
+            color: #a0a0a0;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .detail-item span {
+            color: #e0e0e0;
+            font-family: 'Roboto Mono', monospace;
+        }
+
+        .message-box {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-radius: 6px;
+            padding: 15px;
+            color: #e0e0e0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .code-box {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-radius: 6px;
+            padding: 15px;
+            color: #00ff00;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.9em;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🪳 Code Roach - Issues</h1>
+            <p>View and manage code issues</p>
+        </div>
+
+        <div id="error-message" class="error-message" style="display: none;"></div>
+
+        <div class="filters">
+            <div class="filter-group">
+                <label>Project:</label>
+                <select id="projectFilter" class="filter-select">
+                    <option value="">All Projects</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Status:</label>
+                <select id="statusFilter" class="filter-select">
+                    <option value="">All Status</option>
+                    <option value="pending">Pending</option>
+                    <option value="resolved">Resolved</option>
+                    <option value="ignored">Ignored</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Severity:</label>
+                <select id="severityFilter" class="filter-select">
+                    <option value="">All Severities</option>
+                    <option value="critical">Critical</option>
+                    <option value="high">High</option>
+                    <option value="medium">Medium</option>
+                    <option value="low">Low</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Type:</label>
+                <select id="typeFilter" class="filter-select">
+                    <option value="">All Types</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>File:</label>
+                <input type="text" id="fileFilter" class="filter-input" placeholder="Filter by file path...">
+            </div>
+            <button class="btn" onclick="loadIssues()">🔄 Refresh</button>
+            <button class="btn primary" onclick="exportIssues()">📥 Export</button>
+        </div>
+
+        <div id="loading" class="loading">
+            <div class="pulse">Loading issues...</div>
+        </div>
+
+        <div id="issues-container" style="display: none;">
+            <div class="issues-table">
+                <div class="table-header">
+                    <div>#</div>
+                    <div>File</div>
+                    <div>Type</div>
+                    <div>Severity</div>
+                    <div>Status</div>
+                    <div>Line</div>
+                    <div>Actions</div>
+                </div>
+                <div id="issues-list"></div>
+            </div>
+
+            <div class="pagination">
+                <button class="btn" id="prevBtn" onclick="changePage(-1)">← Prev</button>
+                <span class="page-info" id="pageInfo">Page 1</span>
+                <button class="btn" id="nextBtn" onclick="changePage(1)">Next →</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/supabaseClient.js"></script>
+    <script src="/js/codeRoachAuth.js"></script>
+    <script src="/js/codeRoachApiClient.js"></script>
+    <script>
+        const api = new CodeRoachApiClient();
+        
+        // Initialize auth and check authentication
+        (async () => {
+            await window.codeRoachAuth.initialize();
+            await api.initializeAuth();
+            
+            // Check if authentication is required (can be disabled for development)
+            const requireAuth = window.REQUIRE_AUTH !== 'false';
+            if (requireAuth && !window.codeRoachAuth.isAuthenticated()) {
+                // Redirect to login if not authenticated
+                window.location.href = '/code-roach-login.html?redirect=' + encodeURIComponent(window.location.pathname);
+                return;
+            }
+        })();
+        let currentPage = 0;
+        const pageSize = 50;
+        let totalIssues = 0;
+        let projects = [];
+
+        // Load projects for filter
+        async function loadProjects() {
+            try {
+                const response = await api.getProjects();
+                projects = response.projects || [];
+                const select = document.getElementById('projectFilter');
+                select.innerHTML = '<option value="">All Projects</option>';
+                projects.forEach(project => {
+                    const option = document.createElement('option');
+                    option.value = project.id;
+                    option.textContent = project.name;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.warn('Failed to load projects:', error);
+            }
+        }
+
+        // Load issues
+        async function loadIssues() {
+            try {
+                document.getElementById('loading').style.display = 'block';
+                document.getElementById('issues-container').style.display = 'none';
+                document.getElementById('error-message').style.display = 'none';
+
+                const filters = {
+                    projectId: document.getElementById('projectFilter').value || undefined,
+                    status: document.getElementById('statusFilter').value || undefined,
+                    severity: document.getElementById('severityFilter').value || undefined,
+                    type: document.getElementById('typeFilter').value || undefined,
+                    filePath: document.getElementById('fileFilter').value || undefined,
+                    limit: pageSize,
+                    offset: currentPage * pageSize
+                };
+
+                // Remove undefined filters
+                Object.keys(filters).forEach(key => {
+                    if (filters[key] === undefined) delete filters[key];
+                });
+
+                const response = await api.getIssues(filters);
+                const issues = response.issues || [];
+                totalIssues = response.total || issues.length;
+
+                displayIssues(issues);
+                updatePagination();
+
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('issues-container').style.display = 'block';
+            } catch (error) {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('error-message').style.display = 'block';
+                document.getElementById('error-message').textContent = `Error loading issues: ${error.message}`;
+            }
+        }
+
+        // Display issues
+        function displayIssues(issues) {
+            const list = document.getElementById('issues-list');
+            list.innerHTML = '';
+
+            if (issues.length === 0) {
+                list.innerHTML = `
+                    <div class="empty-state">
+                        <h3>No issues found</h3>
+                        <p>Try adjusting your filters or run a crawl to find issues.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            issues.forEach((issue, index) => {
+                const row = document.createElement('div');
+                row.className = 'issue-row';
+                row.onclick = () => showIssueDetails(issue);
+
+                const severityClass = `severity-${issue.error_severity || 'medium'}`;
+                const statusClass = `status-${issue.review_status || 'pending'}`;
+
+                row.innerHTML = `
+                    <div>${currentPage * pageSize + index + 1}</div>
+                    <div class="file-path" title="${issue.file_path || ''}">${issue.file_path || 'Unknown'}</div>
+                    <div>${issue.error_type || 'Unknown'}</div>
+                    <div><span class="severity-badge ${severityClass}">${issue.error_severity || 'medium'}</span></div>
+                    <div><span class="status-badge ${statusClass}">${issue.review_status || 'pending'}</span></div>
+                    <div class="line-number">${issue.line || '-'}</div>
+                    <div>
+                        <button class="btn" style="padding: 5px 10px; font-size: 0.8em;" onclick="event.stopPropagation(); updateIssueStatus('${issue.id}', 'resolved')">✓</button>
+                        <button class="btn" style="padding: 5px 10px; font-size: 0.8em;" onclick="event.stopPropagation(); updateIssueStatus('${issue.id}', 'ignored')">✗</button>
+                    </div>
+                `;
+                list.appendChild(row);
+            });
+        }
+
+        // Update pagination
+        function updatePagination() {
+            const totalPages = Math.ceil(totalIssues / pageSize);
+            document.getElementById('pageInfo').textContent = `Page ${currentPage + 1} of ${totalPages || 1} (${totalIssues} total)`;
+            document.getElementById('prevBtn').disabled = currentPage === 0;
+            document.getElementById('nextBtn').disabled = currentPage >= totalPages - 1;
+        }
+
+        // Change page
+        function changePage(delta) {
+            const newPage = currentPage + delta;
+            const totalPages = Math.ceil(totalIssues / pageSize);
+            if (newPage >= 0 && newPage < totalPages) {
+                currentPage = newPage;
+                loadIssues();
+            }
+        }
+
+        // Update issue status
+        async function updateIssueStatus(issueId, status) {
+            try {
+                await api.updateIssue(issueId, { review_status: status });
+                loadIssues();
+            } catch (error) {
+                alert(`Error updating issue: ${error.message}`);
+            }
+        }
+
+        // Show issue details modal
+        function showIssueDetails(issue) {
+            const modal = document.getElementById('issueDetailModal');
+            if (!modal) {
+                // Create modal if it doesn't exist
+                createIssueDetailModal();
+            }
+            
+            // Populate modal with issue data
+            document.getElementById('modal-issue-id').textContent = issue.id || 'N/A';
+            document.getElementById('modal-file-path').textContent = issue.file_path || 'Unknown';
+            document.getElementById('modal-line').textContent = issue.line || '-';
+            document.getElementById('modal-type').textContent = issue.error_type || 'Unknown';
+            document.getElementById('modal-severity').textContent = issue.error_severity || 'medium';
+            document.getElementById('modal-severity').className = `severity-badge severity-${issue.error_severity || 'medium'}`;
+            document.getElementById('modal-status').textContent = issue.review_status || 'pending';
+            document.getElementById('modal-status').className = `status-badge status-${issue.review_status || 'pending'}`;
+            document.getElementById('modal-message').textContent = issue.error_message || 'No message';
+            document.getElementById('modal-code').textContent = issue.error_code || 'N/A';
+            document.getElementById('modal-fix-method').textContent = issue.fix_method || 'None';
+            document.getElementById('modal-fix-confidence').textContent = issue.fix_confidence ? `${(issue.fix_confidence * 100).toFixed(1)}%` : 'N/A';
+            document.getElementById('modal-created').textContent = issue.created_at ? new Date(issue.created_at).toLocaleString() : 'N/A';
+            document.getElementById('modal-updated').textContent = issue.updated_at ? new Date(issue.updated_at).toLocaleString() : 'N/A';
+            
+            // Set current issue ID for actions
+            modal.dataset.issueId = issue.id;
+            
+            // Show modal
+            document.getElementById('issueDetailModal').classList.add('active');
+        }
+
+        // Create issue detail modal
+        function createIssueDetailModal() {
+            const modal = document.createElement('div');
+            modal.id = 'issueDetailModal';
+            modal.className = 'modal';
+            modal.innerHTML = `
+                <div class="modal-content issue-detail-modal">
+                    <div class="modal-header">
+                        <h2>Issue Details</h2>
+                        <button class="modal-close" onclick="closeIssueDetailModal()">×</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="detail-section">
+                            <h3>Basic Information</h3>
+                            <div class="detail-grid">
+                                <div class="detail-item">
+                                    <label>ID:</label>
+                                    <span id="modal-issue-id">-</span>
+                                </div>
+                                <div class="detail-item">
+                                    <label>File:</label>
+                                    <span id="modal-file-path" class="file-path">-</span>
+                                </div>
+                                <div class="detail-item">
+                                    <label>Line:</label>
+                                    <span id="modal-line">-</span>
+                                </div>
+                                <div class="detail-item">
+                                    <label>Type:</label>
+                                    <span id="modal-type">-</span>
+                                </div>
+                                <div class="detail-item">
+                                    <label>Severity:</label>
+                                    <span id="modal-severity" class="severity-badge">-</span>
+                                </div>
+                                <div class="detail-item">
+                                    <label>Status:</label>
+                                    <span id="modal-status" class="status-badge">-</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="detail-section">
+                            <h3>Error Message</h3>
+                            <div class="message-box" id="modal-message">-</div>
+                        </div>
+                        <div class="detail-section">
+                            <h3>Error Code</h3>
+                            <pre class="code-box" id="modal-code">-</pre>
+                        </div>
+                        <div class="detail-section">
+                            <h3>Fix Information</h3>
+                            <div class="detail-grid">
+                                <div class="detail-item">
+                                    <label>Fix Method:</label>
+                                    <span id="modal-fix-method">-</span>
+                                </div>
+                                <div class="detail-item">
+                                    <label>Confidence:</label>
+                                    <span id="modal-fix-confidence">-</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="detail-section">
+                            <h3>Timestamps</h3>
+                            <div class="detail-grid">
+                                <div class="detail-item">
+                                    <label>Created:</label>
+                                    <span id="modal-created">-</span>
+                                </div>
+                                <div class="detail-item">
+                                    <label>Updated:</label>
+                                    <span id="modal-updated">-</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="detail-section" id="impact-prediction-section" style="display: none;">
+                            <h3>🔮 Impact Prediction</h3>
+                            <div id="impact-prediction-content"></div>
+                        </div>
+                        <div class="detail-section" id="cost-benefit-section" style="display: none;">
+                            <h3>💰 Cost-Benefit Analysis</h3>
+                            <div id="cost-benefit-content"></div>
+                        </div>
+                        <div class="detail-section" id="explanation-section" style="display: none;">
+                            <h3>📖 Enhanced Explanation</h3>
+                            <div id="explanation-content"></div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn" onclick="loadIssueAnalysis()">🔍 Analyze Issue</button>
+                        <button class="btn" onclick="updateIssueStatusFromModal('resolved')">✓ Resolve</button>
+                        <button class="btn" onclick="updateIssueStatusFromModal('ignored')">✗ Ignore</button>
+                        <button class="btn" onclick="closeIssueDetailModal()">Close</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        // Close issue detail modal
+        function closeIssueDetailModal() {
+            document.getElementById('issueDetailModal')?.classList.remove('active');
+        }
+
+        // Update issue status from modal
+        async function updateIssueStatusFromModal(status) {
+            const modal = document.getElementById('issueDetailModal');
+            const issueId = modal?.dataset.issueId;
+            if (!issueId) return;
+
+            try {
+                await api.updateIssue(issueId, { review_status: status });
+                closeIssueDetailModal();
+                loadIssues();
+            } catch (error) {
+                alert(`Error updating issue: ${error.message}`);
+            }
+        }
+
+        // Close modal on outside click
+        document.addEventListener('click', (e) => {
+            const modal = document.getElementById('issueDetailModal');
+            if (e.target === modal) {
+                closeIssueDetailModal();
+            }
+        });
+
+        // Export issues
+        async function exportIssues() {
+            try {
+                const filters = {
+                    projectId: document.getElementById('projectFilter').value || undefined,
+                    status: document.getElementById('statusFilter').value || undefined,
+                    severity: document.getElementById('severityFilter').value || undefined,
+                    type: document.getElementById('typeFilter').value || undefined,
+                    filePath: document.getElementById('fileFilter').value || undefined
+                };
+
+                Object.keys(filters).forEach(key => {
+                    if (filters[key] === undefined) delete filters[key];
+                });
+
+                const response = await api.getIssues({ ...filters, limit: 10000 });
+                const issues = response.issues || [];
+
+                const json = JSON.stringify(issues, null, 2);
+                const blob = new Blob([json], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `code-roach-issues-${new Date().toISOString().split('T')[0]}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+            } catch (error) {
+                alert(`Error exporting issues: ${error.message}`);
+            }
+        }
+
+        // Filter change handlers
+        document.getElementById('projectFilter').addEventListener('change', () => {
+            currentPage = 0;
+            loadIssues();
+        });
+        document.getElementById('statusFilter').addEventListener('change', () => {
+            currentPage = 0;
+            loadIssues();
+        });
+        document.getElementById('severityFilter').addEventListener('change', () => {
+            currentPage = 0;
+            loadIssues();
+        });
+        document.getElementById('typeFilter').addEventListener('change', () => {
+            currentPage = 0;
+            loadIssues();
+        });
+        document.getElementById('fileFilter').addEventListener('input', debounce(() => {
+            currentPage = 0;
+            loadIssues();
+        }, 500));
+
+        // Debounce helper
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        // Load issue analysis (impact, cost-benefit, explanation)
+        async function loadIssueAnalysis() {
+            const modal = document.getElementById('issueDetailModal');
+            const issueId = modal?.dataset.issueId;
+            if (!issueId) return;
+
+            try {
+                const issue = await api.getIssue(issueId);
+                if (!issue.issue) return;
+
+                const issueData = issue.issue;
+                await api.initializeAuth();
+
+                // Create mock fix for analysis
+                const mockFix = {
+                    code: issueData.fix_code || '',
+                    confidence: issueData.fix_confidence || 0.8
+                };
+
+                const context = {
+                    filePath: issueData.error_file,
+                    originalCode: issueData.context_code_snippet || '',
+                    fixedCode: issueData.fix_code || '',
+                    issue: issueData,
+                    method: issueData.fix_method || 'pattern',
+                    confidence: issueData.fix_confidence || 0.8
+                };
+
+                // Load all analyses in parallel
+                const [impact, costBenefit, explanation] = await Promise.all([
+                    api.predictFixImpact(mockFix, context).catch(() => null),
+                    api.analyzeCostBenefit(mockFix, context).catch(() => null),
+                    api.explainFixEnhanced(mockFix, context).catch(() => null)
+                ]);
+
+                // Display impact prediction
+                if (impact && impact.success) {
+                    const section = document.getElementById('impact-prediction-section');
+                    const content = document.getElementById('impact-prediction-content');
+                    if (section && content) {
+                        section.style.display = 'block';
+                        const riskColor = {
+                            'low': '#00ff00',
+                            'medium': '#ffaa00',
+                            'high': '#ff0000'
+                        }[impact.impact.riskLevel] || '#a0a0a0';
+
+                        content.innerHTML = `
+                            <div style="padding: 15px; background: rgba(0, 255, 255, 0.05); border-radius: 8px; border-left: 4px solid ${riskColor};">
+                                <div style="margin-bottom: 10px;">
+                                    <strong style="color: #00ffff;">Risk Level:</strong>
+                                    <span style="color: ${riskColor}; font-weight: bold;">${impact.impact.riskLevel.toUpperCase()}</span>
+                                    <span style="color: #a0a0a0; margin-left: 10px;">(${(impact.impact.riskScore * 100).toFixed(0)}% risk score)</span>
+                                </div>
+                                <div style="margin-bottom: 10px;">
+                                    <strong style="color: #00ffff;">Affected Files:</strong>
+                                    <span style="color: #e0e0e0;">${impact.impact.affectedFiles.total} file(s)</span>
+                                </div>
+                                ${impact.impact.breakingChanges.length > 0 ? `
+                                    <div style="margin-bottom: 10px;">
+                                        <strong style="color: #ff0000;">Breaking Changes:</strong>
+                                        <ul style="margin: 5px 0 0 20px; color: #ff6666;">
+                                            ${impact.impact.breakingChanges.map(c => `<li>${c}</li>`).join('')}
+                                        </ul>
+                                    </div>
+                                ` : ''}
+                                <div style="margin-top: 15px;">
+                                    <strong style="color: #00ffff;">Recommendations:</strong>
+                                    <ul style="margin: 5px 0 0 20px; color: #e0e0e0;">
+                                        ${impact.impact.recommendations.map(r => `<li>${r}</li>`).join('')}
+                                    </ul>
+                                </div>
+                            </div>
+                        `;
+                    }
+                }
+
+                // Display cost-benefit analysis
+                if (costBenefit && costBenefit.success) {
+                    const section = document.getElementById('cost-benefit-section');
+                    const content = document.getElementById('cost-benefit-content');
+                    if (section && content) {
+                        section.style.display = 'block';
+                        const analysis = costBenefit.analysis;
+                        const roiColor = analysis.roi > 200 ? '#00ff00' : analysis.roi > 100 ? '#ffaa00' : '#ff0000';
+
+                        content.innerHTML = `
+                            <div style="padding: 15px; background: rgba(0, 255, 255, 0.05); border-radius: 8px;">
+                                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px;">
+                                    <div>
+                                        <strong style="color: #00ffff;">Fix Cost:</strong>
+                                        <div style="color: #e0e0e0;">$${analysis.fixCost.total.toFixed(2)}</div>
+                                        <small style="color: #a0a0a0;">${analysis.fixCost.breakdown.fixTimeHours.toFixed(1)} hours</small>
+                                    </div>
+                                    <div>
+                                        <strong style="color: #00ffff;">Benefit:</strong>
+                                        <div style="color: #e0e0e0;">$${analysis.benefit.total.toFixed(2)}</div>
+                                    </div>
+                                    <div>
+                                        <strong style="color: #00ffff;">ROI:</strong>
+                                        <div style="color: ${roiColor}; font-size: 1.2em; font-weight: bold;">${analysis.roi.toFixed(0)}%</div>
+                                    </div>
+                                    <div>
+                                        <strong style="color: #00ffff;">Payback:</strong>
+                                        <div style="color: #e0e0e0;">${analysis.paybackPeriod.toFixed(1)} months</div>
+                                    </div>
+                                </div>
+                                <div style="margin-top: 15px; padding: 10px; background: rgba(0, 255, 0, 0.1); border-radius: 6px; border-left: 3px solid ${roiColor};">
+                                    <strong style="color: #00ffff;">Recommendation:</strong>
+                                    <div style="color: #e0e0e0; margin-top: 5px;">${analysis.recommendation.action}: ${analysis.recommendation.reason}</div>
+                                    <div style="color: #a0a0a0; font-size: 0.9em; margin-top: 5px;">${analysis.recommendation.details}</div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                }
+
+                // Display enhanced explanation
+                if (explanation && explanation.success) {
+                    const section = document.getElementById('explanation-section');
+                    const content = document.getElementById('explanation-content');
+                    if (section && content) {
+                        section.style.display = 'block';
+                        const exp = explanation.explanation;
+
+                        content.innerHTML = `
+                            <div style="padding: 15px; background: rgba(0, 255, 255, 0.05); border-radius: 8px;">
+                                <div style="margin-bottom: 15px;">
+                                    <strong style="color: #00ffff;">Why This Fix:</strong>
+                                    <div style="color: #e0e0e0; margin-top: 5px;">${exp.reasoning?.whyThisFix || exp.decision?.why || 'N/A'}</div>
+                                </div>
+                                <div style="margin-bottom: 15px;">
+                                    <strong style="color: #00ffff;">Confidence:</strong>
+                                    <div style="color: #e0e0e0; margin-top: 5px;">
+                                        ${((exp.confidence?.calibrated || exp.confidence?.original || 0.8) * 100).toFixed(0)}%
+                                        ${exp.confidence?.reliability ? `(${exp.confidence.reliability} reliability)` : ''}
+                                    </div>
+                                </div>
+                                ${exp.reasoning?.whatCouldGoWrong && exp.reasoning.whatCouldGoWrong.length > 0 ? `
+                                    <div style="margin-bottom: 15px;">
+                                        <strong style="color: #ffaa00;">What Could Go Wrong:</strong>
+                                        <ul style="margin: 5px 0 0 20px; color: #e0e0e0;">
+                                            ${exp.reasoning.whatCouldGoWrong.map(r => `
+                                                <li>
+                                                    <strong>${r.risk}</strong> (${r.probability} probability)
+                                                    <div style="color: #a0a0a0; font-size: 0.9em; margin-left: 10px;">${r.mitigation}</div>
+                                                </li>
+                                            `).join('')}
+                                        </ul>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        `;
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading issue analysis:', error);
+                alert(`Error loading analysis: ${error.message}`);
+            }
+        }
+
+        // Initialize
+        loadProjects();
+        loadIssues();
+    </script>
+</body>
+</html>
+

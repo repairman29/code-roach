@@ -1,0 +1,509 @@
+/**
+ * Code Roach Standalone - Synced from Smugglers Project
+ * Source: server/services/fixOrchestrationService.js
+ * Last Sync: 2025-12-16T00:42:39.834Z
+ * 
+ * NOTE: This file is synced from the Smugglers project.
+ * Changes here may be overwritten on next sync.
+ * For standalone-specific changes, see .standalone-overrides/
+ */
+
+/**
+ * Fix Orchestration Service
+ * Coordinates all fix services into a unified pipeline
+ * 
+ * Improvement #1: Integration & Orchestration
+ */
+
+const fixImpactPredictionService = require('./fixImpactPredictionService');
+const fixConfidenceCalibrationService = require('./fixConfidenceCalibrationService');
+const fixVerificationService = require('./fixVerificationService');
+const fixApplicationService = require('./fixApplicationService');
+const fixRollbackIntelligenceService = require('./fixRollbackIntelligenceService');
+const explainabilityService = require('./explainabilityService');
+const fixCostBenefitAnalysisService = require('./fixCostBenefitAnalysisService');
+const issuePrioritizationService = require('./issuePrioritizationService');
+
+class FixOrchestrationService {
+    constructor() {
+        this.pipelines = new Map();
+        this.activeFixes = new Map();
+    }
+
+    /**
+     * Orchestrate complete fix pipeline
+     */
+    async orchestrateFix(issue, context = {}) {
+        const pipelineId = `pipeline-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        
+        try {
+            // Initialize pipeline
+            const pipeline = {
+                id: pipelineId,
+                issue,
+                context,
+                stages: [],
+                status: 'running',
+                startedAt: Date.now(),
+                result: null
+            };
+
+            this.pipelines.set(pipelineId, pipeline);
+
+            // Stage 1: Analysis & Prioritization
+            pipeline.stages.push(await this.stageAnalyze(issue, context));
+
+            // Stage 2: Impact Prediction
+            pipeline.stages.push(await this.stagePredictImpact(issue, context));
+
+            // Stage 3: Cost-Benefit Analysis
+            pipeline.stages.push(await this.stageCostBenefit(issue, context));
+
+            // Stage 4: Fix Generation (delegated to appropriate service)
+            pipeline.stages.push(await this.stageGenerateFix(issue, context));
+
+            // Stage 5: Confidence Calibration
+            pipeline.stages.push(await this.stageCalibrateConfidence(issue, context));
+
+            // Stage 6: Verification
+            pipeline.stages.push(await this.stageVerify(issue, context));
+
+            // Stage 7: Explainability
+            pipeline.stages.push(await this.stageExplain(issue, context));
+
+            // Stage 8: Decision
+            const decision = await this.stageDecision(pipeline);
+
+            // Stage 9: Application (if approved)
+            if (decision.action === 'apply') {
+                pipeline.stages.push(await this.stageApply(issue, context, decision));
+            }
+
+            // Stage 10: Monitoring (if applied)
+            if (decision.action === 'apply') {
+                pipeline.stages.push(await this.stageMonitor(issue, context, decision));
+            }
+
+            pipeline.status = 'completed';
+            pipeline.completedAt = Date.now();
+            pipeline.result = decision;
+
+            return {
+                success: true,
+                pipelineId,
+                pipeline,
+                decision
+            };
+        } catch (error) {
+            console.error('[Fix Orchestration] Error:', error);
+            const pipeline = this.pipelines.get(pipelineId);
+            if (pipeline) {
+                pipeline.status = 'failed';
+                pipeline.error = error.message;
+            }
+            return {
+                success: false,
+                pipelineId,
+                error: error.message
+            };
+        }
+    }
+
+    /**
+     * Stage 1: Analyze issue
+     */
+    async stageAnalyze(issue, context) {
+        const stage = {
+            name: 'analyze',
+            startedAt: Date.now(),
+            status: 'running'
+        };
+
+        try {
+            // Prioritize issue
+            const priority = await issuePrioritizationService.prioritizeIssue(issue, context);
+            
+            stage.result = {
+                priority: priority.priority,
+                score: priority.score,
+                reasons: priority.reasons
+            };
+            stage.status = 'completed';
+            stage.completedAt = Date.now();
+        } catch (error) {
+            stage.status = 'failed';
+            stage.error = error.message;
+        }
+
+        return stage;
+    }
+
+    /**
+     * Stage 2: Predict impact
+     */
+    async stagePredictImpact(issue, context) {
+        const stage = {
+            name: 'predict_impact',
+            startedAt: Date.now(),
+            status: 'running'
+        };
+
+        try {
+            // Create mock fix for prediction
+            const mockFix = {
+                code: context.fixedCode || '',
+                confidence: context.confidence || 0.8
+            };
+
+            const impact = await fixImpactPredictionService.predictImpact(mockFix, {
+                ...context,
+                issue
+            });
+
+            stage.result = impact.success ? impact.impact : null;
+            stage.status = 'completed';
+            stage.completedAt = Date.now();
+        } catch (error) {
+            stage.status = 'failed';
+            stage.error = error.message;
+        }
+
+        return stage;
+    }
+
+    /**
+     * Stage 3: Cost-benefit analysis
+     */
+    async stageCostBenefit(issue, context) {
+        const stage = {
+            name: 'cost_benefit',
+            startedAt: Date.now(),
+            status: 'running'
+        };
+
+        try {
+            const mockFix = {
+                confidence: context.confidence || 0.8
+            };
+
+            const analysis = await fixCostBenefitAnalysisService.analyzeCostBenefit(mockFix, {
+                ...context,
+                issue
+            });
+
+            stage.result = analysis.success ? analysis.analysis : null;
+            stage.status = 'completed';
+            stage.completedAt = Date.now();
+        } catch (error) {
+            stage.status = 'failed';
+            stage.error = error.message;
+        }
+
+        return stage;
+    }
+
+    /**
+     * Stage 4: Generate fix (delegated)
+     */
+    async stageGenerateFix(issue, context) {
+        const stage = {
+            name: 'generate_fix',
+            startedAt: Date.now(),
+            status: 'running'
+        };
+
+        try {
+            // This would delegate to appropriate fix generation service
+            // For now, assume fix is already generated in context
+            stage.result = {
+                fix: context.fixedCode,
+                method: context.method || 'unknown',
+                confidence: context.confidence || 0.8
+            };
+            stage.status = 'completed';
+            stage.completedAt = Date.now();
+        } catch (error) {
+            stage.status = 'failed';
+            stage.error = error.message;
+        }
+
+        return stage;
+    }
+
+    /**
+     * Stage 5: Calibrate confidence
+     */
+    async stageCalibrateConfidence(issue, context) {
+        const stage = {
+            name: 'calibrate_confidence',
+            startedAt: Date.now(),
+            status: 'running'
+        };
+
+        try {
+            const calibrated = await fixConfidenceCalibrationService.calibrateConfidence(
+                context.confidence || 0.8,
+                {
+                    method: context.method,
+                    domain: context.domain,
+                    filePath: context.filePath,
+                    issueType: issue.type
+                }
+            );
+
+            stage.result = calibrated;
+            stage.status = 'completed';
+            stage.completedAt = Date.now();
+        } catch (error) {
+            stage.status = 'failed';
+            stage.error = error.message;
+        }
+
+        return stage;
+    }
+
+    /**
+     * Stage 6: Verify fix
+     */
+    async stageVerify(issue, context) {
+        const stage = {
+            name: 'verify',
+            startedAt: Date.now(),
+            status: 'running'
+        };
+
+        try {
+            const verification = await fixVerificationService.verifyFix(
+                context.fixedCode,
+                context.filePath,
+                context.originalCode
+            );
+
+            stage.result = verification;
+            stage.status = verification.overall ? 'completed' : 'failed';
+            stage.completedAt = Date.now();
+        } catch (error) {
+            stage.status = 'failed';
+            stage.error = error.message;
+        }
+
+        return stage;
+    }
+
+    /**
+     * Stage 7: Explain fix
+     */
+    async stageExplain(issue, context) {
+        const stage = {
+            name: 'explain',
+            startedAt: Date.now(),
+            status: 'running'
+        };
+
+        try {
+            const mockFix = {
+                id: `fix-${Date.now()}`,
+                code: context.fixedCode
+            };
+
+            const explanation = await explainabilityService.explainFixEnhanced(mockFix, {
+                ...context,
+                issue
+            });
+
+            stage.result = explanation.success ? explanation.explanation : null;
+            stage.status = 'completed';
+            stage.completedAt = Date.now();
+        } catch (error) {
+            stage.status = 'failed';
+            stage.error = error.message;
+        }
+
+        return stage;
+    }
+
+    /**
+     * Stage 8: Make decision
+     */
+    async stageDecision(pipeline) {
+        const stage = {
+            name: 'decision',
+            startedAt: Date.now(),
+            status: 'running'
+        };
+
+        try {
+            const impactStage = pipeline.stages.find(s => s.name === 'predict_impact');
+            const costBenefitStage = pipeline.stages.find(s => s.name === 'cost_benefit');
+            const verifyStage = pipeline.stages.find(s => s.name === 'verify');
+            const calibrateStage = pipeline.stages.find(s => s.name === 'calibrate_confidence');
+
+            // Decision logic
+            let action = 'defer';
+            let reason = '';
+            let confidence = 0;
+
+            // Check verification
+            if (!verifyStage || !verifyStage.result || !verifyStage.result.overall) {
+                action = 'reject';
+                reason = 'Fix verification failed';
+            } else {
+                // Check impact
+                const impact = impactStage?.result;
+                if (impact && impact.riskLevel === 'high') {
+                    action = 'review';
+                    reason = 'High risk of breaking changes';
+                } else {
+                    // Check cost-benefit
+                    const costBenefit = costBenefitStage?.result;
+                    if (costBenefit && costBenefit.roi > 0) {
+                        // Check calibrated confidence
+                        const calibrated = calibrateStage?.result;
+                        confidence = calibrated?.calibrated || 0.8;
+
+                        if (confidence >= 0.9 && costBenefit.roi > 200) {
+                            action = 'apply';
+                            reason = 'High confidence and high ROI';
+                        } else if (confidence >= 0.7 && costBenefit.roi > 100) {
+                            action = 'apply';
+                            reason = 'Good confidence and positive ROI';
+                        } else {
+                            action = 'review';
+                            reason = 'Requires human review';
+                        }
+                    } else {
+                        action = 'defer';
+                        reason = 'Negative or low ROI';
+                    }
+                }
+            }
+
+            stage.result = {
+                action,
+                reason,
+                confidence,
+                requiresApproval: action === 'review' || action === 'apply'
+            };
+            stage.status = 'completed';
+            stage.completedAt = Date.now();
+
+            return stage.result;
+        } catch (error) {
+            stage.status = 'failed';
+            stage.error = error.message;
+            return {
+                action: 'defer',
+                reason: 'Decision failed',
+                confidence: 0
+            };
+        }
+    }
+
+    /**
+     * Stage 9: Apply fix
+     */
+    async stageApply(issue, context, decision) {
+        const stage = {
+            name: 'apply',
+            startedAt: Date.now(),
+            status: 'running'
+        };
+
+        try {
+            const fixData = {
+                filePath: context.filePath,
+                originalCode: context.originalCode,
+                fixedCode: context.fixedCode,
+                issue,
+                fix: {
+                    code: context.fixedCode,
+                    confidence: decision.confidence
+                }
+            };
+
+            const result = await fixApplicationService.applyFix(fixData);
+
+            stage.result = result;
+            stage.status = result.success ? 'completed' : 'failed';
+            stage.completedAt = Date.now();
+        } catch (error) {
+            stage.status = 'failed';
+            stage.error = error.message;
+        }
+
+        return stage;
+    }
+
+    /**
+     * Stage 10: Monitor fix
+     */
+    async stageMonitor(issue, context, decision) {
+        const stage = {
+            name: 'monitor',
+            startedAt: Date.now(),
+            status: 'running'
+        };
+
+        try {
+            const fixId = `fix-${Date.now()}`;
+            const monitoring = await fixRollbackIntelligenceService.monitorFix(
+                fixId,
+                {
+                    code: context.fixedCode
+                },
+                {
+                    ...context,
+                    issue
+                }
+            );
+
+            stage.result = monitoring;
+            stage.status = 'completed';
+            stage.completedAt = Date.now();
+        } catch (error) {
+            stage.status = 'failed';
+            stage.error = error.message;
+        }
+
+        return stage;
+    }
+
+    /**
+     * Get pipeline status
+     */
+    getPipelineStatus(pipelineId) {
+        const pipeline = this.pipelines.get(pipelineId);
+        if (!pipeline) {
+            return { error: 'Pipeline not found' };
+        }
+
+        return {
+            id: pipeline.id,
+            status: pipeline.status,
+            stages: pipeline.stages.map(s => ({
+                name: s.name,
+                status: s.status,
+                duration: s.completedAt ? s.completedAt - s.startedAt : null
+            })),
+            result: pipeline.result,
+            duration: pipeline.completedAt 
+                ? pipeline.completedAt - pipeline.startedAt 
+                : Date.now() - pipeline.startedAt
+        };
+    }
+
+    /**
+     * Get all pipelines
+     */
+    getAllPipelines() {
+        return Array.from(this.pipelines.values()).map(p => ({
+            id: p.id,
+            status: p.status,
+            startedAt: p.startedAt,
+            completedAt: p.completedAt,
+            duration: p.completedAt ? p.completedAt - p.startedAt : null
+        }));
+    }
+}
+
+module.exports = new FixOrchestrationService();

@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Roach - Login</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🪳</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Roboto+Mono:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto Mono', monospace;
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .login-container {
+            background: rgba(20, 25, 45, 0.95);
+            border: 2px solid #00ffff;
+            border-radius: 8px;
+            padding: 40px;
+            max-width: 400px;
+            width: 100%;
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.3);
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .login-header h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2em;
+            color: #00ffff;
+            text-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+            margin-bottom: 10px;
+        }
+
+        .login-header p {
+            color: #a0a0a0;
+            font-size: 0.9em;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            color: #00ffff;
+            margin-bottom: 8px;
+            font-size: 0.9em;
+        }
+
+        .form-group input {
+            width: 100%;
+            background: rgba(20, 25, 45, 0.9);
+            color: #00ffff;
+            border: 2px solid #00ffff;
+            padding: 12px 15px;
+            border-radius: 6px;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 1em;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #00ff00;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+        }
+
+        .btn {
+            width: 100%;
+            background: rgba(0, 255, 255, 0.2);
+            color: #00ffff;
+            border: 2px solid #00ffff;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 10px;
+        }
+
+        .btn:hover {
+            background: rgba(0, 255, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.4);
+        }
+
+        .btn.primary {
+            background: rgba(0, 255, 0, 0.2);
+            border-color: #00ff00;
+            color: #00ff00;
+        }
+
+        .btn.primary:hover {
+            background: rgba(0, 255, 0, 0.3);
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .error-message {
+            background: rgba(255, 0, 0, 0.2);
+            border: 1px solid #ff0000;
+            color: #ff6666;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 0.9em;
+            display: none;
+        }
+
+        .success-message {
+            background: rgba(0, 255, 0, 0.2);
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 0.9em;
+            display: none;
+        }
+
+        .form-footer {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(0, 255, 255, 0.2);
+        }
+
+        .form-footer a {
+            color: #00ffff;
+            text-decoration: none;
+            font-size: 0.9em;
+        }
+
+        .form-footer a:hover {
+            text-decoration: underline;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            color: #00ffff;
+            margin-top: 10px;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <h1>🪳 Code Roach</h1>
+            <p>Sign in to continue</p>
+        </div>
+
+        <div id="error-message" class="error-message"></div>
+        <div id="success-message" class="success-message"></div>
+
+        <form id="loginForm" onsubmit="handleLogin(event)">
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="email" required autocomplete="email" placeholder="your@email.com">
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="password" required autocomplete="current-password" placeholder="••••••••">
+            </div>
+            <button type="submit" class="btn primary" id="loginBtn">Sign In</button>
+            <div class="loading" id="loading">
+                <div class="pulse">Signing in...</div>
+            </div>
+        </form>
+
+        <div class="form-footer">
+            <p>Don't have an account? <a href="#" onclick="showSignUp(); return false;">Sign up</a></p>
+            <p><a href="/code-roach-dashboard.html">Continue without login (limited access)</a></p>
+        </div>
+    </div>
+
+    <script src="/js/supabaseClient.js"></script>
+    <script src="/js/codeRoachAuth.js"></script>
+    <script>
+        let isSignUp = false;
+
+        async function handleLogin(event) {
+            event.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const loginBtn = document.getElementById('loginBtn');
+            const loading = document.getElementById('loading');
+            const errorMsg = document.getElementById('error-message');
+            const successMsg = document.getElementById('success-message');
+
+            // Hide messages
+            errorMsg.style.display = 'none';
+            successMsg.style.display = 'none';
+            loginBtn.disabled = true;
+            loading.style.display = 'block';
+
+            try {
+                if (isSignUp) {
+                    // Sign up
+                    await window.codeRoachAuth.signUp(email, password);
+                    successMsg.textContent = 'Account created! Please check your email to verify your account.';
+                    successMsg.style.display = 'block';
+                } else {
+                    // Sign in
+                    await window.codeRoachAuth.signIn(email, password);
+                    // Redirect to original page or dashboard
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const redirect = urlParams.get('redirect') || '/code-roach-dashboard.html';
+                    window.location.href = redirect;
+                }
+            } catch (error) {
+                errorMsg.textContent = error.message || 'Authentication failed';
+                errorMsg.style.display = 'block';
+            } finally {
+                loginBtn.disabled = false;
+                loading.style.display = 'none';
+            }
+        }
+
+        function showSignUp() {
+            isSignUp = true;
+            document.getElementById('loginBtn').textContent = 'Sign Up';
+            document.querySelector('.form-footer p:first-child').innerHTML = 
+                'Already have an account? <a href="#" onclick="showSignIn(); return false;">Sign in</a>';
+        }
+
+        function showSignIn() {
+            isSignUp = false;
+            document.getElementById('loginBtn').textContent = 'Sign In';
+            document.querySelector('.form-footer p:first-child').innerHTML = 
+                'Don\'t have an account? <a href="#" onclick="showSignUp(); return false;">Sign up</a>';
+        }
+
+        // Check if already authenticated
+        window.addEventListener('DOMContentLoaded', async () => {
+            await window.codeRoachAuth.initialize();
+            if (window.codeRoachAuth.isAuthenticated()) {
+                // Redirect to original page or dashboard
+                const urlParams = new URLSearchParams(window.location.search);
+                const redirect = urlParams.get('redirect') || '/code-roach-dashboard.html';
+                window.location.href = redirect;
+            }
+        });
+    </script>
+</body>
+</html>
+

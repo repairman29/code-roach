@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/codebaseCrawler.js
- * Last Sync: 2025-12-16T00:26:16.150Z
+ * Last Sync: 2025-12-16T00:42:37.836Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -50,6 +50,26 @@ try {
     notificationService = require('./notificationService');
 } catch (err) {
     // Notification service optional
+}
+
+// New Services (December 2025)
+let fixOrchestrationService = null;
+let fixImpactPredictionService = null;
+let fixConfidenceCalibrationService = null;
+let fixCostBenefitAnalysisService = null;
+let fixMonitoringService = null;
+let fixDocumentationGenerationService = null;
+
+try {
+    fixOrchestrationService = require('./fixOrchestrationService');
+    fixImpactPredictionService = require('./fixImpactPredictionService');
+    fixConfidenceCalibrationService = require('./fixConfidenceCalibrationService');
+    fixCostBenefitAnalysisService = require('./fixCostBenefitAnalysisService');
+    fixMonitoringService = require('./fixMonitoringService');
+    fixDocumentationGenerationService = require('./fixDocumentationGenerationService');
+} catch (err) {
+    // New services optional - will use fallback if not available
+    console.warn('[Codebase Crawler] Some new services not available:', err.message);
 }
 
 // Path for persisting crawler stats
@@ -1211,6 +1231,67 @@ class CodebaseCrawler {
                     const shouldAutoFix = fixHelpers.shouldAutoFix(issue, autoFix);
 
                     if (shouldAutoFix) {
+                        // NEW: Try orchestration service first if enabled (December 2025)
+                        if (fixOrchestrationService && options.useOrchestration !== false) {
+                            try {
+                                const context = {
+                                    filePath,
+                                    originalCode: code,
+                                    fixedCode: null, // Will be generated
+                                    issue,
+                                    method: 'orchestration',
+                                    confidence: 0.8,
+                                    projectId: options.projectId
+                                };
+
+                                const orchestrationResult = await fixOrchestrationService.orchestrateFix(issue, context);
+                                
+                                if (orchestrationResult.success && orchestrationResult.decision.action === 'apply') {
+                                    // Orchestration approved the fix
+                                    const pipeline = orchestrationResult.pipeline;
+                                    const applyStage = pipeline.stages.find(s => s.name === 'apply');
+                                    
+                                    if (applyStage && applyStage.result && applyStage.result.success) {
+                                        // Fix was applied successfully
+                                        this.stats.issuesAutoFixed++;
+                                        fileResult.autoFixed++;
+                                        code = applyStage.result.fixedCode || code;
+                                        
+                                        // Start monitoring
+                                        if (fixMonitoringService && applyStage.result.fixId) {
+                                            try {
+                                                await fixMonitoringService.startMonitoring(
+                                                    applyStage.result.fixId,
+                                                    { code: applyStage.result.fixedCode },
+                                                    context
+                                                );
+                                            } catch (err) {
+                                                // Monitoring optional
+                                            }
+                                        }
+                                        
+                                        // Generate documentation
+                                        if (fixDocumentationGenerationService) {
+                                            try {
+                                                const docs = await fixDocumentationGenerationService.generateDocumentation(
+                                                    { code: applyStage.result.fixedCode },
+                                                    context
+                                                );
+                                                // Documentation generated, could be stored or logged
+                                            } catch (err) {
+                                                // Documentation optional
+                                            }
+                                        }
+                                        
+                                        console.log(`[Codebase Crawler] ✅ Orchestrated fix applied: ${filePath}:${issue.line} (pipeline: ${orchestrationResult.pipelineId})`);
+                                        continue; // Skip to next issue
+                                    }
+                                }
+                            } catch (err) {
+                                // Orchestration failed, fall through to regular fix flow
+                                console.warn(`[Codebase Crawler] Orchestration failed, using regular fix flow:`, err.message);
+                            }
+                        }
                         // ENHANCED: Special handling for critical security issues
                         const isCriticalSecurity = issue.type === 'security' && issue.severity === 'critical';
                         
@@ -1533,11 +1614,83 @@ class CodebaseCrawler {
                                 }
                             }
                             
+                            // NEW: Predict impact before applying (December 2025)
+                            let impactPrediction = null;
+                            if (fixImpactPredictionService) {
+                                try {
+                                    impactPrediction = await fixImpactPredictionService.predictImpact(
+                                        { code: fixedCode, confidence: finalConfidence },
+                                        {
+                                            filePath,
+                                            originalCode: code,
+                                            fixedCode,
+                                            issue,
+                                            projectId: options.projectId
+                                        }
+                                    );
+                                    
+                                    // Log high-risk fixes
+                                    if (impactPrediction.success && impactPrediction.impact.riskLevel === 'high') {
+                                        console.warn(`[Codebase Crawler] ⚠️  High-risk fix detected: ${impactPrediction.impact.affectedFiles.total} files affected, ${impactPrediction.impact.breakingChanges.length} breaking changes`);
+                                    }
+                                } catch (err) {
+                                    // Impact prediction optional
+                                }
+                            }
+                            
+                            // NEW: Calibrate confidence (December 2025)
+                            let calibratedConfidence = finalConfidence;
+                            if (fixConfidenceCalibrationService) {
+                                try {
+                                    const calibration = await fixConfidenceCalibrationService.calibrateConfidence(
+                                        finalConfidence,
+                                        {
+                                            method: fixMethod,
+                                            domain: insights.issueDomain,
+                                            filePath,
+                                            issueType: issue.type
+                                        }
+                                    );
+                                    calibratedConfidence = calibration.calibrated;
+                                    
+                                    if (Math.abs(calibratedConfidence - finalConfidence) > 0.1) {
+                                        console.log(`[Codebase Crawler] 📊 Confidence calibrated: ${(finalConfidence * 100).toFixed(0)}% → ${(calibratedConfidence * 100).toFixed(0)}%`);
+                                    }
+                                } catch (err) {
+                                    // Calibration optional
+                                }
+                            }
+                            
+                            // NEW: Cost-benefit analysis (December 2025)
+                            let costBenefit = null;
+                            if (fixCostBenefitAnalysisService && options.analyzeCostBenefit !== false) {
+                                try {
+                                    costBenefit = await fixCostBenefitAnalysisService.analyzeCostBenefit(
+                                        { code: fixedCode, confidence: calibratedConfidence },
+                                        {
+                                            issue,
+                                            filePath,
+                                            originalCode: code,
+                                            fixedCode,
+                                            estimatedFixTime: 1, // Estimate
+                                            projectId: options.projectId
+                                        }
+                                    );
+                                    
+                                    // Log low ROI fixes
+                                    if (costBenefit.success && costBenefit.analysis.roi < 0) {
+                                        console.warn(`[Codebase Crawler] 💰 Negative ROI fix: cost=$${costBenefit.analysis.fixCost.total.toFixed(2)}, benefit=$${costBenefit.analysis.benefit.total.toFixed(2)}`);
+                                    }
+                                } catch (err) {
+                                    // Cost-benefit optional
+                                }
+                            }
+                            
                             // SPRINT 20: Use helper for fix application (reduces nesting)
                             // ROUND 6: Enhanced validation with confidence scoring
-                            // ENHANCED: Use final confidence (with security confidence building) for critical security
+                            // ENHANCED: Use calibrated confidence for decision making
                             const validationResult = await fixApplication.applyFixWithValidation(
-                                { code: fixedCode, method: fixMethod, confidence: finalConfidence, type: issue.type, severity: issue.severity },
+                                { code: fixedCode, method: fixMethod, confidence: calibratedConfidence, type: issue.type, severity: issue.severity },
                                 filePath,
                                 code
                             );
@@ -1568,10 +1721,30 @@ class CodebaseCrawler {
                                     console.log(`[Codebase Crawler] 🔒 Critical security fix approved (confidence: ${(finalConfidence * 100).toFixed(0)}% >= ${(minConfidence * 100).toFixed(0)}%)`);
                                 }
                             } else {
+                                // Use calibrated confidence for decision
                                 shouldAutoApply = fixApplication.shouldAutoApply(
-                                    { method: fixMethod, confidence: finalConfidence },
+                                    { method: fixMethod, confidence: calibratedConfidence },
                                     validationResult
                                 );
+                                
+                                // Consider impact prediction in decision
+                                if (impactPrediction && impactPrediction.success) {
+                                    if (impactPrediction.impact.riskLevel === 'high' && impactPrediction.impact.breakingChanges.length > 0) {
+                                        // High risk with breaking changes - require higher confidence
+                                        shouldAutoApply = shouldAutoApply && calibratedConfidence >= 0.9;
+                                    }
+                                }
+                                
+                                // Consider cost-benefit in decision
+                                if (costBenefit && costBenefit.success) {
+                                    if (costBenefit.analysis.roi < 0) {
+                                        // Negative ROI - don't auto-apply
+                                        shouldAutoApply = false;
+                                    } else if (costBenefit.analysis.recommendation.action === 'fix_immediately') {
+                                        // High ROI - more likely to apply
+                                        shouldAutoApply = shouldAutoApply || calibratedConfidence >= 0.7;
+                                    }
+                                }
                                 
                                 // DEBUG: Log shouldAutoApply decision
                                 if (this.stats.issuesAutoFixed <= 5) {
@@ -1614,11 +1787,69 @@ class CodebaseCrawler {
                                     // SPRINT 20: Use helper to record successful fix
                                     await fixApplication.recordSuccessfulFix(
                                         issue,
-                                        { code: fixedCode, method: fixMethod, confidence: finalConfidence },
+                                        { code: fixedCode, method: fixMethod, confidence: calibratedConfidence },
                                         filePath,
                                         languageKnowledge,
                                         insights.issueDomain
                                     );
+                                    
+                                    // NEW: Record outcome for calibration (December 2025)
+                                    if (fixConfidenceCalibrationService && applyResult.fixId) {
+                                        try {
+                                            await fixConfidenceCalibrationService.recordOutcome(
+                                                applyResult.fixId,
+                                                calibratedConfidence,
+                                                true, // Success
+                                                {
+                                                    method: fixMethod,
+                                                    domain: insights.issueDomain,
+                                                    filePath,
+                                                    issueType: issue.type
+                                                }
+                                            );
+                                        } catch (err) {
+                                            // Calibration recording optional
+                                        }
+                                    }
+                                    
+                                    // NEW: Start monitoring after successful fix (December 2025)
+                                    if (fixMonitoringService && applyResult.fixId) {
+                                        try {
+                                            await fixMonitoringService.startMonitoring(
+                                                applyResult.fixId,
+                                                { code: fixedCode, method: fixMethod, confidence: calibratedConfidence },
+                                                {
+                                                    filePath,
+                                                    originalCode: code,
+                                                    fixedCode,
+                                                    issue,
+                                                    projectId: options.projectId
+                                                }
+                                            );
+                                        } catch (err) {
+                                            // Monitoring optional
+                                        }
+                                    }
+                                    
+                                    // NEW: Generate documentation for applied fix (December 2025)
+                                    if (fixDocumentationGenerationService && applyResult.fixId) {
+                                        try {
+                                            const docs = await fixDocumentationGenerationService.generateDocumentation(
+                                                { code: fixedCode, id: applyResult.fixId },
+                                                {
+                                                    issue,
+                                                    filePath,
+                                                    originalCode: code,
+                                                    fixedCode,
+                                                    method: fixMethod,
+                                                    confidence: calibratedConfidence
+                                                }
+                                            );
+                                            // Documentation generated, could be stored or logged
+                                        } catch (err) {
+                                            // Documentation optional
+                                        }
+                                    }
                                 } else {
                                     // Learning cycle failed - try direct file write as fallback
                                     // ULTRA-AGGRESSIVE: Always try to apply the fix even if learning cycle fails

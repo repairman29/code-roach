@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Roach - Projects</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🪳</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Roboto+Mono:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto Mono', monospace;
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(0, 255, 255, 0.1);
+            border: 2px solid #00ffff;
+            border-radius: 8px;
+        }
+
+        .header h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.5em;
+            color: #00ffff;
+            text-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+            margin-bottom: 10px;
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .btn {
+            background: rgba(0, 255, 255, 0.2);
+            color: #00ffff;
+            border: 2px solid #00ffff;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            background: rgba(0, 255, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.4);
+        }
+
+        .btn.primary {
+            background: rgba(0, 255, 0, 0.2);
+            border-color: #00ff00;
+            color: #00ff00;
+        }
+
+        .btn.primary:hover {
+            background: rgba(0, 255, 0, 0.3);
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.4);
+        }
+
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .project-card {
+            background: rgba(20, 25, 45, 0.8);
+            border: 1px solid #00ffff;
+            border-radius: 8px;
+            padding: 20px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .project-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+        }
+
+        .project-card h3 {
+            color: #00ffff;
+            font-size: 1.3em;
+            margin-bottom: 10px;
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .project-card .slug {
+            color: #a0a0a0;
+            font-size: 0.9em;
+            margin-bottom: 15px;
+            font-family: 'Roboto Mono', monospace;
+        }
+
+        .project-card .info {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .project-card .info-item {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9em;
+        }
+
+        .project-card .info-label {
+            color: #a0a0a0;
+        }
+
+        .project-card .info-value {
+            color: #00ffff;
+        }
+
+        .project-card .actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(0, 255, 255, 0.2);
+        }
+
+        .project-card .btn-small {
+            flex: 1;
+            padding: 8px 15px;
+            font-size: 0.9em;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: rgba(20, 25, 45, 0.95);
+            border: 2px solid #00ffff;
+            border-radius: 8px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .modal-content h2 {
+            color: #00ffff;
+            font-family: 'Orbitron', sans-serif;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            color: #00ffff;
+            margin-bottom: 8px;
+            font-size: 0.9em;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            background: rgba(20, 25, 45, 0.9);
+            color: #00ffff;
+            border: 2px solid #00ffff;
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 1em;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #00ff00;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #00ffff;
+            font-size: 1.2em;
+        }
+
+        .error-message {
+            background: rgba(255, 0, 0, 0.2);
+            border: 1px solid #ff0000;
+            color: #ff6666;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #a0a0a0;
+        }
+
+        .empty-state h3 {
+            color: #00ffff;
+            margin-bottom: 10px;
+            font-size: 1.5em;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🪳 Code Roach - Projects</h1>
+            <p>Manage your projects and organizations</p>
+            <div class="header-controls">
+                <button class="btn primary" onclick="showCreateProjectModal()">➕ Create Project</button>
+                <button class="btn" onclick="loadProjects()">🔄 Refresh</button>
+            </div>
+        </div>
+
+        <div id="error-message" class="error-message" style="display: none;"></div>
+
+        <div id="loading" class="loading">
+            <div class="pulse">Loading projects...</div>
+        </div>
+
+        <div id="projects-container" style="display: none;">
+            <div class="projects-grid" id="projects-grid"></div>
+        </div>
+    </div>
+
+    <!-- Create Project Modal -->
+    <div id="createProjectModal" class="modal">
+        <div class="modal-content">
+            <h2>Create New Project</h2>
+            <form id="createProjectForm" onsubmit="createProject(event)">
+                <div class="form-group">
+                    <label>Organization:</label>
+                    <select id="orgSelect" required>
+                        <option value="">Loading...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Project Name:</label>
+                    <input type="text" id="projectName" required placeholder="My Project">
+                </div>
+                <div class="form-group">
+                    <label>Slug (optional):</label>
+                    <input type="text" id="projectSlug" placeholder="my-project">
+                </div>
+                <div class="form-group">
+                    <label>Repository URL (optional):</label>
+                    <input type="url" id="repoUrl" placeholder="https://github.com/owner/repo">
+                </div>
+                <div class="form-group">
+                    <label>Language:</label>
+                    <select id="projectLanguage">
+                        <option value="">Select language...</option>
+                        <option value="javascript">JavaScript</option>
+                        <option value="typescript">TypeScript</option>
+                        <option value="python">Python</option>
+                        <option value="java">Java</option>
+                        <option value="go">Go</option>
+                        <option value="rust">Rust</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Framework:</label>
+                    <input type="text" id="projectFramework" placeholder="React, Express, etc.">
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button type="submit" class="btn primary" style="flex: 1;">Create</button>
+                    <button type="button" class="btn" onclick="closeCreateProjectModal()" style="flex: 1;">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="/js/supabaseClient.js"></script>
+    <script src="/js/codeRoachAuth.js"></script>
+    <script src="/js/codeRoachApiClient.js"></script>
+    <script>
+        const api = new CodeRoachApiClient();
+        
+        // Initialize auth and check authentication
+        (async () => {
+            await window.codeRoachAuth.initialize();
+            await api.initializeAuth();
+            
+            // Check if authentication is required (can be disabled for development)
+            const requireAuth = window.REQUIRE_AUTH !== 'false';
+            if (requireAuth && !window.codeRoachAuth.isAuthenticated()) {
+                // Redirect to login if not authenticated
+                window.location.href = '/code-roach-login.html?redirect=' + encodeURIComponent(window.location.pathname);
+                return;
+            }
+        })();
+        let organizations = [];
+        let projects = [];
+
+        // Load organizations
+        async function loadOrganizations() {
+            try {
+                const response = await api.getOrganizations();
+                organizations = response.organizations || [];
+                const select = document.getElementById('orgSelect');
+                select.innerHTML = '<option value="">Select organization...</option>';
+                organizations.forEach(org => {
+                    const option = document.createElement('option');
+                    option.value = org.id;
+                    option.textContent = org.name;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Failed to load organizations:', error);
+                document.getElementById('orgSelect').innerHTML = '<option value="">Error loading organizations</option>';
+            }
+        }
+
+        // Load projects
+        async function loadProjects() {
+            try {
+                document.getElementById('loading').style.display = 'block';
+                document.getElementById('projects-container').style.display = 'none';
+                document.getElementById('error-message').style.display = 'none';
+
+                const response = await api.getProjects();
+                projects = response.projects || [];
+
+                displayProjects(projects);
+
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('projects-container').style.display = 'block';
+            } catch (error) {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('error-message').style.display = 'block';
+                document.getElementById('error-message').textContent = `Error loading projects: ${error.message}`;
+            }
+        }
+
+        // Display projects
+        function displayProjects(projectsList) {
+            const grid = document.getElementById('projects-grid');
+            grid.innerHTML = '';
+
+            if (projectsList.length === 0) {
+                grid.innerHTML = `
+                    <div class="empty-state" style="grid-column: 1 / -1;">
+                        <h3>No projects yet</h3>
+                        <p>Create your first project to get started with Code Roach.</p>
+                        <button class="btn primary" onclick="showCreateProjectModal()" style="margin-top: 20px;">Create Project</button>
+                    </div>
+                `;
+                return;
+            }
+
+            projectsList.forEach(project => {
+                const card = document.createElement('div');
+                card.className = 'project-card';
+                card.innerHTML = `
+                    <h3>${project.name || 'Unnamed Project'}</h3>
+                    <div class="slug">${project.slug || 'no-slug'}</div>
+                    <div class="info">
+                        <div class="info-item">
+                            <span class="info-label">Language:</span>
+                            <span class="info-value">${project.language || 'Not set'}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Framework:</span>
+                            <span class="info-value">${project.framework || 'Not set'}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Repository:</span>
+                            <span class="info-value">${project.repository_url ? '✓' : '✗'}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Created:</span>
+                            <span class="info-value">${new Date(project.created_at).toLocaleDateString()}</span>
+                        </div>
+                    </div>
+                    <div class="actions">
+                        <button class="btn btn-small" onclick="viewProject('${project.id}')">View</button>
+                        <button class="btn btn-small" onclick="editProject('${project.id}')">Edit</button>
+                        <button class="btn btn-small" onclick="deleteProject('${project.id}')">Delete</button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // Show create project modal
+        function showCreateProjectModal() {
+            document.getElementById('createProjectModal').classList.add('active');
+            loadOrganizations();
+        }
+
+        // Close create project modal
+        function closeCreateProjectModal() {
+            document.getElementById('createProjectModal').classList.remove('active');
+            document.getElementById('createProjectForm').reset();
+        }
+
+        // Create project
+        async function createProject(event) {
+            event.preventDefault();
+            try {
+                const data = {
+                    organizationId: document.getElementById('orgSelect').value,
+                    name: document.getElementById('projectName').value,
+                    slug: document.getElementById('projectSlug').value || null,
+                    repository_url: document.getElementById('repoUrl').value || null,
+                    language: document.getElementById('projectLanguage').value || null,
+                    framework: document.getElementById('projectFramework').value || null
+                };
+
+                await api.createProject(data);
+                closeCreateProjectModal();
+                loadProjects();
+            } catch (error) {
+                alert(`Error creating project: ${error.message}`);
+            }
+        }
+
+        // View project
+        function viewProject(projectId) {
+            window.location.href = `/code-roach-issues.html?project=${projectId}`;
+        }
+
+        // Edit project
+        function editProject(projectId) {
+            // TODO: Implement edit modal
+            alert('Edit project functionality coming soon');
+        }
+
+        // Delete project
+        async function deleteProject(projectId) {
+            if (!confirm('Are you sure you want to delete this project? This action cannot be undone.')) {
+                return;
+            }
+
+            try {
+                await api.deleteProject(projectId);
+                loadProjects();
+            } catch (error) {
+                alert(`Error deleting project: ${error.message}`);
+            }
+        }
+
+        // Initialize
+        loadProjects();
+    </script>
+</body>
+</html>
+
