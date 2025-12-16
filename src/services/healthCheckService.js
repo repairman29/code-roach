@@ -139,74 +139,37 @@ class HealthCheckService {
 
             const supabase = createClient(config.supabase.url, config.supabase.serviceRoleKey);
             
-            // Simple connectivity check - try to query a table that should exist
-            // Try multiple tables in order of likelihood
-            const tablesToTry = ['code_roach_projects', 'projects', 'organizations'];
-            let lastError = null;
-            let connected = false;
-            
-            for (const table of tablesToTry) {
-                try {
-                    const { error: queryError } = await supabase
-                        .from(table)
-                        .select('id')
-                        .limit(1);
-                    
-                    if (!queryError) {
-                        connected = true;
-                        break;
-                    }
-                    lastError = queryError;
-                    
-                    // If it's a "table not found" error, try next table
-                    if (queryError.code === 'PGRST205' || queryError.code === '42P01') {
-                        continue;
-                    }
-                    
-                    // Other errors might indicate connection issues
-                    break;
-                } catch (err) {
-                    lastError = err;
-                    break;
-                }
-            }
-            
-            if (!connected) {
-                // If all tables failed, check if it's a schema issue or connection issue
-                if (lastError && (lastError.code === 'PGRST205' || lastError.code === '42P01')) {
-                    // Table doesn't exist, but connection might be working
-                    // Try a simpler connectivity test
-                    try {
-                        // Just verify we can reach Supabase API
-                        const response = await fetch(`${config.supabase.url}/rest/v1/`, {
-                            headers: {
-                                'apikey': config.supabase.serviceRoleKey,
-                                'Authorization': `Bearer ${config.supabase.serviceRoleKey}`
-                            }
-                        });
-                        
-                        if (response.ok || response.status === 404) {
-                            // 404 is fine - means API is reachable
-                            return {
-                                status: 'degraded',
-                                error: 'Database connected but schema tables not found',
-                                code: lastError.code
-                            };
-                        }
-                    } catch (fetchErr) {
-                        // Connection failed
-                        return {
-                            status: 'error',
-                            error: lastError.message || 'Database connection failed',
-                            code: lastError.code
-                        };
-                    }
+            // Simple connectivity check - verify we can reach Supabase API
+            // Don't require specific tables to exist (they might not be migrated yet)
+            try {
+                const response = await fetch(`${config.supabase.url}/rest/v1/`, {
+                    headers: {
+                        'apikey': config.supabase.serviceRoleKey,
+                        'Authorization': `Bearer ${config.supabase.serviceRoleKey}`
+                    },
+                    signal: AbortSignal.timeout(5000) // 5 second timeout
+                });
+                
+                // Any response (even 404) means API is reachable
+                if (response.status === 404 || response.ok) {
+                    return {
+                        status: 'ok',
+                        response_time_ms: Date.now()
+                    };
                 }
                 
+                // Other status codes might indicate issues
+                return {
+                    status: 'degraded',
+                    error: `Supabase API returned status ${response.status}`,
+                    code: 'HTTP_ERROR'
+                };
+            } catch (fetchErr) {
+                // Connection failed
                 return {
                     status: 'error',
-                    error: lastError?.message || 'Database connection failed',
-                    code: lastError?.code
+                    error: fetchErr.message || 'Cannot connect to Supabase API',
+                    code: 'CONNECTION_ERROR'
                 };
             }
 
