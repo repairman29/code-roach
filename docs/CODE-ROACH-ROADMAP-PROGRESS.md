@@ -285,3 +285,19 @@
 
 **Next Priority:** Complete integration testing and production deployment
 
+---
+
+## 📋 Future: Smugglers Standalone Migration
+
+**Target Date:** December 22, 2025 (1 week from now)  
+**Status:** 📋 Planned - Not Started
+
+### Action Items
+- [ ] Review [Smugglers Standalone Migration Plan](./SMUGGLERS-STANDALONE-MIGRATION-PLAN.md)
+- [ ] Create GitHub repository for Smugglers standalone
+- [ ] Create Railway project for Smugglers standalone
+- [ ] Create sync and push scripts
+- [ ] Begin migration process
+
+**See:** [SMUGGLERS-STANDALONE-MIGRATION-PLAN.md](./SMUGGLERS-STANDALONE-MIGRATION-PLAN.md) for complete details.
+

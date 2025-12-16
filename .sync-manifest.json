@@ -1,5 +1,5 @@
 {
-  "lastSync": "2025-12-16T00:44:46.022Z",
+  "lastSync": "2025-12-16T00:49:53.651Z",
   "files": [
     {
       "source": "/Users/jeffadkins/Smugglers/smugglers/cli/code-roach.js",
@@ -1351,14 +1351,49 @@
       "size": 9592,
       "modified": "2025-12-16T00:44:17.568Z",
       "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/docs/CODE-ROACH-MASTER-SUMMARY.md",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/docs/CODE-ROACH-MASTER-SUMMARY.md",
+      "size": 8048,
+      "modified": "2025-12-16T00:45:16.141Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/docs/CODE-ROACH-ROADMAP-PROGRESS.md",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/docs/CODE-ROACH-ROADMAP-PROGRESS.md",
+      "size": 10141,
+      "modified": "2025-12-16T00:47:03.496Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/docs/CODE-ROACH-MIGRATION-GUIDE.md",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/docs/CODE-ROACH-MIGRATION-GUIDE.md",
+      "size": 3369,
+      "modified": "2025-12-16T00:49:50.494Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/docs/CODE-ROACH-MIGRATION-QUICK-START.md",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/docs/CODE-ROACH-MIGRATION-QUICK-START.md",
+      "size": 1281,
+      "modified": "2025-12-16T00:49:53.243Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/docs/CODE-ROACH-ROADMAP-PROGRESS.md",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/docs/CODE-ROACH-ROADMAP-PROGRESS.md",
+      "size": 10141,
+      "modified": "2025-12-16T00:47:23.946Z",
+      "success": true
     }
   ],
   "stats": {
-    "copied": 193,
-    "skipped": 4117,
+    "copied": 198,
+    "skipped": 4759,
     "errors": 0
   },
-  "lastSyncTimestamp": 1765845886022,
-  "lastSyncHuman": "12/15/2025, 5:44:46 PM",
-  "syncCount": 23
+  "lastSyncTimestamp": 1765846193651,
+  "lastSyncHuman": "12/15/2025, 5:49:53 PM",
+  "syncCount": 26
 }
