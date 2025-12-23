@@ -1,9 +1,13 @@
 /**
  * API Routes
  * Main API endpoint setup
+ * 
+ * NOTE: Many routes have been extracted to modular files in ./api/
+ * See ./api/aiGmRoutes.js, ./api/healthRoutes.js, ./api/sessionsRoutes.js
  */
 
 const SessionPersistence = require('../sessionPersistence');
+const { setupModularRoutes } = require('./api/index');
 
 module.exports = function setupAPIRoutes(app, options = {}) {
     const {
@@ -15,6 +19,9 @@ module.exports = function setupAPIRoutes(app, options = {}) {
         findPlayerSocket = null,
         sessionManager = null
     } = options;
+
+    // Setup modular routes (extracted from this file for maintainability)
+    setupModularRoutes(app, options);
 
     // Get current authenticated user (Supabase Auth) - REGISTER FIRST to avoid route conflicts
     // This endpoint works with or without a token (returns authenticated: false if no token)

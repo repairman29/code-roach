@@ -3,6 +3,7 @@
  * Provides endpoints for knowledge base analytics and management
  */
 
+const { log } = require('../utils/logger');
 const express = require('express');
 const router = express.Router();
 const agentKnowledgeService = require('../services/agentKnowledgeService');
@@ -24,12 +25,6 @@ try {
     console.warn('[apiKnowledgeBase] Failed to create Supabase client:', error.message);
 }
 
-// Simple logger fallback
-const log = {
-    info: (...args) => console.log('[INFO]', ...args),
-    error: (...args) => console.error('[ERROR]', ...args),
-    warn: (...args) => console.warn('[WARN]', ...args)
-};
 
 /**
  * GET /api/knowledge-base/stats

@@ -1,0 +1,34 @@
+{
+  "lastSync": "2025-12-23T21:24:12.140Z",
+  "files": [
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/server/routes/apiKnowledgeBase.js",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/src/routes/apiKnowledgeBase.js",
+      "size": 15746,
+      "modified": "2025-12-23T20:57:57.449Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/server/routes/api.js",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/src/routes/api.js",
+      "size": 84222,
+      "modified": "2025-12-23T21:05:31.523Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/server/routes/api.js",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/src/routes/api.js",
+      "size": 84222,
+      "modified": "2025-12-23T21:16:59.922Z",
+      "success": true
+    }
+  ],
+  "stats": {
+    "copied": 3,
+    "skipped": 7361,
+    "errors": 0
+  },
+  "lastSyncTimestamp": 1766525052140,
+  "lastSyncHuman": "12/23/2025, 2:24:12 PM",
+  "syncCount": 28
+}
