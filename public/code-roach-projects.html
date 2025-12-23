@@ -5,22 +5,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Code Roach - Projects</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🪳</text></svg>">
+    <link rel="icon" type="image/svg+xml" href="/logo.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Roboto+Mono:wght@300;400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <!-- System 3046 Design System -->
+    <link rel="stylesheet" href="/css/system-3046-design-system.css">
+    <!-- XSS Sanitization Utility -->
+    <script src="/js/utils/domSanitizer.js"></script>
+    <link rel="stylesheet" href="/css/emptyStates.css">
+    <script src="/js/uiAssetGenerator.js"></script>
+    <script src="/js/emptyStateGenerator.js"></script>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-
-        body {
-            font-family: 'Roboto Mono', monospace;
-            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
-            color: #e0e0e0;
-            min-height: 100vh;
-            padding: 20px;
+        
+        /* System 3046 overrides */
+        body.system-3046 {
+            padding: 0;
         }
 
         .container {
@@ -32,16 +37,15 @@
             text-align: center;
             margin-bottom: 30px;
             padding: 20px;
-            background: rgba(0, 255, 255, 0.1);
-            border: 2px solid #00ffff;
-            border-radius: 8px;
+            background: var(--panel-bg);
+            border: 1px solid var(--border-dim);
+            clip-path: polygon(var(--corner-cut) 0, 100% 0, 100% calc(100% - var(--corner-cut)), calc(100% - var(--corner-cut)) 100%, 0 100%, 0 var(--corner-cut));
         }
 
         .header h1 {
-            font-family: 'Orbitron', sans-serif;
+            font-family: var(--font-tech);
             font-size: 2.5em;
-            color: #00ffff;
-            text-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+            color: var(--neon-cyan);
             margin-bottom: 10px;
         }
 
@@ -251,8 +255,49 @@
         }
     </style>
 </head>
-<body>
-    <div class="container">
+<body class="system-3046">
+    <!-- Boot Sequence -->
+    <div id="sys-boot" style="position:fixed; top:0; left:0; width:100%; height:100%; background:#000; z-index:9999; display:flex; align-items:center; justify-content:center; flex-direction:column; transition: opacity 0.5s;">
+        <div style="font-family:'Space Mono'; color:#00F0FF; margin-bottom:10px;">INITIALIZING...</div>
+        <div style="width:200px; height:2px; background:#333;">
+            <div id="sys-loader-bar" style="width:0%; height:100%; background:#00F0FF; transition:width 1s ease-in-out;"></div>
+        </div>
+    </div>
+    <script>
+        // Immediate removal fallback
+        setTimeout(() => {
+            const boot = document.getElementById('sys-boot');
+            if (boot) {
+                boot.style.opacity = '0';
+                setTimeout(() => boot.remove(), 500);
+            }
+        }, 1500);
+    </script>
+
+    <!-- HUD Overlay -->
+    <div class="sys-hud-overlay">
+        <div class="sys-hud-border">
+            <div class="sys-bracket tl"></div>
+            <div class="sys-bracket tr"></div>
+            <div class="sys-bracket bl"></div>
+            <div class="sys-bracket br"></div>
+        </div>
+    </div>
+    
+    <div class="scanlines"></div>
+    
+    <!-- Navigation -->
+    <nav style="position: sticky; top: 0; z-index: 1000; background: rgba(5, 5, 5, 0.95); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border-dim); padding: 1rem 2rem;">
+        <div style="max-width: 1400px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center;">
+            <a href="/" class="sys-font text-cyan" style="font-size: 1.2rem; text-decoration: none;">SMUGGLER</a>
+            <div style="display: flex; gap: 2rem;">
+                <a href="/code-roach-dashboard.html" style="color: var(--text-muted); text-decoration: none; font-family: var(--font-tech); font-size: 0.9rem;">DASHBOARD</a>
+                <a href="/code-roach-projects.html" style="color: var(--neon-cyan); text-decoration: none; font-family: var(--font-tech); font-size: 0.9rem;">PROJECTS</a>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="sys-container" style="max-width: 1400px; margin: 2rem auto; padding: 2rem;">
         <div class="header">
             <h1>🪳 Code Roach - Projects</h1>
             <p>Manage your projects and organizations</p>
@@ -280,9 +325,12 @@
             <form id="createProjectForm" onsubmit="createProject(event)">
                 <div class="form-group">
                     <label>Organization:</label>
-                    <select id="orgSelect" required>
-                        <option value="">Loading...</option>
-                    </select>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <select id="orgSelect" required style="flex: 1;">
+                            <option value="">Loading...</option>
+                        </select>
+                        <button type="button" class="btn" onclick="showCreateOrgModal()" style="white-space: nowrap;">➕ New</button>
+                    </div>
                 </div>
                 <div class="form-group">
                     <label>Project Name:</label>
@@ -320,44 +368,161 @@
         </div>
     </div>
 
+    <!-- Create Organization Modal -->
+    <div id="createOrgModal" class="modal">
+        <div class="modal-content">
+            <h2>Create New Organization</h2>
+            <form id="createOrgForm" onsubmit="createOrganization(event)">
+                <div class="form-group">
+                    <label>Organization Name:</label>
+                    <input type="text" id="orgName" required placeholder="My Organization">
+                </div>
+                <div class="form-group">
+                    <label>Slug (optional):</label>
+                    <input type="text" id="orgSlug" placeholder="my-org">
+                    <small style="color: #a0a0a0; font-size: 0.8em;">Auto-generated from name if not provided</small>
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button type="submit" class="btn primary" style="flex: 1;">Create</button>
+                    <button type="button" class="btn" onclick="closeCreateOrgModal()" style="flex: 1;">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script src="/js/supabaseClient.js"></script>
     <script src="/js/codeRoachAuth.js"></script>
     <script src="/js/codeRoachApiClient.js"></script>
+    <script src="/js/shared/navigation.js"></script>
+    <script src="/js/globalNavigation.js"></script>
+    <script src="/js/utils/bootHandler.js"></script>
     <script>
         const api = new CodeRoachApiClient();
         
+        // Declare variables at the top to avoid temporal dead zone issues
+        // Use var instead of let to avoid hoisting issues
+        var organizations = [];
+        var projects = [];
+        
+        // Track if we've already checked auth to prevent multiple redirects
+        let authChecked = false;
+        
         // Initialize auth and check authentication
         (async () => {
-            await window.codeRoachAuth.initialize();
-            await api.initializeAuth();
-            
-            // Check if authentication is required (can be disabled for development)
-            const requireAuth = window.REQUIRE_AUTH !== 'false';
-            if (requireAuth && !window.codeRoachAuth.isAuthenticated()) {
-                // Redirect to login if not authenticated
-                window.location.href = '/code-roach-login.html?redirect=' + encodeURIComponent(window.location.pathname);
-                return;
+            try {
+                await window.codeRoachAuth.initialize();
+                await api.initializeAuth();
+                
+                // Wait a bit for session to be established (OAuth callback might be processing)
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                // Only check once
+                if (authChecked) return;
+                authChecked = true;
+                
+                // Check if authentication is required (can be disabled for development)
+                const requireAuth = window.REQUIRE_AUTH !== 'false';
+                if (requireAuth && !window.codeRoachAuth.isAuthenticated()) {
+                    // Redirect to login if not authenticated
+                    // Always use the current pathname (should be /code-roach-projects, not .html)
+                    let redirectPath = window.location.pathname;
+                    
+                    // Normalize: remove .html if present
+                    if (redirectPath.endsWith('.html')) {
+                        redirectPath = redirectPath.replace(/\.html$/, '');
+                    }
+                    
+                    // Ensure we're using the correct path
+                    if (redirectPath === '/code-roach-projects.html') {
+                        redirectPath = '/code-roach-projects';
+                    }
+                    
+                    console.log('[Projects] Not authenticated, redirecting to login. Redirect path:', redirectPath);
+                    window.location.href = '/code-roach-login.html?redirect=' + encodeURIComponent(redirectPath);
+                    return;
+                } else {
+                    console.log('[Projects] Authentication check passed');
+                }
+            } catch (error) {
+                console.error('[Projects] Auth initialization error:', error);
             }
         })();
-        let organizations = [];
-        let projects = [];
+        
+        // Also listen for auth state changes (but don't redirect if already on page)
+        if (window.codeRoachAuth && window.codeRoachAuth.onAuthStateChange) {
+            window.codeRoachAuth.onAuthStateChange((event, session) => {
+                if (event === 'SIGNED_OUT' && !authChecked) {
+                    // Only redirect on sign out if we haven't already checked
+                    const requireAuth = window.REQUIRE_AUTH !== 'false';
+                    if (requireAuth) {
+                        let redirectPath = window.location.pathname;
+                        if (redirectPath.endsWith('.html')) {
+                            redirectPath = redirectPath.replace(/\.html$/, '');
+                        }
+                        if (redirectPath === '/code-roach-projects.html') {
+                            redirectPath = '/code-roach-projects';
+                        }
+                        window.location.href = '/code-roach-login.html?redirect=' + encodeURIComponent(redirectPath);
+                    }
+                }
+            });
+        }
 
         // Load organizations
         async function loadOrganizations() {
             try {
+                console.log('[Projects] Loading organizations...');
                 const response = await api.getOrganizations();
+                console.log('[Projects] Organizations response:', response);
                 organizations = response.organizations || [];
                 const select = document.getElementById('orgSelect');
-                select.innerHTML = '<option value="">Select organization...</option>';
+                if (!select) {
+                    console.error('[Projects] orgSelect element not found');
+                    return;
+                }
+                // Fix XSS: Use safeSetHTML for select clearing
+                if (window.DOMSanitizer && window.DOMSanitizer.safeSetHTML) {
+                    window.DOMSanitizer.safeSetHTML(select, '<option value="">Select organization...</option>');
+                } else {
+                    select.innerHTML = '<option value="">Select organization...</option>';
+                }
                 organizations.forEach(org => {
                     const option = document.createElement('option');
                     option.value = org.id;
-                    option.textContent = org.name;
+                    // Fix XSS: Sanitize organization name
+                    option.textContent = window.DOMSanitizer ? window.DOMSanitizer.escapeHTML(org.name || '') : (org.name || '');
                     select.appendChild(option);
                 });
+                if (organizations.length === 0) {
+                    // Fix XSS: Use safeSetHTML for empty state
+                    if (window.DOMSanitizer && window.DOMSanitizer.safeSetHTML) {
+                        window.DOMSanitizer.safeSetHTML(select, '<option value="">No organizations yet</option>');
+                    } else {
+                        // Fix XSS: Use safeSetHTML for select options
+                        if (window.DOMSanitizer && window.DOMSanitizer.safeSetHTML) {
+                            window.DOMSanitizer.safeSetHTML(select, '<option value="">No organizations yet</option>');
+                        } else {
+                            select.innerHTML = '<option value="">No organizations yet</option>';
+                        }
+                    }
+                }
             } catch (error) {
                 console.error('Failed to load organizations:', error);
-                document.getElementById('orgSelect').innerHTML = '<option value="">Error loading organizations</option>';
+                const select = document.getElementById('orgSelect');
+                if (select) {
+                    // Fix XSS: Use safeSetHTML for error state
+                    if (window.DOMSanitizer && window.DOMSanitizer.safeSetHTML) {
+                        window.DOMSanitizer.safeSetHTML(select, '<option value="">Error loading organizations</option>');
+                    } else {
+                        // Fix XSS: Use safeSetHTML for select options
+                        if (window.DOMSanitizer && window.DOMSanitizer.safeSetHTML) {
+                            window.DOMSanitizer.safeSetHTML(select, '<option value="">Error loading organizations</option>');
+                        } else {
+                            select.innerHTML = '<option value="">Error loading organizations</option>';
+                        }
+                    }
+                }
+                // Don't show alert, just log the error
             }
         }
 
@@ -388,13 +553,22 @@
             grid.innerHTML = '';
 
             if (projectsList.length === 0) {
-                grid.innerHTML = `
-                    <div class="empty-state" style="grid-column: 1 / -1;">
-                        <h3>No projects yet</h3>
-                        <p>Create your first project to get started with Code Roach.</p>
-                        <button class="btn primary" onclick="showCreateProjectModal()" style="margin-top: 20px;">Create Project</button>
-                    </div>
-                `;
+                if (window.emptyStateGenerator) {
+                    window.emptyStateGenerator.inject(grid, 'missions', {
+                        title: 'Project Files Missing',
+                        message: 'No active projects detected in the Code Roach mainframe. Initialize a new project to begin optimization.',
+                        actionText: 'Initialize Project',
+                        actionHandler: () => showCreateProjectModal()
+                    });
+                } else {
+                    grid.innerHTML = `
+                        <div class="empty-state" style="grid-column: 1 / -1;">
+                            <h3>No projects yet</h3>
+                            <p>Create your first project to get started with Code Roach.</p>
+                            <button class="btn primary" onclick="showCreateProjectModal()" style="margin-top: 20px;">Create Project</button>
+                        </div>
+                    `;
+                }
                 return;
             }
 
@@ -434,14 +608,107 @@
 
         // Show create project modal
         function showCreateProjectModal() {
-            document.getElementById('createProjectModal').classList.add('active');
-            loadOrganizations();
+            const modal = document.getElementById('createProjectModal');
+            if (!modal) {
+                console.error('[Projects] createProjectModal not found');
+                return;
+            }
+            modal.classList.add('active');
+            // Wait a bit for modal to be visible before loading
+            setTimeout(() => {
+                loadOrganizations();
+            }, 100);
         }
 
         // Close create project modal
         function closeCreateProjectModal() {
             document.getElementById('createProjectModal').classList.remove('active');
             document.getElementById('createProjectForm').reset();
+        }
+
+        // Show create organization modal
+        function showCreateOrgModal() {
+            document.getElementById('createOrgModal').classList.add('active');
+        }
+
+        // Close create organization modal
+        function closeCreateOrgModal() {
+            document.getElementById('createOrgModal').classList.remove('active');
+            document.getElementById('createOrgForm').reset();
+        }
+
+        // Create organization
+        async function createOrganization(event) {
+            event.preventDefault();
+            const nameInput = document.getElementById('orgName');
+            const slugInput = document.getElementById('orgSlug');
+            const errorMsg = document.getElementById('error-message');
+            
+            if (!nameInput || !slugInput) {
+                console.error('[Projects] Organization form inputs not found');
+                return;
+            }
+            
+            const name = nameInput.value.trim();
+            const slug = slugInput.value.trim() || null;
+            
+            if (!name) {
+                if (errorMsg) {
+                    errorMsg.textContent = 'Organization name is required';
+                    errorMsg.style.display = 'block';
+                }
+                return;
+            }
+            
+            try {
+                if (errorMsg) {
+                    errorMsg.style.display = 'none';
+                }
+                
+                console.log('[Projects] Creating organization:', { name, slug });
+                
+                // Ensure auth is initialized
+                await api.initializeAuth();
+                
+                const response = await api.createOrganization(name, slug);
+                console.log('[Projects] Create organization response:', response);
+                
+                if (response.success && response.organization) {
+                    // Add to organizations array
+                    organizations.push(response.organization);
+                    
+                    // Update the dropdown
+                    const select = document.getElementById('orgSelect');
+                    if (select) {
+                        // Remove "No organizations yet" if present
+                        if (select.options.length === 1 && select.options[0].text.includes('No organizations')) {
+                            select.innerHTML = '';
+                        }
+                        
+                        const option = document.createElement('option');
+                        option.value = response.organization.id;
+                        option.textContent = response.organization.name;
+                        option.selected = true;
+                        select.appendChild(option);
+                    }
+                    
+                    // Close modal
+                    closeCreateOrgModal();
+                    
+                    // Show success
+                    alert(`Organization "${name}" created successfully!`);
+                } else {
+                    throw new Error(response.error || 'Failed to create organization');
+                }
+            } catch (error) {
+                console.error('Create organization error:', error);
+                if (errorMsg) {
+                    errorMsg.textContent = error.message || 'Failed to create organization. Please try again.';
+                    errorMsg.style.display = 'block';
+                } else {
+                    alert(`Error: ${error.message || 'Failed to create organization'}`);
+                }
+            }
         }
 
         // Create project
@@ -493,6 +760,7 @@
         // Initialize
         loadProjects();
     </script>
+    </div>
 </body>
 </html>
 

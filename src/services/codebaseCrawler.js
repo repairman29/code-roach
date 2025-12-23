@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/codebaseCrawler.js
- * Last Sync: 2025-12-16T03:17:15.002Z
+ * Last Sync: 2025-12-21T02:43:02.366Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -66,29 +66,19 @@ const STATS_FILE = path.join(__dirname, '../../data/crawler-stats.json');
 
 class CodebaseCrawler {
     constructor() {
-        this.isRunning = false;
-        this.stats = {
-            filesScanned: 0,
-            filesSkipped: 0, // PHASE 3: Track skipped files (cached/unchanged)
-            filesWithIssues: 0,
-            issuesFound: 0,
-            issuesAutoFixed: 0,
-            issuesNeedingReview: 0,
-            errors: 0,
-            startTime: null,
-            endTime: null
-        };
-        this.scanResults = [];
-        this.fileCache = new Map(); // PHASE 3: In-memory cache for file hashes
-        
-        // Initialize Supabase client for optimizations
-        try {
-            this.supabase = createClient(
-                config.supabase.url,
-                config.supabase.serviceRoleKey
-            );
-        } catch (err) {
-            console.warn('[Codebase Crawler] Supabase not available, optimizations disabled:', err.message);
+        // Only create Supabase client if credentials are available
+        if (config.supabase.serviceRoleKey) {
+            try {
+                this.supabase = createClient(
+                    config.supabase.url,
+                    config.supabase.serviceRoleKey
+                );
+            } catch (error) {
+                console.warn('[codebaseCrawler] Supabase not configured:', error.message);
+                this.supabase = null;
+            }
+        } else {
+            console.warn('[codebaseCrawler] Supabase credentials not configured. Service will be disabled.');
             this.supabase = null;
         }
         
@@ -286,13 +276,33 @@ class CodebaseCrawler {
      */
     async getGitChangedFiles(rootDir = process.cwd(), since = 'HEAD~1') {
         try {
+            // SECURITY: Validate and sanitize rootDir to prevent command injection
+            const safeRootDir = path.resolve(rootDir);
+            const allowedRoot = path.resolve(process.cwd());
+            
+            // SECURITY: Ensure rootDir is within allowed directory (prevent path traversal)
+            if (!safeRootDir.startsWith(allowedRoot)) {
+                console.warn('[Security] Attempted path traversal in getGitChangedFiles:', rootDir);
+                throw new Error('Invalid root directory');
+            }
+            
+            // SECURITY: Validate 'since' parameter to prevent command injection
+            // Only allow alphanumeric, hyphens, underscores, and common git refs
+            const safeSince = String(since || 'HEAD~1').replace(/[^a-zA-Z0-9~^@._-]/g, '');
+            if (safeSince !== since) {
+                console.warn('[Security] Suspicious characters in git since parameter:', since);
+                throw new Error('Invalid git reference');
+            }
+            
+            // SECURITY: Use path.join and proper escaping for command arguments
+            const safeRootDirEscaped = safeRootDir.replace(/'/g, "'\\''");
+            
             // Get files changed since last commit
-            const { stdout } = await execAsync(`cd ${rootDir} && git diff --name-only ${since} HEAD 
-                2>/dev/null || echo ""`);
+            const { stdout } = await execAsync(`cd '${safeRootDirEscaped}' && git diff --name-only '${safeSince}' HEAD 2>/dev/null || echo ""`);
             const changedFiles = stdout.trim().split('\n').filter(Boolean);
             
             // Also get untracked files
-            const { stdout: untracked } = await execAsync(`cd ${rootDir} && git ls-files --others --exclude-standard 2>/dev/null || echo ""`);
+            const { stdout: untracked } = await execAsync(`cd '${safeRootDirEscaped}' && git ls-files --others --exclude-standard 2>/dev/null || echo ""`);
             const untrackedFiles = untracked.trim().split('\n').filter(Boolean);
             
             const allChanged = [...new Set([...changedFiles, ...untrackedFiles])];
@@ -728,6 +738,39 @@ class CodebaseCrawler {
         // Ensure rootDir is a string
         if (typeof rootDir !== 'string') {
             rootDir = process.cwd();
+        }
+        
+        // If projectId is provided, look up project and use its root directory
+        if (options.projectId && this.supabase) {
+            try {
+                const { data: project, error } = await this.supabase
+                    .from('projects')
+                    .select('root_directory, repository_url, repository_type')
+                    .eq('id', options.projectId)
+                    .single();
+                
+                if (!error && project) {
+                    // Use project's root_directory if set, otherwise try repository_url
+                    if (project.root_directory && project.root_directory !== '.') {
+                        rootDir = path.isAbsolute(project.root_directory) 
+                            ? project.root_directory 
+                            : path.resolve(process.cwd(), project.root_directory);
+                        console.log(`[Codebase Crawler] Using project root directory: ${rootDir}`);
+                    } else if (project.repository_url && project.repository_type === 'local') {
+                        // For local repositories, use the repository_url as the root
+                        rootDir = path.isAbsolute(project.repository_url)
+                            ? project.repository_url
+                            : path.resolve(process.cwd(), project.repository_url);
+                        console.log(`[Codebase Crawler] Using project repository path: ${rootDir}`);
+                    } else {
+                        console.log(`[Codebase Crawler] Project ${options.projectId} found, but no root directory configured. Using default: ${rootDir}`);
+                    }
+                } else if (error) {
+                    console.warn(`[Codebase Crawler] Could not load project ${options.projectId}:`, error.message);
+                }
+            } catch (err) {
+                console.warn(`[Codebase Crawler] Error loading project ${options.projectId}:`, err.message);
+            }
         }
 
         if (this.isRunning) {
@@ -1221,13 +1264,23 @@ class CodebaseCrawler {
 
                     if (shouldAutoFix) {
                         try {
-                        // INTEGRATION: Use orchestration service by default (System Architecture Expert - 2025-01-15)
+                        // INTEGRATION: Orchestration service is REQUIRED (System Architecture Expert - 2025-01-15)
+                        // Original Objective: Remove optional flag, make orchestration required
                         // Orchestration coordinates all 12+ services through unified pipeline
-                        // Services are now always available - orchestration is the default path
-                        let orchestrationUsed = false;
+                        // This is now the ONLY path for fixes - legacy flow removed
                         
-                        // Use orchestration unless explicitly disabled
-                        if (options.useOrchestration !== false) {
+                        // Check if orchestration service is available
+                        if (!fixOrchestrationService) {
+                            console.error(`[Codebase Crawler] ❌ Fix Orchestration Service not available - cannot proceed with fix`);
+                            continue; // Skip this issue if orchestration service unavailable
+                        }
+                        
+                        // Orchestration is now required - no optional flag
+                        // DEPRECATED: options.useOrchestration is ignored (orchestration always used)
+                        if (options.useOrchestration === false) {
+                            console.warn(`[Codebase Crawler] ⚠️ useOrchestration=false is deprecated - orchestration is now required`);
+                        }
+                        
                             try {
                                 const context = {
                                     filePath,
@@ -1248,905 +1301,183 @@ class CodebaseCrawler {
                                     
                                     if (applyStage && applyStage.result && applyStage.result.success) {
                                         // Fix was applied successfully
-                                        orchestrationUsed = true;
                                         this.stats.issuesAutoFixed++;
                                         fileResult.autoFixed++;
                                         code = applyStage.result.fixedCode || code;
                                         
-                                        // Monitoring is handled by orchestration pipeline
-                                        // Documentation is handled by orchestration pipeline
+                                    // Monitoring is handled by orchestration pipeline (Stage 10)
+                                    // Documentation is handled by orchestration pipeline (Stage 7)
+                                    // Impact Prediction is handled by orchestration pipeline (Stage 2)
+                                    // Cost-Benefit Analysis is handled by orchestration pipeline (Stage 3)
                                         
                                         console.log(`[Codebase Crawler] ✅ Orchestrated fix applied: ${filePath}:${issue.line} (pipeline: ${orchestrationResult.pipelineId})`);
                                         continue; // Skip to next issue
+                                } else {
+                                    // Orchestration approved but apply stage failed
+                                    console.warn(`[Codebase Crawler] ⚠️ Orchestration approved fix but apply stage failed: ${filePath}:${issue.line}`);
+                                    continue; // Skip this issue - don't fall back to legacy
                                     }
                                 } else if (orchestrationResult.success && orchestrationResult.decision.action === 'skip') {
                                     // Orchestration decided to skip this fix
                                     console.log(`[Codebase Crawler] ⏭️ Orchestration skipped fix: ${filePath}:${issue.line} - ${orchestrationResult.decision.reason || 'Low priority'}`);
                                     continue; // Skip to next issue
+                            } else {
+                                // Orchestration failed or returned unexpected result
+                                console.warn(`[Codebase Crawler] ⚠️ Orchestration failed or returned unexpected result: ${filePath}:${issue.line} - ${orchestrationResult.error || 'Unknown error'}`);
+                                continue; // Skip this issue - don't fall back to legacy
                                 }
                             } catch (err) {
-                                // Orchestration failed, fall through to legacy fix flow
-                                console.warn(`[Codebase Crawler] ⚠️ Orchestration failed, falling back to legacy fix flow:`, err.message);
-                            }
-                        } else {
-                            // Explicitly disabled, use legacy path
-                            console.log(`[Codebase Crawler] 📋 Using legacy fix flow (orchestration disabled)`);
+                            // Orchestration service error - log and skip (no legacy fallback)
+                            console.error(`[Codebase Crawler] ❌ Orchestration service error: ${filePath}:${issue.line} - ${err.message}`);
+                            console.error(`[Codebase Crawler] Stack: ${err.stack}`);
+                            continue; // Skip this issue - orchestration is required, no fallback
                         }
                         
-                        // Legacy fix flow (fallback if orchestration not used or failed)
-                        if (!orchestrationUsed) {
-                            // ENHANCED: Special handling for critical security issues
-                            const isCriticalSecurity = issue.type === 'security' && issue.severity === 'critical';
-                            
-                            // ROUND 10: Notify on critical issue found
-                            if (isCriticalSecurity || (issue.severity === 'critical')) {
-                                try {
-                                    const notificationService = require('./notificationService');
-                                    await notificationService.notifyCriticalIssue(issue, filePath).catch(() => {});
-                                } catch (err) {
-                                    // Notifications are optional
-                                }
-                            }
-                            
-                            if (this.stats.issuesAutoFixed <= 10 || isCriticalSecurity) {
-                                console.log(`[Codebase Crawler] 🔧 Attempting auto-fix: ${filePath}:${issue.line} - ${issue.type}/${issue.severity} - ${issue.message.substring(0, 60)}${isCriticalSecurity ? ' [CRITICAL SECURITY]' : ''}`);
-                            }
-                            try {
-                            // SPRINT 20: Use helper functions to reduce nesting complexity
-                            // Get meta-learning insights
-                            const insights = await fixHelpers.getMetaLearningInsights(issue);
-                            const languageKnowledge = await fixHelpers.getLanguageKnowledge(filePath, code);
-
-                            // PHASE 5: Try to reuse fix from similar resolved issue first (fastest)
-                            let reusedFix = await this.tryReuseFix(issue, code, filePath);
-                            
-                            if (reusedFix && reusedFix.confidence >= 0.85) {
-                                // Use the reused fix directly
-                                const validationResult = await fixApplication.applyFixWithValidation(
-                                    { code: reusedFix.code, method: reusedFix.method, confidence: reusedFix.confidence },
-                                    filePath,
-                                    code
-                                );
-                                
-                                if (validationResult.verified && fixApplication.shouldAutoApply(
-                                    { method: reusedFix.method, confidence: reusedFix.confidence },
-                                    validationResult
-                                )) {
-                                    const applyResult = await fixApplication.applyFixWithLearning(
-                                        { code: reusedFix.code, method: reusedFix.method, confidence: reusedFix.confidence },
-                                        issue,
-                                        filePath,
-                                        code
-                                    );
-                                    
-                                    if (applyResult.success) {
-                                        this.stats.issuesAutoFixed++;
-                                        fileResult.autoFixed++;
-                                        code = applyResult.code;
-                                        
-                                        // ROUND 10: Notify on critical fix applied
-                                        if (issue.severity === 'critical' || issue.type === 'security') {
-                                            try {
-                                                const notificationService = require('./notificationService');
-                                                await notificationService.notifyFixApplied(issue, reusedFix, filePath).catch(() => {});
-                                            } catch (err) {
-                                                // Notifications are optional
-                                            }
-                                        }
-                                        
-                                        if (this.stats.issuesAutoFixed <= 20) {
-                                            console.log(`[Codebase Crawler] ✅ Reused fix from ${reusedFix.source} (${(reusedFix.confidence * 100).toFixed(0)}%): ${filePath}:${issue.line}`);
-                                        }
-                                        
-                                        await fixApplication.recordSuccessfulFix(
-                                            issue,
-                                            { code: reusedFix.code, method: reusedFix.method, confidence: reusedFix.confidence },
-                                            filePath,
-                                            languageKnowledge,
-                                            insights.issueDomain,
-                                            code // Pass original code for documentation
-                                        );
-                                        continue; // Skip to next issue
-                                    }
-                                }
-                            }
-                            
-                            // Try known pattern match next (fast)
-                            let patternFixResult = null;
-                            if (knownPatterns && knownPatterns.length > 0) {
-                                const patternMatches = this.matchPatterns(code, filePath, knownPatterns);
-                                if (patternMatches.length > 0) {
-                                    // Sort by confidence (highest first)
-                                    patternMatches.sort((a, b) => b.confidence - a.confidence);
-                                    const bestMatch = patternMatches[0];
-                                    if (bestMatch && bestMatch.confidence >= 0.7) {
-                                        const fixedCode = this.applyPatternFix(code, bestMatch);
-                                        if (fixedCode !== code) {
-                                            patternFixResult = {
-                                                code: fixedCode,
-                                                method: 'pattern',
-                                                confidence: bestMatch.confidence
-                                            };
-                                        }
-                                    }
-                                }
-                            }
-                            
-                            // Fallback to simple pattern-based fix if no result
-                            if (!patternFixResult) {
-                                const simplePatternFix = await this.applyFixToCode(issue, code, filePath);
-                                // applyFixToCode returns the fixed code string or null
-                                if (simplePatternFix && typeof simplePatternFix === 'string' && simplePatternFix !== code) {
-                                    patternFixResult = {
-                                        code: simplePatternFix,
-                                        method: 'simple-pattern',
-                                        confidence: 0.75
-                                    };
-                                }
-                            }
-                            
-                            // If we have a high-confidence pattern fix, use it directly
-                            if (patternFixResult && patternFixResult.confidence >= 0.85) {
-                                // Use the pattern fix directly
-                                const validationResult = await fixApplication.applyFixWithValidation(
-                                    { code: patternFixResult.code, method: patternFixResult.method, confidence: patternFixResult.confidence },
-                                    filePath,
-                                    code
-                                );
-                                
-                                if (validationResult.verified && fixApplication.shouldAutoApply(
-                                    { method: patternFixResult.method, confidence: patternFixResult.confidence },
-                                    validationResult
-                                )) {
-                                    const applyResult = await fixApplication.applyFixWithLearning(
-                                        { code: patternFixResult.code, method: patternFixResult.method, confidence: patternFixResult.confidence },
-                                        issue,
-                                        filePath,
-                                        code
-                                    );
-                                    
-                                    if (applyResult.success) {
-                                        this.stats.issuesAutoFixed++;
-                                        fileResult.autoFixed++;
-                                        code = applyResult.code;
-                                        
-                                        if (this.stats.issuesAutoFixed <= 20) {
-                                            console.log(`[Codebase Crawler] ✅ Pattern fix applied (
-                                                ${(patternFixResult.confidence * 100).toFixed(0)}%): ${filePath}:${issue.line}`);
-                                        }
-                                        
-                                        // ROUND 12: Learn from successful pattern fix
-                                        try {
-                                            const patternEvolutionService = require('./patternEvolutionService');
-                                            const knownPatterns = await this.getKnownPatterns();
-                                            if (knownPatterns && knownPatterns.length > 0) {
-                                                const matchingPattern = knownPatterns.find(p => 
-                                                    p.error_type === issue.type
-                                                );
-                                                if (matchingPattern) {
-                                                    await patternEvolutionService.learnFromOutcome(
-                                                        matchingPattern,
-                                                        issue,
-                                                        { code: patternFixResult.code, method: patternFixResult.method, confidence: patternFixResult.confidence },
-                                                        { success: true, applied: true }
-                                                    );
-                                                }
-                                            }
-                                        } catch (err) {
-                                            // Pattern evolution optional
-                                        }
-                                        
-                                        await fixApplication.recordSuccessfulFix(
-                                            issue,
-                                            { code: patternFixResult.code, method: patternFixResult.method, confidence: patternFixResult.confidence },
-                                            filePath,
-                                            languageKnowledge,
-                                            insights.issueDomain
-                                        );
-                                        continue; // Skip to next issue
-                                    }
-                                }
-                            }
-                            
-                            // Fallback to simple pattern-based fix if no known pattern or pattern fix failed
-                            const patternFix = patternFixResult?.code || await this.applyFixToCode(issue, code, filePath);
-                            
-                            // Generate fix using helper (handles all fix strategies)
-                            // Pass applyLLMFix method for transformation
-                            const fixResult = await fixHelpers.generateFix(issue, code, filePath, patternFix, insights, this.applyLLMFix.bind(this));
-                            
-                            if (!fixResult || !fixResult.success) {
-                                // ENHANCED: Even if generateFix fails, try a simple fix attempt
-                                // Don't give up - try to fix it anyway
-                                try {
-                                    const simpleFix = await this.applyFixToCode(issue, code, filePath);
-                                    if (simpleFix && simpleFix !== code) {
-                                        // We have a simple fix, use it
-                                        const applyResult = await fixApplication.applyFixWithLearning(
-                                            { code: simpleFix, method: 'simple', confidence: 0.5 },
-                                            issue,
-                                            filePath,
-                                            code
-                                        );
-                                        
-                                        if (applyResult.success) {
-                                            this.stats.issuesAutoFixed++;
-                                            fileResult.autoFixed++;
-                                            code = applyResult.code;
-                                            continue;
-                                        }
-                                    }
-                                } catch (err) {
-                                    // Ignore simple fix errors
-                                }
-                                
-                            // Couldn't generate fix - try extreme issue router
-                            // ENHANCED: Route to specialized background agents
-                            const extremeIssueRouter = require('./extremeIssueRouter');
-                            const extremeResult = await extremeIssueRouter.routeExtremeIssue(
-                                issue,
-                                code,
-                                filePath,
-                                { insights, languageKnowledge }
-                            );
-                            
-                            if (extremeResult && extremeResult.success) {
-                                // Extreme issue router succeeded!
-                                const applyResult = await fixApplication.applyFixWithLearning(
-                                    { code: extremeResult.fixedCode, method: extremeResult.agent, confidence: extremeResult.confidence || 0.7 },
-                                    issue,
-                                    filePath,
-                                    code
-                                );
-                                
-                                if (applyResult.success) {
-                                    this.stats.issuesAutoFixed++;
-                                    fileResult.autoFixed++;
-                                    code = applyResult.code;
-                                    
-                                    console.log(`[Codebase Crawler] 🚀 Extreme issue fixed by ${extremeResult.agent} (confidence: ${((extremeResult.confidence || 0.7) * 100).toFixed(0)}%): ${filePath}:${issue.line}`);
-                                    
-                                    // ROUND 11: Record analytics
-                                    try {
-                                        const codeRoachAnalytics = require('./codeRoachAnalytics');
-                                        await codeRoachAnalytics.recordFixApplied(issue, extremeResult.agent, extremeResult.confidence || 0.7);
-                                    } catch (err) {
-                                        // Analytics are optional
-                                    }
-                                    
-                                    await fixApplication.recordSuccessfulFix(
-                                        issue,
-                                        { code: extremeResult.fixedCode, method: extremeResult.agent, confidence: extremeResult.confidence || 0.7 },
-                                        filePath,
-                                        languageKnowledge,
-                                        insights.issueDomain
-                                    );
-                                    continue;
-                                }
-                            }
-                            
-                            // All attempts failed, mark for review
-                            // ROUND 7: Calculate priority before adding to review queue
-                            let priority = { level: 'medium', score: 50 };
-                            if (issuePrioritizationService && typeof issuePrioritizationService.calculatePriority === 'function') {
-                                try {
-                                    priority = issuePrioritizationService.calculatePriority(issue, {
-                                        filePath,
-                                        lineCount: issue.endLine ? issue.endLine - issue.line : 1,
-                                        extremeRouterAttempted: true,
-                                        extremeRouterFailed: !extremeResult || !extremeResult.success
-                                    });
-                                } catch (err) {
-                                    // Use default priority
-                                }
-                            }
-                            issue.priority = priority;
-                            issue.extremeRouterAttempted = true;
-                            
+                        // LEGACY FIX FLOW REMOVED - Original Objective: Replace individual fix steps with orchestration pipeline
+                        // All fixes now go through orchestration service only
+                        // If you need legacy behavior, ensure orchestration service is available and working
+                        } catch (outerFixErr) {
+                            // Outer error handler - should not normally be reached
+                            console.error(`[Codebase Crawler] Unexpected error in fix flow: ${filePath}:${issue.line}:`, outerFixErr.message);
+                            // Mark for review
                             this.stats.issuesNeedingReview++;
                             fileResult.needsReview++;
                             fileResult.issues.push(issue);
                             continue;
-                            }
-
-                            const { fixedCode, confidence: fixConfidence, method: fixMethod } = fixResult;
-                            
-                            // DEBUG: Log fix generation success
-                            if (this.stats.issuesAutoFixed <= 5) {
-                                console.log(`[Codebase Crawler] 🔧 Fix generated: ${filePath}:${issue.line} - method: ${fixMethod}, confidence: ${(fixConfidence * 100).toFixed(0)}%`);
-                            }
-                            
-                            // ENHANCED: Build confidence for critical security fixes
-                            let finalConfidence = fixConfidence;
-                            let confidenceDetails = null;
-                            const isCriticalSecurity = issue.type === 'security' && issue.severity === 'critical';
-                            
-                            if (isCriticalSecurity) {
-                                const securityFixConfidenceBuilder = require('./securityFixConfidenceBuilder');
-                                const confidenceResult = await securityFixConfidenceBuilder.buildConfidenceForSecurityFix(
-                                    issue,
-                                    code,
-                                    filePath,
-                                    { code: fixedCode, confidence: fixConfidence, method: fixMethod }
-                                );
-                                
-                                finalConfidence = confidenceResult.confidence;
-                                confidenceDetails = confidenceResult;
-                                
-                                console.log(`[Codebase Crawler] 🔒 Security fix confidence: ${(finalConfidence * 100).toFixed(0)}% (${confidenceResult.recommendation.action})`);
-                            }
-                            
-                            if (this.stats.issuesAutoFixed <= 10 || isCriticalSecurity) {
-                                console.log(`[Codebase Crawler] ✅ Fix generated (confidence: ${(finalConfidence * 100).toFixed(0)}%, method: ${fixMethod})${isCriticalSecurity ? ' [SECURITY]' : ''}`);
-                            }
-                            
-                            // ROUND 6: Generate fix preview for complex fixes
-                            let preview = null;
-                            if (fixMethod === 'multi-step' || fixConfidence < 0.7) {
-                                try {
-                                    const fixPreviewService = require('./fixPreviewService');
-                                    preview = await fixPreviewService.generatePreview(
-                                        code,
-                                        fixedCode,
-                                        issue,
-                                        filePath,
-                                        { confidence: fixConfidence }
-                                    );
-                                } catch (err) {
-                                    // Preview generation failed, continue without it
-                                }
-                            }
-                            
-                            // NEW: Predict impact before applying (December 2025)
-                            let impactPrediction = null;
-                            if (fixImpactPredictionService) {
-                                try {
-                                    impactPrediction = await fixImpactPredictionService.predictImpact(
-                                        { code: fixedCode, confidence: finalConfidence },
-                                        {
-                                            filePath,
-                                            originalCode: code,
-                                            fixedCode,
-                                            issue,
-                                            projectId: options.projectId
-                                        }
-                                    );
-                                    
-                                    // Log high-risk fixes
-                                    if (impactPrediction.success && impactPrediction.impact.riskLevel === 'high') {
-                                        console.warn(`[Codebase Crawler] ⚠️  High-risk fix detected: ${impactPrediction.impact.affectedFiles.total} files affected, ${impactPrediction.impact.breakingChanges.length} breaking changes`);
-                                    }
-                                } catch (err) {
-                                    // Impact prediction optional
-                                }
-                            }
-                            
-                            // NEW: Calibrate confidence (December 2025)
-                            let calibratedConfidence = finalConfidence;
-                            if (fixConfidenceCalibrationService) {
-                                try {
-                                    const calibration = await fixConfidenceCalibrationService.calibrateConfidence(
-                                        finalConfidence,
-                                        {
-                                            method: fixMethod,
-                                            domain: insights.issueDomain,
-                                            filePath,
-                                            issueType: issue.type
-                                        }
-                                    );
-                                    calibratedConfidence = calibration.calibrated;
-                                    
-                                    if (Math.abs(calibratedConfidence - finalConfidence) > 0.1) {
-                                        console.log(`[Codebase Crawler] 📊 Confidence calibrated: ${(finalConfidence * 100).toFixed(0)}% → ${(calibratedConfidence * 100).toFixed(0)}%`);
-                                    }
-                                } catch (err) {
-                                    // Calibration optional
-                                }
-                            }
-                            
-                            // NEW: Cost-benefit analysis (December 2025)
-                            let costBenefit = null;
-                            if (fixCostBenefitAnalysisService && options.analyzeCostBenefit !== false) {
-                                try {
-                                    costBenefit = await fixCostBenefitAnalysisService.analyzeCostBenefit(
-                                        { code: fixedCode, confidence: calibratedConfidence },
-                                        {
-                                            issue,
-                                            filePath,
-                                            originalCode: code,
-                                            fixedCode,
-                                            estimatedFixTime: 1, // Estimate
-                                            projectId: options.projectId
-                                        }
-                                    );
-                                    
-                                    // Log low ROI fixes
-                                    if (costBenefit.success && costBenefit.analysis.roi < 0) {
-                                        console.warn(`[Codebase Crawler] 💰 Negative ROI fix: cost=$${costBenefit.analysis.fixCost.total.toFixed(2)}, benefit=$${costBenefit.analysis.benefit.total.toFixed(2)}`);
-                                    }
-                                } catch (err) {
-                                    // Cost-benefit optional
-                                }
-                            }
-                            
-                            // SPRINT 20: Use helper for fix application (reduces nesting)
-                            // ROUND 6: Enhanced validation with confidence scoring
-                            // ENHANCED: Use calibrated confidence for decision making
-                            const validationResult = await fixApplication.applyFixWithValidation(
-                                { code: fixedCode, method: fixMethod, confidence: calibratedConfidence, type: issue.type, severity: issue.severity },
-                                filePath,
-                                code
-                            );
-                            
-                            // DEBUG: Log validation results
-                            if (this.stats.issuesAutoFixed <= 5) {
-                                console.log(`[Codebase Crawler] 🔍 Validation: verified=${validationResult.verified}, applied=${validationResult.applied}, errors=${validationResult.errors?.length || 0}, method=${fixMethod}, confidence=${(finalConfidence * 100).toFixed(0)}%`);
-                                if (validationResult.errors && validationResult.errors.length > 0) {
-                                    console.log(`[Codebase Crawler] ⚠️  Validation errors: ${validationResult.errors.slice(0, 3).join(', ')}`);
-                                }
-                            }
-                            
-                            if (validationResult.errors.length > 0 && (this.stats.issuesAutoFixed <= 10 || isCriticalSecurity)) {
-                                console.warn(`[Codebase Crawler] Fix validation failed: ${validationResult.errors.join(', ')}${isCriticalSecurity ? ' [SECURITY]' : ''}`);
-                            }
-                            
-                            // ENHANCED: For critical security, use higher threshold but still attempt if confident enough
-                            let shouldAutoApply;
-                            if (isCriticalSecurity) {
-                                const securityFixConfidenceBuilder = require('./securityFixConfidenceBuilder');
-                                const minConfidence = securityFixConfidenceBuilder.getMinConfidenceForCritical();
-                                
-                                // Apply if confidence is high enough and validation passed
-                                shouldAutoApply = finalConfidence >= minConfidence && 
-                                                 (validationResult.verified || finalConfidence >= 0.85);
-                                
-                                if (shouldAutoApply) {
-                                    console.log(`[Codebase Crawler] 🔒 Critical security fix approved (confidence: ${(finalConfidence * 100).toFixed(0)}% >= ${(minConfidence * 100).toFixed(0)}%)`);
-                                }
-                            } else {
-                                // Use calibrated confidence for decision
-                                shouldAutoApply = fixApplication.shouldAutoApply(
-                                    { method: fixMethod, confidence: calibratedConfidence },
-                                    validationResult
-                                );
-                                
-                                // Consider impact prediction in decision
-                                if (impactPrediction && impactPrediction.success) {
-                                    if (impactPrediction.impact.riskLevel === 'high' && impactPrediction.impact.breakingChanges.length > 0) {
-                                        // High risk with breaking changes - require higher confidence
-                                        shouldAutoApply = shouldAutoApply && calibratedConfidence >= 0.9;
-                                    }
-                                }
-                                
-                                // Consider cost-benefit in decision
-                                if (costBenefit && costBenefit.success) {
-                                    if (costBenefit.analysis.roi < 0) {
-                                        // Negative ROI - don't auto-apply
-                                        shouldAutoApply = false;
-                                    } else if (costBenefit.analysis.recommendation.action === 'fix_immediately') {
-                                        // High ROI - more likely to apply
-                                        shouldAutoApply = shouldAutoApply || calibratedConfidence >= 0.7;
-                                    }
-                                }
-                                
-                                // DEBUG: Log shouldAutoApply decision
-                                if (this.stats.issuesAutoFixed <= 5) {
-                                    console.log(`[Codebase Crawler] 🤔 shouldAutoApply: ${shouldAutoApply} (method: ${fixMethod}, confidence: ${(finalConfidence * 100).toFixed(0)}%)`);
-                                }
-                            }
-                            
-                            // ULTRA-AGGRESSIVE: Apply fixes even if validation has minor issues
-                            // We have fallbacks and learning, so it's better to try than not
-                            if (shouldAutoApply) {
-                                // SPRINT 20: Use helper for fix application with learning
-                                const applyResult = await fixApplication.applyFixWithLearning(
-                                    { code: fixedCode, method: fixMethod, confidence: finalConfidence },
-                                    issue,
-                                    filePath,
-                                    code
-                                );
-                                
-                                // DEBUG: Log apply result
-                                if (this.stats.issuesAutoFixed <= 5) {
-                                    console.log(`[Codebase Crawler] 📝 Apply result: success=${applyResult.success}, applied=${applyResult.applied}, error=${applyResult.error || 'none'}, fallback=${applyResult.fallback || false}`);
-                                }
-                                
-                                if (applyResult.success) {
-                                    this.stats.issuesAutoFixed++;
-                                    fileResult.autoFixed++;
-                                    code = applyResult.code; // Update for next fix
-                                    
-                                    if (this.stats.issuesAutoFixed <= 20 || isCriticalSecurity) {
-                                        const method = applyResult.fallback ? 'simple' : fixMethod;
-                                        console.log(`[Codebase Crawler] ✅ Auto-fixed & validated (${method}, ${(finalConfidence * 100).toFixed(0)}%): ${filePath}:${issue.line} - ${issue.message.substring(0, 50)}${isCriticalSecurity ? ' [CRITICAL SECURITY FIXED]' : ''}`);
-                                    }
-                                    
-                                    // ENHANCED: Record security fix result for confidence building
-                                    if (isCriticalSecurity) {
-                                        const securityFixConfidenceBuilder = require('./securityFixConfidenceBuilder');
-                                        securityFixConfidenceBuilder.recordSecurityFixResult(issue, true, finalConfidence);
-                                    }
-                                    
-                                    // SPRINT 20: Use helper to record successful fix
-                                    await fixApplication.recordSuccessfulFix(
-                                        issue,
-                                        { code: fixedCode, method: fixMethod, confidence: calibratedConfidence },
-                                        filePath,
-                                        languageKnowledge,
-                                        insights.issueDomain
-                                    );
-                                    
-                                    // NEW: Record outcome for calibration (December 2025)
-                                    if (fixConfidenceCalibrationService && applyResult.fixId) {
-                                        try {
-                                            await fixConfidenceCalibrationService.recordOutcome(
-                                                applyResult.fixId,
-                                                calibratedConfidence,
-                                                true, // Success
-                                                {
-                                                    method: fixMethod,
-                                                    domain: insights.issueDomain,
-                                                    filePath,
-                                                    issueType: issue.type
-                                                }
-                                            );
-                                        } catch (err) {
-                                            // Calibration recording optional
-                                        }
-                                    }
-                                    
-                                    // NEW: Start monitoring after successful fix (December 2025)
-                                    if (fixMonitoringService && applyResult.fixId) {
-                                        try {
-                                            await fixMonitoringService.startMonitoring(
-                                                applyResult.fixId,
-                                                { code: fixedCode, method: fixMethod, confidence: calibratedConfidence },
-                                                {
-                                                    filePath,
-                                                    originalCode: code,
-                                                    fixedCode,
-                                                    issue,
-                                                    projectId: options.projectId
-                                                }
-                                            );
-                                        } catch (err) {
-                                            // Monitoring optional
-                                        }
-                                    }
-                                    
-                                    // NEW: Generate documentation for applied fix (December 2025)
-                                    if (fixDocumentationGenerationService && applyResult.fixId) {
-                                        try {
-                                            const docs = await fixDocumentationGenerationService.generateDocumentation(
-                                                { code: fixedCode, id: applyResult.fixId },
-                                                {
-                                                    issue,
-                                                    filePath,
-                                                    originalCode: code,
-                                                    fixedCode,
-                                                    method: fixMethod,
-                                                    confidence: calibratedConfidence
-                                                }
-                                            );
-                                            // Documentation generated, could be stored or logged
-                                        } catch (err) {
-                                            // Documentation optional
-                                        }
-                                    }
-                                } else {
-                                    // Learning cycle failed - try direct file write as fallback
-                                    // ULTRA-AGGRESSIVE: Always try to apply the fix even if learning cycle fails
-                                    try {
-                                        await fs.writeFile(filePath, fixedCode, 'utf8');
-                                        this.stats.issuesAutoFixed++;
-                                        fileResult.autoFixed++;
-                                        code = fixedCode;
-                                        
-                                        if (this.stats.issuesAutoFixed <= 20 || isCriticalSecurity) {
-                                            console.log(`[Codebase Crawler] ✅ Direct fix applied (fallback after learning cycle failed): ${filePath}:${issue.line} - ${issue.message.substring(0, 50)}`);
-                                        }
-                                        
-                                        // Record as successful even though learning cycle failed
-                                        await fixApplication.recordSuccessfulFix(
-                                            issue,
-                                            { code: fixedCode, method: fixMethod, confidence: finalConfidence },
-                                            filePath,
-                                            languageKnowledge,
-                                            insights.issueDomain
-                                        );
-                                        
-                                        // Record security fix result
-                                        if (isCriticalSecurity) {
-                                            const securityFixConfidenceBuilder = require('./securityFixConfidenceBuilder');
-                                            securityFixConfidenceBuilder.recordSecurityFixResult(issue, true, finalConfidence);
-                                        }
-                                    } catch (writeErr) {
-                                        // All attempts failed
-                                        if (isCriticalSecurity) {
-                                            const securityFixConfidenceBuilder = require('./securityFixConfidenceBuilder');
-                                            securityFixConfidenceBuilder.recordSecurityFixResult(issue, false, finalConfidence);
-                                        }
-                                        
-                                        // ROUND 7: Calculate priority before adding to review queue
-                                        let priority = { level: 'medium', score: 50 };
-                                        if (issuePrioritizationService && typeof issuePrioritizationService.calculatePriority === 'function') {
-                                            try {
-                                                priority = issuePrioritizationService.calculatePriority(issue, {
-                                                    filePath,
-                                                    lineCount: issue.endLine ? issue.endLine - issue.line : 1,
-                                                    fixConfidence: finalConfidence,
-                                                    validationCycleFailed: true
-                                                });
-                                            } catch (err) {
-                                                // Use default priority
-                                            }
-                                        }
-                                        issue.priority = priority;
-                                        
-                                        this.stats.issuesNeedingReview++;
-                                        fileResult.needsReview++;
-                                        
-                                        if (this.stats.issuesAutoFixed <= 10 || isCriticalSecurity) {
-                                            console.log(`[Codebase Crawler] ⚠️  All fix attempts failed: ${writeErr.message}${isCriticalSecurity ? ' [SECURITY]' : ''}`);
-                                        }
-                                        
-                                        // SPRINT 20: Use helper to record failed fix
-                                        await fixApplication.recordFailedFix(
-                                            issue,
-                                            { code: fixedCode, method: fixMethod, confidence: finalConfidence },
-                                            filePath,
-                                            applyResult.error
-                                        );
-                                    }
-                                }
-                            } else {
-                                // Fix validation failed or confidence too low
-                                // ULTRA-AGGRESSIVE: Try to apply anyway if we have any fix at all
-                                // Better to try than to leave issues unfixed
-                                if (finalConfidence >= 0.25) {
-                                    // Very low confidence but try it anyway
-                                    try {
-                                        const applyResult = await fixApplication.applyFixWithLearning(
-                                            { code: fixedCode, method: fixMethod, confidence: finalConfidence },
-                                            issue,
-                                            filePath,
-                                            code
-                                        );
-                                        
-                                        if (applyResult.success) {
-                                            this.stats.issuesAutoFixed++;
-                                            fileResult.autoFixed++;
-                                            code = applyResult.code;
-                                            
-                                            if (this.stats.issuesAutoFixed <= 20) {
-                                                console.log(`[Codebase Crawler] ✅ Low-confidence fix applied (${(finalConfidence * 100).toFixed(0)}%): ${filePath}:${issue.line} - ${issue.message.substring(0, 50)}`);
-                                            }
-                                            
-                                            await fixApplication.recordSuccessfulFix(
-                                                issue,
-                                                { code: fixedCode, method: fixMethod, confidence: finalConfidence },
-                                                filePath,
-                                                languageKnowledge,
-                                                insights.issueDomain
-                                            );
-                                        } else {
-                                            // Learning cycle failed, try direct write
-                                            try {
-                                                await fs.writeFile(filePath, fixedCode, 'utf8');
-                                                this.stats.issuesAutoFixed++;
-                                                fileResult.autoFixed++;
-                                                code = fixedCode;
-                                                
-                                                if (this.stats.issuesAutoFixed <= 20) {
-                                                    console.log(`[Codebase Crawler] ✅ Direct fix applied (low confidence, ${(finalConfidence * 100).toFixed(0)}%): ${filePath}:${issue.line}`);
-                                                }
-                                                
-                                                await fixApplication.recordSuccessfulFix(
-                                                    issue,
-                                                    { code: fixedCode, method: fixMethod, confidence: finalConfidence },
-                                                    filePath,
-                                                    languageKnowledge,
-                                                    insights.issueDomain
-                                                );
-                                            } catch (writeErr) {
-                                                // All attempts failed - mark for review
-                                                const priority = issuePrioritizationService.calculatePriority(issue, {
-                                                    filePath,
-                                                    lineCount: issue.endLine ? issue.endLine - issue.line : 1,
-                                                    fixConfidence,
-                                                    validationFailed: true
-                                                });
-                                                issue.priority = priority;
-                                                
-                                                this.stats.issuesNeedingReview++;
-                                                fileResult.needsReview++;
-                                                
-                                                await fixApplication.recordFailedFix(
-                                                    issue,
-                                                    { code: fixedCode, method: fixMethod, confidence: fixConfidence },
-                                                    filePath,
-                                                    `All fix attempts failed: ${writeErr.message}`
-                                                );
-                                            }
-                                        }
-                                    } catch (err) {
-                                        // Try direct write as last resort
-                                        try {
-                                            await fs.writeFile(filePath, fixedCode, 'utf8');
-                                            this.stats.issuesAutoFixed++;
-                                            fileResult.autoFixed++;
-                                            code = fixedCode;
-                                            
-                                            if (this.stats.issuesAutoFixed <= 20) {
-                                                console.log(`[Codebase Crawler] ✅ Direct fix applied (error fallback): ${filePath}:${issue.line}`);
-                                            }
-                                            
-                                            await fixApplication.recordSuccessfulFix(
-                                                issue,
-                                                { code: fixedCode, method: fixMethod, confidence: finalConfidence },
-                                                filePath,
-                                                languageKnowledge,
-                                                insights.issueDomain
-                                            );
-                                        } catch (writeErr) {
-                                            // All attempts failed - mark for review
-                                            const priority = issuePrioritizationService.calculatePriority(issue, {
-                                                filePath,
-                                                lineCount: issue.endLine ? issue.endLine - issue.line : 1,
-                                                fixConfidence,
-                                                validationFailed: true
-                                            });
-                                            issue.priority = priority;
-                                            
-                                            this.stats.issuesNeedingReview++;
-                                            fileResult.needsReview++;
-                                            
-                                            await fixApplication.recordFailedFix(
-                                                issue,
-                                                { code: fixedCode, method: fixMethod, confidence: fixConfidence },
-                                                filePath,
-                                                `All fix attempts failed: ${writeErr.message}`
-                                            );
-                                        }
-                                    }
-                                } else {
-                                    // Confidence too low - mark for review
-                                    let priority = { level: 'medium', score: 50 };
-                                    if (issuePrioritizationService && typeof issuePrioritizationService.calculatePriority === 'function') {
-                                        try {
-                                            priority = issuePrioritizationService.calculatePriority(issue, {
-                                                filePath,
-                                                lineCount: issue.endLine ? issue.endLine - issue.line : 1,
-                                                fixConfidence,
-                                                validationFailed: true
-                                            });
-                                        } catch (err) {
-                                            // Use default priority
-                                        }
-                                    }
-                                    issue.priority = priority;
-                                    
-                                    if (this.stats.issuesAutoFixed <= 10) {
-                                        console.log(`[Codebase Crawler] ⚠️  Fix not applied (${fixMethod}, ${(fixConfidence * 100).toFixed(0)}% conf, verified: ${validationResult.verified}, shouldApply: ${shouldAutoApply}, priority: ${priority.level}): ${filePath}:${issue.line} - ${issue.message.substring(0, 50)}`);
-                                    }
-                                    
-                                    this.stats.issuesNeedingReview++;
-                                    fileResult.needsReview++;
-                                    
-                                    await fixApplication.recordFailedFix(
-                                        issue,
-                                        { code: fixedCode, method: fixMethod, confidence: fixConfidence },
-                                        filePath,
-                                        `Validation failed or low confidence (${(fixConfidence * 100).toFixed(0)}%, verified: ${validationResult.verified}, shouldApply: ${shouldAutoApply})`
-                                    );
-                                }
-                            }
-                            } catch (legacyFixErr) {
-                                // Legacy fix flow error - log and continue
-                                console.warn(`[Codebase Crawler] Legacy fix flow error: ${filePath}:${issue.line}:`, legacyFixErr.message);
-                            } // End of try block for legacy fix flow
-                        } // End of if (!orchestrationUsed)
-                    } catch (fixErr) {
-                            console.warn(`[Codebase Crawler] Failed to auto-fix ${filePath}:${issue.line}:`, fixErr.message);
-                            // Mark for review if auto-fix fails
-                            // ROUND 7: Calculate priority before adding to review queue
-                            let priority = { level: 'medium', score: 50 };
-                            if (issuePrioritizationService && typeof issuePrioritizationService.calculatePriority === 'function') {
-                                try {
-                                    priority = issuePrioritizationService.calculatePriority(issue, {
-                                        filePath,
-                                        lineCount: issue.endLine ? issue.endLine - issue.line : 1,
-                                        fixError: fixErr.message
-                                    });
-                                } catch (err) {
-                                    // Use default priority
-                                }
-                            }
-                            issue.priority = priority;
-                            
-                            this.stats.issuesNeedingReview++;
-                            fileResult.needsReview++;
-                            
-                            // SPRINT 20: Use helper to record failed fix
-                            await fixApplication.recordFailedFix(issue, null, filePath, fixErr.message);
                         }
                     } else {
-                        // Issue that can't be auto-fixed - try extreme issue router anyway
-                        // ENHANCED: Even "can't auto-fix" issues get routed to specialized agents
-                        const extremeIssueRouter = require('./extremeIssueRouter');
-                        const extremeResult = await extremeIssueRouter.routeExtremeIssue(
-                            issue,
-                            code,
-                            filePath,
-                            { insights, languageKnowledge, cannotAutoFix: true }
-                        );
-                        
-                        if (extremeResult && extremeResult.success) {
-                            // Extreme issue router succeeded!
-                            const applyResult = await fixApplication.applyFixWithLearning(
-                                { code: extremeResult.fixedCode, method: extremeResult.agent, confidence: extremeResult.confidence || 0.7 },
-                                issue,
-                                filePath,
-                                code
-                            );
-                            
-                            if (applyResult.success) {
-                                this.stats.issuesAutoFixed++;
-                                fileResult.autoFixed++;
-                                code = applyResult.code;
-                                
-                                console.log(`[Codebase Crawler] 🚀 Extreme issue fixed by ${extremeResult.agent} (confidence: ${((extremeResult.confidence || 0.7) * 100).toFixed(0)}%): ${filePath}:${issue.line}`);
-                                
-                                await fixApplication.recordSuccessfulFix(
-                                    issue,
-                                    { code: extremeResult.fixedCode, method: extremeResult.agent, confidence: extremeResult.confidence || 0.7 },
-                                    filePath,
-                                    languageKnowledge,
-                                    insights.issueDomain
-                                );
-                                continue;
-                            }
-                        }
-                        
-                        // ROUND 7: Calculate priority - these are usually high priority
-                        let priority = { level: 'high', score: 75 };
-                        if (issuePrioritizationService && typeof issuePrioritizationService.calculatePriority === 'function') {
-                            try {
-                                priority = issuePrioritizationService.calculatePriority(issue, {
-                                    filePath,
-                                    lineCount: issue.endLine ? issue.endLine - issue.line : 1,
-                                    cannotAutoFix: true,
-                                    extremeRouterAttempted: true,
-                                    extremeRouterFailed: !extremeResult || !extremeResult.success
-                                });
-                            } catch (err) {
-                                // Use default priority
-                            }
-                        }
-                        issue.priority = priority;
-                        issue.extremeRouterAttempted = true;
-                        
+                        // Auto-fix disabled for this issue
                         this.stats.issuesNeedingReview++;
                         fileResult.needsReview++;
+                        fileResult.issues.push(issue);
                     }
+                } // End of for loop
+            } // End of if (!useMultiAgentTeams || fileResult.autoFixed === 0)
+            } // End of if (issues.length > 0)
+            
+            // Return file result
+            return fileResult;
+        } catch (fileErr) {
+            console.error(`[Codebase Crawler] Error processing file ${filePath}:`, fileErr.message);
+            return {
+                filePath,
+                issues: [],
+                autoFixed: 0,
+                needsReview: 0,
+                error: fileErr.message
+            };
+        }
+    }
+    
+    /**
+     * PHASE 2 OPTIMIZATION: Match code against known patterns
+     * ENHANCEMENT: Batch pattern matching for better performance
+     */
+    matchPatterns(code, filePath, patterns) {
+        const matches = [];
+        
+        // ENHANCEMENT: Pre-compile all regex patterns for batch matching
+        const compiledPatterns = [];
+        for (const pattern of patterns) {
+            try {
+                const errorPattern = pattern.error_pattern;
+                if (!errorPattern || !errorPattern.pattern) continue;
+                
+                const regex = new RegExp(errorPattern.pattern, errorPattern.flags || 'g');
+                compiledPatterns.push({
+                    pattern,
+                    regex,
+                    errorPattern
+                });
+                                            } catch (err) {
+                // Pattern compilation failed, skip
+                continue;
+            }
+        }
+        
+        // Match all patterns in one pass
+        for (const compiled of compiledPatterns) {
+            try {
+                const matchesInCode = compiled.regex.exec(code);
+                if (matchesInCode) {
+                    matches.push({
+                        pattern: compiled.pattern,
+                        matches: matchesInCode,
+                        confidence: Math.min(0.9, 0.6 + (compiled.pattern.occurrence_count / 100) * 
+                            0.3), // Higher confidence for frequent patterns
+                        fix: compiled.pattern.best_fix
+                    });
+                }
+            } catch (err) {
+                // Match failed, skip
+                continue;
+            }
+        }
+        
+        // Sort by confidence (highest first) for better fix selection
+        matches.sort((a, b) => b.confidence - a.confidence);
+        
+        return matches;
+    }
 
-                    fileResult.issues.push(issue);
-                    }
-                } // End of individual processing (if multi-agent teams not used)
-
-                this.scanResults.push(fileResult);
+    /**
+     * PHASE 2 OPTIMIZATION: Apply pattern fix to code
+     */
+    applyPatternFix(code, match) {
+        if (!match || !match.pattern) {
+            return code;
+        }
+        
+        try {
+            const fix = match.fix || match.pattern.best_fix;
+            if (!fix) {
+                return code;
             }
             
-            // PHASE 3: Update cache after analysis
-            if (skipUnchanged) {
-                const fileHash = await this.calculateFileHash(filePath, code);
-                const stats = await fs.stat(filePath);
-                const issueCount = issues?.length || 0;
-                await this.updateFileCache(filePath, fileHash, issueCount, stats.mtime.toISOString());
+            // Handle different fix formats
+            let replacement = null;
+            if (typeof fix === 'string') {
+                // Simple string replacement format: "before → after"
+                if (fix.includes('→')) {
+                    const parts = fix.split('→').map(s => s.trim());
+                    if (parts.length === 2) {
+                        replacement = parts[1];
+                        const beforePattern = parts[0];
+                        // Try to find and replace
+                        if (code.includes(beforePattern)) {
+                            return code.replace(beforePattern, replacement);
+                        }
+                    }
+                } else {
+                    // Assume it's a replacement string
+                    replacement = fix;
+                }
+            } else if (fix.replacement) {
+                // Object format with replacement property
+                replacement = fix.replacement;
             }
-        } catch (err) {
-            this.stats.errors++;
-            console.error(`[Codebase Crawler] Error analyzing ${filePath}:`, err.message);
+            
+            if (!replacement) {
+                return code;
+            }
+            
+            // Try to apply the fix using the pattern
+            const errorPattern = match.pattern.error_pattern;
+            if (errorPattern && errorPattern.pattern) {
+                const regex = new RegExp(errorPattern.pattern, errorPattern.flags || 'g');
+                return code.replace(regex, replacement);
+            }
+            
+            // Fallback: try simple string replacement
+            if (typeof fix === 'string' && code.includes(fix.split('→')[0]?.trim())) {
+                const before = fix.split('→')[0].trim();
+                return code.replace(before, replacement);
+            }
+            
+            return code;
+                                } catch (err) {
+            console.warn(`[Codebase Crawler] Failed to apply pattern fix: ${err.message}`);
+            return code;
         }
     }
 

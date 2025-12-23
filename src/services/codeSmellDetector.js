@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/codeSmellDetector.js
- * Last Sync: 2025-12-14T07:30:45.532Z
+ * Last Sync: 2025-12-20T22:26:03.322Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -20,45 +20,20 @@ const codebaseSearch = require('./codebaseSearch');
 
 class CodeSmellDetector {
     constructor() {
-        this.supabase = null;
-        this.smellPatterns = [
-            {
-                name: 'Long Method',
-                pattern: /function\s+\w+[^{]*\{[^}]{500,}/,
-                fix: 'extract-method',
-                severity: 'medium'
-            },
-            {
-                name: 'Large Class',
-                pattern: /class\s+\w+[^{]*\{[^}]{2000,}/,
-                fix: 'extract-class',
-                severity: 'high'
-            },
-            {
-                name: 'Duplicate Code',
-                pattern: null, // Detected via similarity
-                fix: 'extract-function',
-                severity: 'medium'
-            },
-            {
-                name: 'Magic Numbers',
-                pattern: /\b\d{3,}\b/,
-                fix: 'extract-constant',
-                severity: 'low'
-            },
-            {
-                name: 'Deep Nesting',
-                pattern: /\{[^{}]*\{[^{}]*\{[^{}]*\{/,
-                fix: 'reduce-nesting',
-                severity: 'medium'
+        // Only create Supabase client if credentials are available
+        if (config.supabase.serviceRoleKey) {
+            try {
+                this.supabase = createClient(
+                    config.supabase.url,
+                    config.supabase.serviceRoleKey
+                );
+            } catch (error) {
+                console.warn('[codeSmellDetector] Supabase not configured:', error.message);
+                this.supabase = null;
             }
-        ];
-        
-        if (config.supabase?.url && config.supabase?.serviceRoleKey) {
-            this.supabase = createClient(
-                config.supabase.url,
-                config.supabase.serviceRoleKey
-            );
+        } else {
+            console.warn('[codeSmellDetector] Supabase credentials not configured. Service will be disabled.');
+            this.supabase = null;
         }
     }
 

@@ -1,4 +1,14 @@
 /**
+ * Code Roach Standalone - Synced from Smugglers Project
+ * Source: server/services/issueStorageService.js
+ * Last Sync: 2025-12-19T23:29:57.621Z
+ * 
+ * NOTE: This file is synced from the Smugglers project.
+ * Changes here may be overwritten on next sync.
+ * For standalone-specific changes, see .standalone-overrides/
+ */
+
+/**
  * Issue Storage Service
  * Handles storing and retrieving issues from database
  * Now uses resilient databaseService with circuit breakers and retry logic
@@ -16,6 +26,15 @@ class IssueStorageService {
      */
     async storeIssue(issue, projectId) {
         try {
+            // Auto-mark as resolved if issue was auto-fixed
+            let reviewStatus = issue.reviewStatus || 'pending';
+            if (issue.type === 'auto-fixed' || issue.error_type === 'auto-fixed') {
+                reviewStatus = 'resolved';
+            } else if (issue.fixApplied && issue.fixSuccess !== false) {
+                // Also mark as resolved if fix was applied and successful
+                reviewStatus = 'resolved';
+            }
+            
             const { data, error } = await databaseService.insert('code_roach_issues', {
                 project_id: projectId,
                 file_path: issue.file || issue.filePath,
@@ -26,7 +45,7 @@ class IssueStorageService {
                 error_message: issue.message,
                 error_severity: issue.severity || 'medium',
                 error_code: issue.code,
-                review_status: issue.reviewStatus || 'pending',
+                review_status: reviewStatus,
                 fix_applied: issue.fixApplied,
                 fix_method: issue.fixMethod,
                 fix_confidence: issue.fixConfidence
@@ -119,18 +138,62 @@ class IssueStorageService {
                 queryFilters.push({ column: 'file_path', operator: 'eq', value: filters.filePath });
             }
 
-            const { data, error } = await databaseService.query('code_roach_issues', {
+            const { data, error, count } = await databaseService.query('code_roach_issues', {
                 select: '*',
                 filters: queryFilters,
                 order: { column: 'created_at', ascending: false },
                 limit: filters.limit,
-                offset: filters.offset
+                offset: filters.offset,
+                count: 'exact'
             });
 
             if (error) throw error;
-            return data || [];
+            // Return data with count for pagination
+            const result = data || [];
+            result._count = count || result.length;
+            return result;
         } catch (err) {
             console.error('[Issue Storage] Get issues error:', err.message);
+            return [];
+        }
+    }
+
+    /**
+     * Get all issues (with optional filters, no project filter)
+     */
+    async getAllIssues(filters = {}) {
+        try {
+            const queryFilters = [];
+
+            if (filters.status) {
+                queryFilters.push({ column: 'review_status', operator: 'eq', value: filters.status });
+            }
+            if (filters.severity) {
+                queryFilters.push({ column: 'error_severity', operator: 'eq', value: filters.severity });
+            }
+            if (filters.type) {
+                queryFilters.push({ column: 'error_type', operator: 'eq', value: filters.type });
+            }
+            if (filters.filePath) {
+                queryFilters.push({ column: 'file_path', operator: 'eq', value: filters.filePath });
+            }
+
+            const { data, error, count } = await databaseService.query('code_roach_issues', {
+                select: '*',
+                filters: queryFilters,
+                order: { column: 'created_at', ascending: false },
+                limit: filters.limit || 100,
+                offset: filters.offset || 0,
+                count: 'exact'
+            });
+
+            if (error) throw error;
+            // Return data with count for pagination
+            const result = data || [];
+            result._count = count || result.length;
+            return result;
+        } catch (err) {
+            console.error('[Issue Storage] Get all issues error:', err.message);
             return [];
         }
     }

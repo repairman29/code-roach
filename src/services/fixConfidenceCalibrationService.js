@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/fixConfidenceCalibrationService.js
- * Last Sync: 2025-12-16T00:42:39.833Z
+ * Last Sync: 2025-12-20T22:26:03.331Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -20,19 +20,20 @@ const config = require('../config');
 
 class FixConfidenceCalibrationService {
     constructor() {
-        this.supabase = null;
-        this.calibrationCache = new Map();
-        this.calibrationData = {
-            byMethod: new Map(),
-            byDomain: new Map(),
-            byConfidenceBucket: new Map()
-        };
-        
-        if (config.supabase?.url && config.supabase?.serviceRoleKey) {
-            this.supabase = createClient(
-                config.supabase.url,
-                config.supabase.serviceRoleKey
-            );
+        // Only create Supabase client if credentials are available
+        if (config.supabase.serviceRoleKey) {
+            try {
+                this.supabase = createClient(
+                    config.supabase.url,
+                    config.supabase.serviceRoleKey
+                );
+            } catch (error) {
+                console.warn('[fixConfidenceCalibrationService] Supabase not configured:', error.message);
+                this.supabase = null;
+            }
+        } else {
+            console.warn('[fixConfidenceCalibrationService] Supabase credentials not configured. Service will be disabled.');
+            this.supabase = null;
         }
     }
 

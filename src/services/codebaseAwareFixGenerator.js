@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/codebaseAwareFixGenerator.js
- * Last Sync: 2025-12-14T18:32:20.345Z
+ * Last Sync: 2025-12-19T23:29:57.557Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -460,13 +460,15 @@ Code: ${code.substring(0, 300)}
 
 Return a short phrase (2-5 words) describing the intent, like "handling undefined values" or "async error handling".`;
             
-            const response = await llmService.generateOpenAI(
-                'You extract code intent from errors.',
-                prompt,
-                'gpt-4o-mini'
-            );
+            // Use new multi-provider system with cost-effective routing for intent extraction
+            const response = await llmService.generateNarrative({
+                userMessage: prompt,
+                gameStateContext: 'Extract code intent from error',
+                costMode: 'aggressive', // Use cheapest for simple intent extraction
+                source: 'code-roach-intent'
+            });
             
-            const intent = (typeof response === 'string') ? response : (response.narrative || '').trim();
+            const intent = response.narrative?.trim() || '';
             if (intent && intent.length > 5 && intent.length < 50) {
                 return intent;
             }
@@ -544,34 +546,32 @@ Return ONLY the fixed code, no explanations, no markdown, just the code.`;
 
         try {
             const systemPrompt = 'You are an expert code fixer that matches codebase patterns perfectly. Always preserve const/let/var declarations and indentation.';
-            // Try OpenAI first, fallback to Anthropic if needed
-            let response;
-            try {
-                response = await llmService.generateOpenAI(
-                    systemPrompt,
-                    prompt,
-                    'gpt-4o-mini' // Use default model
-                );
-            } catch (openaiErr) {
-                // Fallback to Anthropic if OpenAI fails
-                if (llmService.anthropicApiKey) {
-                    try {
-                        response = await llmService.generateAnthropic(
-                            systemPrompt,
-                            prompt,
-                            'claude-3-haiku-20240307'
-                        );
-                    } catch (anthropicErr) {
-                        throw new Error(`Both OpenAI and Anthropic failed: ${openaiErr.message}, ${anthropicErr.message}`);
-                    }
-                } else {
-                    throw openaiErr;
+            
+            // Use new multi-provider system with smart routing
+            // Determine cost mode based on error severity
+            const costMode = error.severity === 'critical' || error.severity === 'high' 
+                ? 'quality'  // Use best quality for critical issues
+                : 'balanced'; // Smart routing for others
+            
+            // Determine context type for routing
+            const contextType = this.getContextTypeForError(error);
+            
+            const response = await llmService.generateNarrative({
+                userMessage: prompt,
+                gameStateContext: systemPrompt,
+                costMode: costMode,
+                source: 'code-roach-fix', // Track Code Roach usage
+                // Context for smart routing
+                context: {
+                    contextType: contextType,
+                    importance: error.severity === 'critical' ? 'critical' : 
+                               error.severity === 'high' ? 'high' : 'medium',
+                    isCritical: error.severity === 'critical'
                 }
-            }
+            });
 
-            // Extract text from response (format may vary)
-            // llmService.generateOpenAI returns { narrative, tokensUsed, cost, ... }
-            const fixedCode = (typeof response === 'string') ? response : (response.narrative || response.content || response.text || '');
+            // New system returns { narrative, provider, model, cost, ... }
+            const fixedCode = response.narrative || '';
 
             return {
                 code: fixedCode,
@@ -581,7 +581,11 @@ Return ONLY the fixed code, no explanations, no markdown, just the code.`;
                     similarCode: similarCode.length,
                     workingExamples: workingExamples.length
                 },
-                method: 'codebase-aware'
+                method: 'codebase-aware',
+                provider: response.provider, // Track which provider was used
+                model: response.model,
+                cost: response.cost,
+                responseTime: response.responseTime
             };
         } catch (err) {
             console.error('[Codebase-Aware Fix] LLM generation failed:', err);
@@ -691,21 +695,25 @@ Return only the code, no explanations.`;
 
         try {
             const systemPrompt = 'You generate code that perfectly matches codebase patterns.';
-            const response = await llmService.generateOpenAI(
-                systemPrompt,
-                prompt,
-                'gpt-4o-mini' // Use default model
-            );
+            // Use new multi-provider system with cost-effective routing for code generation
+            const response = await llmService.generateNarrative({
+                userMessage: prompt,
+                gameStateContext: systemPrompt,
+                costMode: 'balanced', // Smart routing for code generation
+                source: 'code-roach-generate'
+            });
 
-            // Extract text from response
-            // llmService.generateOpenAI returns { narrative, tokensUsed, cost, ... }
-            const generatedCode = (typeof response === 'string') ? response : (response.narrative || 
-                response.content || response.text || '');
+            // New system returns { narrative, provider, model, cost, ... }
+            const generatedCode = response.narrative || '';
 
             return {
                 code: generatedCode,
                 patternsUsed: patterns.length,
-                confidence: Math.min(0.9, 0.5 + (patterns.length * 0.1))
+                confidence: Math.min(0.9, 0.5 + (patterns.length * 0.1)),
+                provider: response.provider, // Track which provider was used
+                model: response.model,
+                cost: response.cost,
+                responseTime: response.responseTime
             };
         } catch (err) {
             console.error('[Codebase-Aware Fix] Code generation failed:', err);

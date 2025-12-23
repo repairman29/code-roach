@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/developerMetricsService.js
- * Last Sync: 2025-12-14T21:52:03.193Z
+ * Last Sync: 2025-12-20T22:26:03.329Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -18,13 +18,19 @@ const config = require('../config');
 
 class DeveloperMetricsService {
     constructor() {
-        try {
-            this.supabase = createClient(
-                config.supabase.url,
-                config.supabase.serviceRoleKey
-            );
-        } catch (err) {
-            console.warn('[Developer Metrics] Supabase not available:', err.message);
+        // Only create Supabase client if credentials are available
+        if (config.supabase.serviceRoleKey) {
+            try {
+                this.supabase = createClient(
+                    config.supabase.url,
+                    config.supabase.serviceRoleKey
+                );
+            } catch (error) {
+                console.warn('[developerMetricsService] Supabase not configured:', error.message);
+                this.supabase = null;
+            }
+        } else {
+            console.warn('[developerMetricsService] Supabase credentials not configured. Service will be disabled.');
             this.supabase = null;
         }
     }

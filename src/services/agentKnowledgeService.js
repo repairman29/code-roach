@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/agentKnowledgeService.js
- * Last Sync: 2025-12-14T07:30:45.566Z
+ * Last Sync: 2025-12-20T22:26:03.324Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -19,16 +19,31 @@ const codebaseSearch = require('./codebaseSearch');
 
 class AgentKnowledgeService {
     constructor() {
-        this.supabase = createClient(
-            config.supabase.url,
-            config.supabase.serviceRoleKey
-        );
+        // Only create Supabase client if credentials are available
+        if (config.supabase.serviceRoleKey) {
+            try {
+                this.supabase = createClient(
+                    config.supabase.url,
+                    config.supabase.serviceRoleKey
+                );
+            } catch (error) {
+                console.warn('[AgentKnowledgeService] Supabase not configured:', error.message);
+                this.supabase = null;
+            }
+        } else {
+            console.warn('[AgentKnowledgeService] Supabase credentials not configured. Knowledge service will be disabled.');
+            this.supabase = null;
+        }
     }
 
     /**
      * Search knowledge base semantically
      */
     async searchKnowledge(query, options = {}) {
+        if (!this.supabase) {
+            console.warn('[AgentKnowledgeService] Cannot search: Supabase not configured');
+            return [];
+        }
         const {
             knowledgeType = null,
             threshold = 0.7,
@@ -93,6 +108,9 @@ class AgentKnowledgeService {
      */
     async recordUsage(knowledgeId, success) {
         try {
+            if (!this.supabase) {
+                return false;
+            }
             const { error } = await this.supabase.rpc('record_knowledge_usage', {
                 p_knowledge_id: knowledgeId,
                 p_success: success

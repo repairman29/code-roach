@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/codebaseWatcher.js
- * Last Sync: 2025-12-14T08:56:32.982Z
+ * Last Sync: 2025-12-20T22:26:03.320Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -215,8 +215,11 @@ class CodebaseWatcher {
                 if (!stats) {
                     // File was deleted, remove from index
                     log.info(`File deleted, removing from index: ${filePath}`);
+                    if (!config.supabase?.serviceRoleKey) {
+                        log.warn('Supabase not configured, cannot remove from index');
+                        continue;
+                    }
                     const { createClient } = require('@supabase/supabase-js');
-                    const config = require('../config');
                     const supabase = createClient(config.supabase.url, config.supabase.serviceRoleKey);
                     await supabase
                         .from('codebase_index')
@@ -273,8 +276,11 @@ class CodebaseWatcher {
      */
     async loadIndexedFiles() {
         try {
+            if (!config.supabase?.serviceRoleKey) {
+                log.warn('Supabase not configured, cannot load indexed files');
+                return;
+            }
             const { createClient } = require('@supabase/supabase-js');
-            const config = require('../config');
             const supabase = createClient(config.supabase.url, config.supabase.serviceRoleKey);
             
             const { data: chunks } = await supabase
@@ -320,8 +326,11 @@ class CodebaseWatcher {
         log.info('Checking for changed files...');
         
         try {
+            if (!config.supabase?.serviceRoleKey) {
+                log.warn('Supabase not configured, cannot check for changes');
+                return;
+            }
             const { createClient } = require('@supabase/supabase-js');
-            const config = require('../config');
             const supabase = createClient(config.supabase.url, config.supabase.serviceRoleKey);
             
             // Get all indexed files

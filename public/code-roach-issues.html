@@ -5,22 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Code Roach - Issues</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🪳</text></svg>">
+    <link rel="icon" type="image/svg+xml" href="/logo.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Roboto+Mono:wght@300;400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <!-- System 3046 Design System -->
+    <link rel="stylesheet" href="/css/system-3046-design-system.css">
+    <!-- XSS Sanitization Utility -->
+    <script src="/js/utils/domSanitizer.js"></script>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-
-        body {
-            font-family: 'Roboto Mono', monospace;
-            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
-            color: #e0e0e0;
-            min-height: 100vh;
-            padding: 20px;
+        
+        /* System 3046 overrides */
+        body.system-3046 {
+            padding: 0;
         }
 
         .container {
@@ -32,16 +34,15 @@
             text-align: center;
             margin-bottom: 30px;
             padding: 20px;
-            background: rgba(0, 255, 255, 0.1);
-            border: 2px solid #00ffff;
-            border-radius: 8px;
+            background: var(--panel-bg);
+            border: 1px solid var(--border-dim);
+            clip-path: polygon(var(--corner-cut) 0, 100% 0, 100% calc(100% - var(--corner-cut)), calc(100% - var(--corner-cut)) 100%, 0 100%, 0 var(--corner-cut));
         }
 
         .header h1 {
-            font-family: 'Orbitron', sans-serif;
+            font-family: var(--font-tech);
             font-size: 2.5em;
-            color: #00ffff;
-            text-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+            color: var(--neon-cyan);
             margin-bottom: 10px;
         }
 
@@ -410,8 +411,39 @@
         }
     </style>
 </head>
-<body>
-    <div class="container">
+<body class="system-3046">
+    <!-- Boot Sequence -->
+    <div id="sys-boot" style="position:fixed; top:0; left:0; width:100%; height:100%; background:#000; z-index:9999; display:flex; align-items:center; justify-content:center; flex-direction:column; transition: opacity 0.5s;">
+        <div style="font-family:'Space Mono'; color:#00F0FF; margin-bottom:10px;">INITIALIZING...</div>
+        <div style="width:200px; height:2px; background:#333;">
+            <div id="sys-loader-bar" style="width:0%; height:100%; background:#00F0FF; transition:width 1s ease-in-out;"></div>
+        </div>
+    </div>
+
+    <!-- HUD Overlay -->
+    <div class="sys-hud-overlay">
+        <div class="sys-hud-border">
+            <div class="sys-bracket tl"></div>
+            <div class="sys-bracket tr"></div>
+            <div class="sys-bracket bl"></div>
+            <div class="sys-bracket br"></div>
+        </div>
+    </div>
+    
+    <div class="scanlines"></div>
+    
+    <!-- Navigation -->
+    <nav style="position: sticky; top: 0; z-index: 1000; background: rgba(5, 5, 5, 0.95); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border-dim); padding: 1rem 2rem;">
+        <div style="max-width: 1600px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center;">
+            <a href="/" class="sys-font text-cyan" style="font-size: 1.2rem; text-decoration: none;">SMUGGLER</a>
+            <div style="display: flex; gap: 2rem;">
+                <a href="/code-roach-dashboard.html" style="color: var(--text-muted); text-decoration: none; font-family: var(--font-tech); font-size: 0.9rem;">DASHBOARD</a>
+                <a href="/code-roach-issues.html" style="color: var(--neon-cyan); text-decoration: none; font-family: var(--font-tech); font-size: 0.9rem;">ISSUES</a>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="sys-container" style="max-width: 1600px; margin: 2rem auto; padding: 2rem;">
         <div class="header">
             <h1>🪳 Code Roach - Issues</h1>
             <p>View and manage code issues</p>
@@ -491,21 +523,55 @@
     <script>
         const api = new CodeRoachApiClient();
         
+        // Track if we've already checked auth to prevent multiple redirects
+        let authChecked = false;
+        
         // Initialize auth and check authentication
         (async () => {
-            await window.codeRoachAuth.initialize();
-            await api.initializeAuth();
-            
-            // Check if authentication is required (can be disabled for development)
-            const requireAuth = window.REQUIRE_AUTH !== 'false';
-            if (requireAuth && !window.codeRoachAuth.isAuthenticated()) {
-                // Redirect to login if not authenticated
-                window.location.href = '/code-roach-login.html?redirect=' + encodeURIComponent(window.location.pathname);
-                return;
+            try {
+                await window.codeRoachAuth.initialize();
+                await api.initializeAuth();
+                
+                // Wait a bit for session to be established (OAuth callback might be processing)
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                // Only check once
+                if (authChecked) return;
+                authChecked = true;
+                
+                // Check if authentication is required (can be disabled for development)
+                const requireAuth = window.REQUIRE_AUTH !== 'false' && window.location.hostname !== 'localhost';
+                if (requireAuth && !window.codeRoachAuth.isAuthenticated()) {
+                    // Redirect to login if not authenticated
+                    // Normalize redirect path (remove .html if present)
+                    let redirectPath = window.location.pathname;
+                    if (redirectPath.endsWith('.html')) {
+                        redirectPath = redirectPath.replace(/\.html$/, '');
+                    }
+                    // Preserve query string (e.g., ?project=proj-123)
+                    const queryString = window.location.search;
+                    window.location.replace(`/code-roach-login?redirect=${encodeURIComponent(redirectPath + queryString)}`);
+                    return;
+                }
+            } catch (error) {
+                console.error('[Issues] Auth initialization error:', error);
+                // Don't redirect on error, just log it
             }
         })();
+        
+        // Listen for auth state changes (e.g., after OAuth callback)
+        if (window.codeRoachAuth && window.codeRoachAuth.onAuthStateChange) {
+            window.codeRoachAuth.onAuthStateChange((event, session) => {
+                if (event === 'SIGNED_IN' && session && !authChecked) {
+                    // User just signed in, reload the page to show content
+                    console.log('[Issues] User signed in, reloading...');
+                    window.location.reload();
+                }
+            });
+        }
+        
         let currentPage = 0;
-        const pageSize = 50;
+        const pageSize = 100; // Increased from 50 to show more issues per page
         let totalIssues = 0;
         let projects = [];
 
@@ -515,15 +581,62 @@
                 const response = await api.getProjects();
                 projects = response.projects || [];
                 const select = document.getElementById('projectFilter');
-                select.innerHTML = '<option value="">All Projects</option>';
+                // Fix XSS: Use safeSetHTML for select clearing
+                if (window.DOMSanitizer && window.DOMSanitizer.safeSetHTML) {
+                    window.DOMSanitizer.safeSetHTML(select, '<option value="">All Projects</option>');
+                } else {
+                    select.innerHTML = '<option value="">All Projects</option>';
+                }
                 projects.forEach(project => {
                     const option = document.createElement('option');
                     option.value = project.id;
-                    option.textContent = project.name;
+                    // Fix XSS: Sanitize project name
+                    option.textContent = window.DOMSanitizer ? window.DOMSanitizer.escapeHTML(project.name || '') : (project.name || '');
+                    select.appendChild(option);
+                });
+                
+                // Auto-select project from URL params
+                const urlParams = new URLSearchParams(window.location.search);
+                const projectIdFromUrl = urlParams.get('project');
+                if (projectIdFromUrl && projects.find(p => p.id === projectIdFromUrl)) {
+                    select.value = projectIdFromUrl;
+                    console.log(`[Issues] Auto-selected project from URL: ${projectIdFromUrl}`);
+                    // Load issues for this project
+                    loadIssues();
+                }
+            } catch (error) {
+                console.warn('Failed to load projects:', error);
+            }
+        }
+
+        // Load issue types for filter
+        async function loadIssueTypes() {
+            try {
+                const response = await api.getIssues({ limit: 1000 }); // Get enough to find all types
+                const issues = response.issues || [];
+                const types = [...new Set(issues.map(i => i.error_type || i.type).filter(Boolean))].sort();
+                
+                const select = document.getElementById('typeFilter');
+                // Fix XSS: Use safeSetHTML for select clearing
+                if (window.DOMSanitizer && window.DOMSanitizer.safeSetHTML) {
+                    window.DOMSanitizer.safeSetHTML(select, '<option value="">All Types</option>');
+                } else {
+                    // Fix XSS: Use safeSetHTML for select options
+                    if (window.DOMSanitizer && window.DOMSanitizer.safeSetHTML) {
+                        window.DOMSanitizer.safeSetHTML(select, '<option value="">All Types</option>');
+                    } else {
+                        select.innerHTML = '<option value="">All Types</option>';
+                    }
+                }
+                types.forEach(type => {
+                    const option = document.createElement('option');
+                    option.value = type;
+                    // Fix XSS: Sanitize type
+                    option.textContent = window.DOMSanitizer ? window.DOMSanitizer.escapeHTML(type || '') : (type || '');
                     select.appendChild(option);
                 });
             } catch (error) {
-                console.warn('Failed to load projects:', error);
+                console.warn('Failed to load issue types:', error);
             }
         }
 
@@ -568,7 +681,12 @@
         // Display issues
         function displayIssues(issues) {
             const list = document.getElementById('issues-list');
-            list.innerHTML = '';
+            // Fix XSS: Use safeSetHTML for clearing list (defense in depth)
+            if (window.DOMSanitizer && window.DOMSanitizer.safeSetHTML) {
+                window.DOMSanitizer.safeSetHTML(list, '');
+            } else {
+                list.innerHTML = '';
+            }
 
             if (issues.length === 0) {
                 list.innerHTML = `
@@ -1018,8 +1136,11 @@
         }
 
         // Initialize
-        loadProjects();
-        loadIssues();
+        (async () => {
+            await loadProjects();
+            await loadIssueTypes();
+            loadIssues();
+        })();
     </script>
 </body>
 </html>

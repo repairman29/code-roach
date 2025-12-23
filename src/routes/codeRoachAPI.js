@@ -5,7 +5,27 @@
 
 const express = require('express');
 const router = express.Router();
+const path = require('path');
 const log = console;
+
+// Supabase client for database operations
+const { createClient } = require('@supabase/supabase-js');
+const config = require('../config');
+let supabase = null;
+
+try {
+    supabase = createClient(config.supabase.url, config.supabase.serviceRoleKey);
+    log.log('✅ Supabase client initialized for Code Roach API');
+} catch (err) {
+    log.warn('⚠️ Supabase client not available:', err.message);
+    // Fallback to in-memory storage if Supabase is not available
+}
+
+// Fallback in-memory storage (only used if Supabase is unavailable)
+const inMemoryStore = {
+    organizations: [],
+    projects: []
+};
 
 // Codebase Crawler
 let codebaseCrawler = null;
@@ -40,16 +60,52 @@ router.post('/crawl', async (req, res) => {
             });
         }
         
-        // Start crawl in background (don't await)
+        // Get options and projectId from request
         const options = req.body.options || {};
-        codebaseCrawler.crawlCodebase(options).catch(err => {
+        const projectId = req.body.projectId || options.projectId || null;
+        
+        // If projectId is provided, add it to options
+        if (projectId) {
+            options.projectId = projectId;
+            log.log(`[Code Roach API] Starting crawl for project: ${projectId}`);
+        } else {
+            log.log('[Code Roach API] Starting crawl without project (issues will not be associated with a project)');
+        }
+        
+        // SECURITY: Validate and sanitize rootDir to prevent path traversal
+        let rootDir = options.rootDir || process.cwd();
+        if (rootDir) {
+            // Normalize path and resolve to absolute path
+            rootDir = path.resolve(rootDir);
+            const allowedRoot = path.resolve(process.cwd());
+            
+            // SECURITY: Ensure rootDir is within allowed directory (prevent path traversal)
+            if (!rootDir.startsWith(allowedRoot)) {
+                log.warn('[Security] Attempted path traversal in rootDir:', rootDir);
+                rootDir = allowedRoot; // Fallback to safe default
+            }
+            
+            // SECURITY: Prevent directory traversal patterns
+            if (rootDir.includes('..') || rootDir.includes('~')) {
+                log.warn('[Security] Suspicious path pattern detected:', rootDir);
+                rootDir = allowedRoot; // Fallback to safe default
+            }
+            
+            options.rootDir = rootDir;
+        } else if (!options.files) {
+            options.rootDir = process.cwd();
+        }
+        
+        // Start crawl in background (don't await)
+        codebaseCrawler.crawlCodebase(options.rootDir || process.cwd(), options).catch(err => {
             log.error('Background crawl error:', err);
         });
         
         // Return immediately
         res.json({ 
             success: true, 
-            message: 'Crawl started in background',
+            message: projectId ? `Crawl started for project ${projectId}` : 'Crawl started in background',
+            projectId: projectId,
             status: await codebaseCrawler.getStatus()
         });
     } catch (err) {
@@ -248,19 +304,88 @@ router.get('/issues', optionalAuth, async (req, res) => {
             offset: parseInt(req.query.offset) || 0
         };
 
-        // Use issueStorageService which now has resilience built-in
-        const issues = filters.projectId 
-            ? await issueStorageService.getProjectIssues(filters.projectId, filters)
-            : [];
+        let issues = [];
+        let total = 0;
+        
+        // If projectId is provided, get issues for that project
+        if (filters.projectId) {
+            issues = await issueStorageService.getProjectIssues(filters.projectId, filters);
+            total = issues._count || issues.length;
+        } else {
+            // If no projectId, get all issues (including those with null project_id)
+            issues = await issueStorageService.getAllIssues(filters);
+            total = issues._count || issues.length;
+        }
+        
+        // Remove _count from issues array (it's metadata)
+        if (Array.isArray(issues) && issues._count !== undefined) {
+            delete issues._count;
+        }
 
-        // Get total count (for pagination) - would need to add count method to service
-        // For now, use issues length as approximation
-        const total = issues.length;
+        // Transform database format to API format for frontend compatibility
+        // Frontend expects both camelCase and snake_case formats
+        const transformedIssues = (issues || []).map(issue => ({
+            // Core fields (both formats for compatibility)
+            id: issue.id,
+            projectId: issue.project_id,
+            project_id: issue.project_id, // Keep original for compatibility
+            
+            // File paths
+            file: issue.file_path,
+            filePath: issue.file_path,
+            file_path: issue.file_path, // Keep original for frontend
+            
+            // Line numbers
+            line: issue.error_line || issue.line,
+            error_line: issue.error_line || issue.line, // Keep original for frontend
+            endLine: issue.end_line,
+            end_line: issue.end_line,
+            column: issue.column,
+            
+            // Error details
+            type: issue.error_type,
+            error_type: issue.error_type, // Keep original for frontend
+            message: issue.error_message,
+            error_message: issue.error_message, // Keep original for frontend
+            severity: issue.error_severity,
+            error_severity: issue.error_severity, // Keep original for frontend
+            code: issue.error_code,
+            error_code: issue.error_code,
+            
+            // Review status
+            reviewStatus: issue.review_status || 'pending',
+            review_status: issue.review_status || 'pending', // Keep original for frontend
+            
+            // Fix information
+            fixApplied: issue.fix_applied,
+            fix_applied: issue.fix_applied,
+            fixMethod: issue.fix_method,
+            fix_method: issue.fix_method,
+            fixConfidence: issue.fix_confidence,
+            fix_confidence: issue.fix_confidence,
+            
+            // Resolution
+            resolvedAt: issue.resolved_at,
+            resolved_at: issue.resolved_at,
+            resolvedBy: issue.resolved_by,
+            resolved_by: issue.resolved_by,
+            
+            // Timestamps
+            createdAt: issue.created_at,
+            created_at: issue.created_at,
+            updatedAt: issue.updated_at,
+            updated_at: issue.updated_at,
+            
+            // Include all original fields for full backward compatibility
+            ...issue
+        }));
+
+        // Use the total count from database query (already set above)
 
         const stats = filters.projectId ? await issueStorageService.getProjectStatistics(filters.projectId) : null;
 
         res.json({
-            issues: issues || [],
+            issues: transformedIssues,
             total: total,
             statistics: stats
         });
@@ -273,25 +398,82 @@ router.get('/issues', optionalAuth, async (req, res) => {
 // Get single issue
 router.get('/issues/:id', optionalAuth, async (req, res) => {
     try {
+        // SECURITY: Validate issue ID format (prevent injection)
+        const issueId = req.params.id;
+        if (!issueId || typeof issueId !== 'string' || issueId.length > 100) {
+            return res.status(400).json({ error: 'Invalid issue ID format' });
+        }
+        
         // Use issueStorageService which now has resilience built-in
-        const issue = await issueStorageService.getIssue(req.params.id);
+        const issue = await issueStorageService.getIssue(issueId);
 
         if (!issue) {
             return res.status(404).json({ error: 'Issue not found' });
         }
 
+        // SECURITY: If user is authenticated, verify project access
+        if (req.userId && issue.project_id) {
+            try {
+                const projectService = require('../services/projectService');
+                const hasAccess = await projectService.hasProjectAccess(issue.project_id, req.userId);
+                if (!hasAccess) {
+                    // Don't reveal that issue exists, just return 404
+                    return res.status(404).json({ error: 'Issue not found' });
+                }
+            } catch (err) {
+                // If project service unavailable, allow access (development mode)
+                // In production, this should fail securely
+                if (config.isProduction()) {
+                    log.warn('[Security] Project service unavailable in production for issue access check');
+                }
+            }
+        }
+
         res.json({ issue });
     } catch (err) {
         log.error('Get issue error:', err);
-        res.status(500).json({ error: err.message });
+        // SECURITY: Use standardized error handling
+        const { formatErrorResponse } = require('../utils/errors');
+        const errorResponse = formatErrorResponse(err);
+        res.status(errorResponse.statusCode).json(errorResponse);
     }
 });
 
 // Update issue
 router.put('/issues/:id', authenticate, async (req, res) => {
     try {
+        // SECURITY: Validate issue ID format (prevent injection)
+        const issueId = req.params.id;
+        if (!issueId || typeof issueId !== 'string' || issueId.length > 100) {
+            return res.status(400).json({ error: 'Invalid issue ID format' });
+        }
+        
+        // SECURITY: Get issue first to verify project access
+        const issue = await issueStorageService.getIssue(issueId);
+        if (!issue) {
+            return res.status(404).json({ error: 'Issue not found' });
+        }
+        
+        // SECURITY: Verify user has access to the project
+        if (issue.project_id) {
+            try {
+                const projectService = require('../services/projectService');
+                const hasAccess = await projectService.hasProjectAccess(issue.project_id, req.userId);
+                if (!hasAccess) {
+                    // Don't reveal that issue exists, just return 404
+                    return res.status(404).json({ error: 'Issue not found' });
+                }
+            } catch (err) {
+                // If project service unavailable, fail securely in production
+                if (config.isProduction()) {
+                    log.error('[Security] Project service unavailable in production for issue update');
+                    return res.status(500).json({ error: 'Authorization service unavailable' });
+                }
+            }
+        }
+        
         const updates = req.body;
-        const updated = await issueStorageService.updateIssue(req.params.id, updates);
+        const updated = await issueStorageService.updateIssue(issueId, updates);
         
         if (!updated) {
             return res.status(404).json({ error: 'Issue not found' });
@@ -300,7 +482,10 @@ router.put('/issues/:id', authenticate, async (req, res) => {
         res.json({ success: true, issue: updated });
     } catch (err) {
         log.error('Update issue error:', err);
-        res.status(500).json({ error: err.message });
+        // SECURITY: Use standardized error handling
+        const { formatErrorResponse } = require('../utils/errors');
+        const errorResponse = formatErrorResponse(err);
+        res.status(errorResponse.statusCode).json(errorResponse);
     }
 });
 
@@ -789,14 +974,37 @@ if (crossProjectLearningService) {
     router.get('/learning/cross-project/recommendations', authenticate, async (req, res) => {
         try {
             const { issue, projectId } = req.query;
+            
+            // SECURITY: Prevent prototype pollution in JSON.parse
+            let parsedIssue = {};
+            if (issue) {
+                try {
+                    parsedIssue = JSON.parse(issue);
+                    // SECURITY: Remove dangerous prototype properties
+                    if (parsedIssue && typeof parsedIssue === 'object') {
+                        delete parsedIssue.__proto__;
+                        delete parsedIssue.constructor;
+                        delete parsedIssue.prototype;
+                        // Create a clean object without prototype chain pollution
+                        parsedIssue = Object.assign(Object.create(null), parsedIssue);
+                    }
+                } catch (parseErr) {
+                    log.warn('[Security] Invalid JSON in issue parameter:', parseErr.message);
+                    parsedIssue = {};
+                }
+            }
+            
             const result = await crossProjectLearningService.getCrossProjectRecommendations(
-                JSON.parse(issue || '{}'),
+                parsedIssue,
                 projectId
             );
             res.json(result);
         } catch (err) {
             log.error('Get cross-project recommendations error:', err);
-            res.status(500).json({ error: err.message });
+            // SECURITY: Use standardized error handling
+            const { formatErrorResponse } = require('../utils/errors');
+            const errorResponse = formatErrorResponse(err);
+            res.status(errorResponse.statusCode).json(errorResponse);
         }
     });
 
@@ -811,6 +1019,545 @@ if (crossProjectLearningService) {
         }
     });
 }
+
+// Projects endpoint
+router.get('/projects', optionalAuth, async (req, res) => {
+    try {
+        const organizationId = req.query.organizationId;
+        
+        if (supabase) {
+            // Use database
+            let query = supabase.from('projects').select('*');
+            
+            if (organizationId) {
+                query = query.eq('organization_id', organizationId);
+            }
+            
+            const { data, error } = await query.order('created_at', { ascending: false });
+            
+            if (error) {
+                log.error('Database error fetching projects:', error);
+                return res.status(500).json({ 
+                    success: false,
+                    error: error.message,
+                    projects: []
+                });
+            }
+            
+            // Transform database format to API format
+            const projects = (data || []).map(proj => ({
+                id: proj.id,
+                organizationId: proj.organization_id,
+                name: proj.name,
+                slug: proj.slug,
+                repository_url: proj.repository_url,
+                repository_type: proj.repository_type,
+                root_directory: proj.root_directory,
+                language: proj.language,
+                framework: proj.framework,
+                createdAt: proj.created_at,
+                updatedAt: proj.updated_at
+            }));
+            
+            res.json({
+                success: true,
+                projects: projects,
+                message: 'Projects loaded successfully'
+            });
+        } else {
+            // Fallback to in-memory
+            let projects = inMemoryStore.projects;
+            if (organizationId) {
+                projects = projects.filter(p => p.organizationId === organizationId);
+            }
+            res.json({
+                success: true,
+                projects: projects,
+                message: 'Projects loaded successfully (in-memory)'
+            });
+        }
+    } catch (err) {
+        log.error('Projects endpoint error:', err);
+        res.status(500).json({ 
+            success: false,
+            error: err.message,
+            projects: []
+        });
+    }
+});
+
+// Create project endpoint
+router.post('/projects', optionalAuth, async (req, res) => {
+    try {
+        const { organizationId, name, slug, repository_url, language, framework } = req.body;
+        
+        if (!name) {
+            return res.status(400).json({ 
+                success: false,
+                error: 'Project name is required' 
+            });
+        }
+        
+        // SECURITY: Validate repository_url to prevent SSRF attacks
+        if (repository_url) {
+            try {
+                const url = new URL(repository_url);
+                // Only allow http/https protocols
+                if (!['http:', 'https:'].includes(url.protocol)) {
+                    return res.status(400).json({
+                        success: false,
+                        error: 'Invalid repository URL protocol'
+                    });
+                }
+                // Block private/internal IP addresses (SSRF protection)
+                const hostname = url.hostname;
+                if (hostname === 'localhost' || hostname === '127.0.0.1' || 
+                    hostname === '0.0.0.0' || hostname.startsWith('192.168.') ||
+                    hostname.startsWith('10.') || hostname.startsWith('172.16.') ||
+                    hostname.startsWith('172.17.') || hostname.startsWith('172.18.') ||
+                    hostname.startsWith('172.19.') || hostname.startsWith('172.20.') ||
+                    hostname.startsWith('172.21.') || hostname.startsWith('172.22.') ||
+                    hostname.startsWith('172.23.') || hostname.startsWith('172.24.') ||
+                    hostname.startsWith('172.25.') || hostname.startsWith('172.26.') ||
+                    hostname.startsWith('172.27.') || hostname.startsWith('172.28.') ||
+                    hostname.startsWith('172.29.') || hostname.startsWith('172.30.') ||
+                    hostname.startsWith('172.31.') || hostname === '[::1]' ||
+                    hostname === '::1' || hostname.startsWith('169.254.')) {
+                    log.warn('[Security] Blocked SSRF attempt with internal IP:', repository_url);
+                    return res.status(400).json({
+                        success: false,
+                        error: 'Repository URL cannot point to internal addresses'
+                    });
+                }
+            } catch (urlError) {
+                return res.status(400).json({
+                    success: false,
+                    error: 'Invalid repository URL format'
+                });
+            }
+        }
+        
+        // Generate slug if not provided
+        const projectSlug = slug || name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+        
+        if (supabase) {
+            // Use database
+            // Check if slug already exists in the organization
+            const { data: existing } = await supabase
+                .from('projects')
+                .select('id')
+                .eq('organization_id', organizationId)
+                .eq('slug', projectSlug)
+                .single();
+            
+            if (existing) {
+                return res.status(400).json({ 
+                    success: false,
+                    error: 'Project with this slug already exists in this organization' 
+                });
+            }
+            
+            // Create project in database
+            const { data, error } = await supabase
+                .from('projects')
+                .insert({
+                    organization_id: organizationId || null,
+                    name: name,
+                    slug: projectSlug,
+                    repository_url: repository_url || null,
+                    repository_type: 'github', // Default
+                    root_directory: '.',
+                    language: language || null,
+                    framework: framework || null
+                })
+                .select()
+                .single();
+            
+            if (error) {
+                log.error('Database error creating project:', error);
+                return res.status(500).json({ 
+                    success: false,
+                    error: error.message
+                });
+            }
+            
+            // Transform to API format
+            const project = {
+                id: data.id,
+                organizationId: data.organization_id,
+                name: data.name,
+                slug: data.slug,
+                repository_url: data.repository_url,
+                repository_type: data.repository_type,
+                root_directory: data.root_directory,
+                language: data.language,
+                framework: data.framework,
+                createdAt: data.created_at,
+                updatedAt: data.updated_at
+            };
+            
+            res.json({
+                success: true,
+                project: project,
+                message: 'Project created successfully'
+            });
+        } else {
+            // Fallback to in-memory
+            const existingProject = inMemoryStore.projects.find(
+                p => p.slug === projectSlug && p.organizationId === organizationId
+            );
+            if (existingProject) {
+                return res.status(400).json({ 
+                    success: false,
+                    error: 'Project with this slug already exists in this organization' 
+                });
+            }
+            
+            const project = {
+                id: 'proj-' + Date.now(),
+                organizationId: organizationId || null,
+                name: name,
+                slug: projectSlug,
+                repository_url: repository_url || null,
+                language: language || null,
+                framework: framework || null,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            };
+            
+            inMemoryStore.projects.push(project);
+            
+            res.json({
+                success: true,
+                project: project,
+                message: 'Project created successfully (in-memory)'
+            });
+        }
+    } catch (err) {
+        log.error('Create project error:', err);
+        res.status(500).json({ 
+            success: false,
+            error: err.message
+        });
+    }
+});
+
+// Update project endpoint
+router.put('/projects/:id', optionalAuth, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const updates = req.body;
+        
+        if (supabase) {
+            // Use database
+            // Transform API format to database format
+            const dbUpdates = {};
+            if (updates.name !== undefined) dbUpdates.name = updates.name;
+            if (updates.slug !== undefined) dbUpdates.slug = updates.slug;
+            // SECURITY: Validate repository_url to prevent SSRF attacks
+            if (updates.repository_url !== undefined) {
+                if (updates.repository_url === null) {
+                    dbUpdates.repository_url = null;
+                } else {
+                    try {
+                        const url = new URL(updates.repository_url);
+                        // Only allow http/https protocols
+                        if (!['http:', 'https:'].includes(url.protocol)) {
+                            return res.status(400).json({
+                                success: false,
+                                error: 'Invalid repository URL protocol'
+                            });
+                        }
+                        // Block private/internal IP addresses (SSRF protection)
+                        const hostname = url.hostname;
+                        if (hostname === 'localhost' || hostname === '127.0.0.1' || 
+                            hostname === '0.0.0.0' || hostname.startsWith('192.168.') ||
+                            hostname.startsWith('10.') || hostname.startsWith('172.16.') ||
+                            hostname.startsWith('172.17.') || hostname.startsWith('172.18.') ||
+                            hostname.startsWith('172.19.') || hostname.startsWith('172.20.') ||
+                            hostname.startsWith('172.21.') || hostname.startsWith('172.22.') ||
+                            hostname.startsWith('172.23.') || hostname.startsWith('172.24.') ||
+                            hostname.startsWith('172.25.') || hostname.startsWith('172.26.') ||
+                            hostname.startsWith('172.27.') || hostname.startsWith('172.28.') ||
+                            hostname.startsWith('172.29.') || hostname.startsWith('172.30.') ||
+                            hostname.startsWith('172.31.') || hostname === '[::1]' ||
+                            hostname === '::1' || hostname.startsWith('169.254.')) {
+                            log.warn('[Security] Blocked SSRF attempt with internal IP:', updates.repository_url);
+                            return res.status(400).json({
+                                success: false,
+                                error: 'Repository URL cannot point to internal addresses'
+                            });
+                        }
+                        dbUpdates.repository_url = updates.repository_url;
+                    } catch (urlError) {
+                        return res.status(400).json({
+                            success: false,
+                            error: 'Invalid repository URL format'
+                        });
+                    }
+                }
+            }
+            if (updates.language !== undefined) dbUpdates.language = updates.language;
+            if (updates.framework !== undefined) dbUpdates.framework = updates.framework;
+            if (updates.organizationId !== undefined) dbUpdates.organization_id = updates.organizationId;
+            
+            const { data, error } = await supabase
+                .from('projects')
+                .update(dbUpdates)
+                .eq('id', id)
+                .select()
+                .single();
+            
+            if (error) {
+                log.error('Database error updating project:', error);
+                return res.status(error.code === 'PGRST116' ? 404 : 500).json({ 
+                    success: false,
+                    error: error.message
+                });
+            }
+            
+            if (!data) {
+                return res.status(404).json({ 
+                    success: false,
+                    error: 'Project not found' 
+                });
+            }
+            
+            // Transform to API format
+            const project = {
+                id: data.id,
+                organizationId: data.organization_id,
+                name: data.name,
+                slug: data.slug,
+                repository_url: data.repository_url,
+                repository_type: data.repository_type,
+                root_directory: data.root_directory,
+                language: data.language,
+                framework: data.framework,
+                createdAt: data.created_at,
+                updatedAt: data.updated_at
+            };
+            
+            res.json({
+                success: true,
+                project: project,
+                message: 'Project updated successfully'
+            });
+        } else {
+            // Fallback to in-memory
+            const projectIndex = inMemoryStore.projects.findIndex(p => p.id === id);
+            if (projectIndex === -1) {
+                return res.status(404).json({ 
+                    success: false,
+                    error: 'Project not found' 
+                });
+            }
+            
+            const project = inMemoryStore.projects[projectIndex];
+            const updatedProject = {
+                ...project,
+                ...updates,
+                updatedAt: new Date().toISOString()
+            };
+            
+            inMemoryStore.projects[projectIndex] = updatedProject;
+            
+            res.json({
+                success: true,
+                project: updatedProject,
+                message: 'Project updated successfully (in-memory)'
+            });
+        }
+    } catch (err) {
+        log.error('Update project error:', err);
+        res.status(500).json({ 
+            success: false,
+            error: err.message
+        });
+    }
+});
+
+// Delete project endpoint
+router.delete('/projects/:id', optionalAuth, async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        if (supabase) {
+            // Use database
+            // First check if project exists
+            const { data: existing } = await supabase
+                .from('projects')
+                .select('id')
+                .eq('id', id)
+                .single();
+            
+            if (!existing) {
+                return res.status(404).json({ 
+                    success: false,
+                    error: 'Project not found' 
+                });
+            }
+            
+            const { error } = await supabase
+                .from('projects')
+                .delete()
+                .eq('id', id);
+            
+            if (error) {
+                log.error('Database error deleting project:', error);
+                return res.status(500).json({ 
+                    success: false,
+                    error: error.message
+                });
+            }
+            
+            res.json({
+                success: true,
+                message: 'Project deleted successfully'
+            });
+        } else {
+            // Fallback to in-memory
+            const projectIndex = inMemoryStore.projects.findIndex(p => p.id === id);
+            if (projectIndex === -1) {
+                return res.status(404).json({ 
+                    success: false,
+                    error: 'Project not found' 
+                });
+            }
+            
+            inMemoryStore.projects.splice(projectIndex, 1);
+            
+            res.json({
+                success: true,
+                message: 'Project deleted successfully (in-memory)'
+            });
+        }
+    } catch (err) {
+        log.error('Delete project error:', err);
+        res.status(500).json({ 
+            success: false,
+            error: err.message
+        });
+    }
+});
+
+// Organizations endpoint
+router.get('/organizations', optionalAuth, async (req, res) => {
+    try {
+        res.json({
+            success: true,
+            organizations: inMemoryStore.organizations,
+            message: 'Organizations loaded successfully'
+        });
+    } catch (err) {
+        log.error('Organizations endpoint error:', err);
+        res.status(500).json({ 
+            success: false,
+            error: err.message,
+            organizations: []
+        });
+    }
+});
+
+// Create organization endpoint (optionalAuth for now - can require auth later)
+router.post('/organizations', optionalAuth, async (req, res) => {
+    try {
+        const { name, slug } = req.body;
+        if (!name) {
+            return res.status(400).json({ 
+                success: false,
+                error: 'Organization name is required' 
+            });
+        }
+        
+        // Generate slug if not provided
+        const orgSlug = slug || name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+        
+        if (supabase) {
+            // Use database
+            // Check if slug already exists
+            const { data: existing } = await supabase
+                .from('organizations')
+                .select('id')
+                .eq('slug', orgSlug)
+                .single();
+            
+            if (existing) {
+                return res.status(400).json({ 
+                    success: false,
+                    error: 'Organization with this slug already exists' 
+                });
+            }
+            
+            // Create organization in database
+            const { data, error } = await supabase
+                .from('organizations')
+                .insert({
+                    name: name,
+                    slug: orgSlug,
+                    plan: 'starter' // Default plan
+                })
+                .select()
+                .single();
+            
+            if (error) {
+                log.error('Database error creating organization:', error);
+                return res.status(500).json({ 
+                    success: false,
+                    error: error.message
+                });
+            }
+            
+            // Transform to API format
+            const organization = {
+                id: data.id,
+                name: data.name,
+                slug: data.slug,
+                plan: data.plan,
+                billing_email: data.billing_email,
+                createdAt: data.created_at,
+                updatedAt: data.updated_at
+            };
+            
+            res.json({
+                success: true,
+                organization: organization,
+                message: 'Organization created successfully'
+            });
+        } else {
+            // Fallback to in-memory
+            const existingOrg = inMemoryStore.organizations.find(org => org.slug === orgSlug);
+            if (existingOrg) {
+                return res.status(400).json({ 
+                    success: false,
+                    error: 'Organization with this slug already exists' 
+                });
+            }
+            
+            const organization = {
+                id: 'org-' + Date.now(),
+                name: name,
+                slug: orgSlug,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            };
+            
+            inMemoryStore.organizations.push(organization);
+            
+            res.json({
+                success: true,
+                organization: organization,
+                message: 'Organization created successfully (in-memory)'
+            });
+        }
+    } catch (err) {
+        log.error('Create organization error:', err);
+        res.status(500).json({ 
+            success: false,
+            error: err.message
+        });
+    }
+});
 
 module.exports = router;
 

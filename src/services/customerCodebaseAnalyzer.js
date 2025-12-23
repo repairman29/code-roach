@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/customerCodebaseAnalyzer.js
- * Last Sync: 2025-12-16T04:14:36.743Z
+ * Last Sync: 2025-12-20T22:26:03.337Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -25,14 +25,20 @@ const execAsync = promisify(exec);
 
 class CustomerCodebaseAnalyzer {
     constructor() {
-        this.supabase = null;
-        this.analysisCache = new Map();
-        
-        if (config.supabase?.url && config.supabase?.serviceRoleKey) {
-            this.supabase = createClient(
-                config.supabase.url,
-                config.supabase.serviceRoleKey
-            );
+        // Only create Supabase client if credentials are available
+        if (config.supabase.serviceRoleKey) {
+            try {
+                this.supabase = createClient(
+                    config.supabase.url,
+                    config.supabase.serviceRoleKey
+                );
+            } catch (error) {
+                console.warn('[customerCodebaseAnalyzer] Supabase not configured:', error.message);
+                this.supabase = null;
+            }
+        } else {
+            console.warn('[customerCodebaseAnalyzer] Supabase credentials not configured. Service will be disabled.');
+            this.supabase = null;
         }
     }
 
@@ -113,8 +119,9 @@ class CustomerCodebaseAnalyzer {
             // Detect databases
             techStack.databases = await this.detectDatabases(codebasePath, packageJson);
 
-            // Detect cloud providers
+            // Detect cloud providers and deployment platforms
             techStack.cloud_providers = await this.detectCloudProviders(codebasePath);
+            techStack.deployment_platforms = await this.detectDeploymentPlatforms(codebasePath, packageJson);
 
         } catch (err) {
             console.warn('[Customer Codebase Analyzer] Error analyzing tech stack:', err);
@@ -312,6 +319,142 @@ class CustomerCodebaseAnalyzer {
         }
 
         return providers;
+    }
+
+    /**
+     * Detect deployment platforms
+     */
+    async detectDeploymentPlatforms(codebasePath, packageJson) {
+        const platforms = [];
+
+        try {
+            const files = await fs.readdir(codebasePath);
+
+            // Railway detection
+            if (files.includes('railway.json') || 
+                files.includes('nixpacks.toml') ||
+                files.some(f => f.includes('railway'))) {
+                platforms.push('Railway');
+            }
+
+            // Vercel detection
+            if (files.includes('vercel.json') || 
+                files.includes('.vercel')) {
+                platforms.push('Vercel');
+            }
+
+            // Netlify detection
+            if (files.includes('netlify.toml') || 
+                files.includes('netlify.yaml') ||
+                files.includes('.netlify')) {
+                platforms.push('Netlify');
+            }
+
+            // Heroku detection
+            if (files.includes('Procfile') || 
+                files.includes('app.json') ||
+                files.some(f => f.includes('heroku'))) {
+                platforms.push('Heroku');
+            }
+
+            // Render detection
+            if (files.includes('render.yaml') || 
+                files.some(f => f.includes('render'))) {
+                platforms.push('Render');
+            }
+
+            // Fly.io detection
+            if (files.includes('fly.toml') || 
+                files.some(f => f.includes('fly'))) {
+                platforms.push('Fly.io');
+            }
+
+            // Docker detection (could be used with multiple platforms)
+            if (files.includes('Dockerfile') || 
+                files.includes('docker-compose.yml') ||
+                files.includes('docker-compose.yaml')) {
+                platforms.push('Docker');
+            }
+
+            // Check package.json for deployment-related dependencies
+            if (packageJson) {
+                const deps = {
+                    ...packageJson.dependencies || {},
+                    ...packageJson.devDependencies || {}
+                };
+
+                // Railway CLI
+                if (deps['@railway/cli']) {
+                    platforms.push('Railway');
+                }
+
+                // Vercel CLI
+                if (deps['vercel'] || deps['@vercel/cli']) {
+                    platforms.push('Vercel');
+                }
+
+                // Netlify CLI
+                if (deps['netlify-cli'] || deps['netlify']) {
+                    platforms.push('Netlify');
+                }
+
+                // Check scripts for deployment commands
+                const scripts = packageJson.scripts || {};
+                if (scripts.deploy?.includes('railway') || 
+                    scripts['deploy:railway']) {
+                    platforms.push('Railway');
+                }
+                if (scripts.deploy?.includes('vercel') || 
+                    scripts['deploy:vercel']) {
+                    platforms.push('Vercel');
+                }
+                if (scripts.deploy?.includes('netlify') || 
+                    scripts['deploy:netlify']) {
+                    platforms.push('Netlify');
+                }
+            }
+
+            // Check for CI/CD files that might indicate deployment
+            const cicdFiles = [
+                '.github/workflows',
+                '.gitlab-ci.yml',
+                'circleci',
+                '.travis.yml'
+            ];
+
+            for (const cicdFile of cicdFiles) {
+                try {
+                    const cicdPath = path.join(codebasePath, cicdFile);
+                    const stats = await fs.stat(cicdPath);
+                    if (stats.isDirectory() || stats.isFile()) {
+                        // Check content for deployment platform references
+                        if (cicdFile.includes('github')) {
+                            const workflowFiles = await this.getAllFiles(cicdPath, {
+                                include: ['*.yml', '*.yaml']
+                            });
+                            for (const workflowFile of workflowFiles) {
+                                try {
+                                    const content = await fs.readFile(workflowFile, 'utf8');
+                                    if (content.includes('railway')) platforms.push('Railway');
+                                    if (content.includes('vercel')) platforms.push('Vercel');
+                                    if (content.includes('netlify')) platforms.push('Netlify');
+                                } catch (err) {
+                                    // Ignore
+                                }
+                            }
+                        }
+                    }
+                } catch (err) {
+                    // File doesn't exist, continue
+                }
+            }
+
+        } catch (err) {
+            console.warn('[Customer Codebase Analyzer] Error detecting deployment platforms:', err);
+        }
+
+        // Remove duplicates
+        return [...new Set(platforms)];
     }
 
     /**

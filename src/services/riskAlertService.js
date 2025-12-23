@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/riskAlertService.js
- * Last Sync: 2025-12-14T07:30:45.716Z
+ * Last Sync: 2025-12-21T02:43:02.372Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -19,11 +19,21 @@ const developerMetricsService = require('./developerMetricsService');
 
 class RiskAlertService {
     constructor() {
-        this.supabase = createClient(
-            config.supabase.url,
-            config.supabase.serviceRoleKey
-        );
-        this.alertSubscribers = new Set(); // For real-time alerts
+        // Only create Supabase client if credentials are available
+        if (config.supabase.serviceRoleKey) {
+            try {
+                this.supabase = createClient(
+                    config.supabase.url,
+                    config.supabase.serviceRoleKey
+                );
+            } catch (error) {
+                console.warn('[riskAlertService] Supabase not configured:', error.message);
+                this.supabase = null;
+            }
+        } else {
+            console.warn('[riskAlertService] Supabase credentials not configured. Service will be disabled.');
+            this.supabase = null;
+        }
     }
 
     /**

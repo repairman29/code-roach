@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/fixMonitoringService.js
- * Last Sync: 2025-12-16T00:42:39.834Z
+ * Last Sync: 2025-12-21T02:43:02.374Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -22,16 +22,23 @@ const codeHealthScoring = require('./codeHealthScoring');
 
 class FixMonitoringService {
     constructor() {
-        this.supabase = null;
-        this.monitoringInterval = 5 * 60 * 1000; // 5 minutes
+        // Initialize active monitors map
         this.activeMonitors = new Map();
-        this.metrics = new Map();
         
-        if (config.supabase?.url && config.supabase?.serviceRoleKey) {
-            this.supabase = createClient(
-                config.supabase.url,
-                config.supabase.serviceRoleKey
-            );
+        // Only create Supabase client if credentials are available
+        if (config.supabase.serviceRoleKey) {
+            try {
+                this.supabase = createClient(
+                    config.supabase.url,
+                    config.supabase.serviceRoleKey
+                );
+            } catch (error) {
+                console.warn('[fixMonitoringService] Supabase not configured:', error.message);
+                this.supabase = null;
+            }
+        } else {
+            console.warn('[fixMonitoringService] Supabase credentials not configured. Service will be disabled.');
+            this.supabase = null;
         }
 
         // Start monitoring loop

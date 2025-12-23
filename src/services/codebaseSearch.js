@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/codebaseSearch.js
- * Last Sync: 2025-12-14T07:30:45.519Z
+ * Last Sync: 2025-12-20T21:10:13.780Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -25,10 +25,21 @@ const log = {
 
 class CodebaseSearch {
     constructor() {
-        this.supabase = createClient(
-            config.supabase.url,
-            config.supabase.serviceRoleKey
-        );
+        // Only create Supabase client if credentials are available
+        if (config.supabase.serviceRoleKey) {
+            try {
+                this.supabase = createClient(
+                    config.supabase.url,
+                    config.supabase.serviceRoleKey
+                );
+            } catch (error) {
+                console.warn('[CodebaseSearch] Supabase not configured:', error.message);
+                this.supabase = null;
+            }
+        } else {
+            console.warn('[CodebaseSearch] Supabase credentials not configured. Codebase search will be disabled.');
+            this.supabase = null;
+        }
         this.openaiApiKey = process.env.OPENAI_API_KEY || config.imageGeneration?.openai?.apiKey;
     }
 
@@ -101,6 +112,11 @@ class CodebaseSearch {
             languageFilter = null
         } = options;
 
+        if (!this.supabase) {
+            log.warn('[CodebaseSearch] Supabase not configured, using fallback search');
+            return await this.fallbackSearch(query, options);
+        }
+
         const startTime = Date.now();
         let queryError = null;
 
@@ -169,6 +185,17 @@ class CodebaseSearch {
      */
     async fallbackSearch(query, options = {}) {
         const { limit = 10, fileFilter = null, languageFilter = null } = options;
+
+        if (!this.supabase) {
+            log.warn('[CodebaseSearch] Supabase not configured, returning empty results');
+            return {
+                results: [],
+                query: query,
+                count: 0,
+                method: 'text_search',
+                error: 'Supabase not configured'
+            };
+        }
 
         try {
             let dbQuery = this.supabase
@@ -282,6 +309,10 @@ class CodebaseSearch {
      * Find files by pattern
      */
     async findFiles(pattern) {
+        if (!this.supabase) {
+            log.warn('[CodebaseSearch] Supabase not configured, returning empty file list');
+            return { files: [], count: 0, error: 'Supabase not configured' };
+        }
         try {
             const { data, error } = await this.supabase
                 .from('codebase_index')
@@ -312,6 +343,10 @@ class CodebaseSearch {
      * Get file context (all chunks for a file)
      */
     async getFileContext(filePath) {
+        if (!this.supabase) {
+            log.warn('[CodebaseSearch] Supabase not configured, returning empty context');
+            return { file: filePath, chunks: [], count: 0, error: 'Supabase not configured' };
+        }
         const startTime = Date.now();
         try {
             const { data, error } = await this.supabase
@@ -359,6 +394,11 @@ class CodebaseSearch {
      */
     async searchPattern(pattern, options = {}) {
         const { limit = 10, language = null } = options;
+
+        if (!this.supabase) {
+            log.warn('[CodebaseSearch] Supabase not configured, returning empty results');
+            return { results: [], pattern: pattern, count: 0, error: 'Supabase not configured' };
+        }
 
         try {
             let query = this.supabase

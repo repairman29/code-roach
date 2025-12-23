@@ -4,15 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Code Quality Dashboard - Real-Time</title>
+    <link rel="icon" type="image/svg+xml" href="/logo.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <!-- System 3046 Design System -->
+    <link rel="stylesheet" href="/css/system-3046-design-system.css">
     <link rel="stylesheet" href="/css/admin.css">
     <link rel="stylesheet" href="/css/shared/navigation.css">
     <link rel="stylesheet" href="/css/shared/toast.css">
     <link rel="stylesheet" href="/css/shared/loading.css">
     <style>
-        body {
-            font-family: 'Roboto Mono', monospace;
-            background: #0a0e27;
-            color: #00ffff;
+        /* System 3046 overrides */
+        body.system-3046 {
             padding: 0;
         }
         .dashboard {
@@ -32,9 +36,9 @@
             margin-bottom: 30px;
         }
         .stat-card {
-            background: #1a1f3a;
-            border: 1px solid #00ffff;
-            border-radius: 8px;
+            background: var(--panel-bg);
+            border: 1px solid var(--border-dim);
+            clip-path: polygon(var(--corner-cut) 0, 100% 0, 100% calc(100% - var(--corner-cut)), calc(100% - var(--corner-cut)) 100%, 0 100%, 0 var(--corner-cut));
             padding: 20px;
         }
         .stat-value {
@@ -88,15 +92,107 @@
             animation: none;
         }
     </style>
+    <script src="/js/admin-hub-utils.js"></script>
 </head>
-<body>
-    <div class="dashboard">
+<body class="system-3046">
+    <!-- Boot Sequence -->
+    <div id="sys-boot" style="position:fixed; top:0; left:0; width:100%; height:100%; background:#000; z-index:9999; display:flex; align-items:center; justify-content:center; flex-direction:column; transition: opacity 0.5s;">
+        <div style="font-family:'Space Mono'; color:#00F0FF; margin-bottom:10px;">INITIALIZING...</div>
+        <div style="width:200px; height:2px; background:#333;">
+            <div id="sys-loader-bar" style="width:0%; height:100%; background:#00F0FF; transition:width 1s ease-in-out;"></div>
+        </div>
+    </div>
+
+    <!-- HUD Overlay -->
+    <div class="sys-hud-overlay">
+        <div class="sys-hud-border">
+            <div class="sys-bracket tl"></div>
+            <div class="sys-bracket tr"></div>
+            <div class="sys-bracket bl"></div>
+            <div class="sys-bracket br"></div>
+        </div>
+    </div>
+    
+    <div class="scanlines"></div>
+    
+    <!-- Navigation -->
+    <nav style="position: sticky; top: 0; z-index: 1000; background: rgba(5, 5, 5, 0.95); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border-dim); padding: 1rem 2rem;">
+        <div style="max-width: 1400px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center;">
+            <a href="/" class="sys-font text-cyan" style="font-size: 1.2rem; text-decoration: none;">SMUGGLER</a>
+            <div style="display: flex; gap: 2rem;">
+                <a href="/admin-dashboard.html" style="color: var(--text-muted); text-decoration: none; font-family: var(--font-tech); font-size: 0.9rem;">ADMIN</a>
+                <a href="/admin/code-quality-dashboard.html" style="color: var(--neon-cyan); text-decoration: none; font-family: var(--font-tech); font-size: 0.9rem;">CODE QUALITY</a>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="sys-container" style="max-width: 1400px; margin: 2rem auto; padding: 2rem;">
         <div class="header">
             <h1>🔴 Code Quality Dashboard - Real-Time</h1>
-            <p>
-                <span class="status-indicator" id="statusIndicator"></span>
-                <span id="statusText">Connecting...</span>
-            </p>
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                <p style="margin: 0;">
+                    <span class="status-indicator" id="statusIndicator"></span>
+                    <span id="statusText">Connecting...</span>
+                </p>
+                <div style="display: flex; gap: 10px;">
+                    <button onclick="exportData()" style="padding: 8px 16px; background: transparent; border: 1px solid #00ffff; color: #00ffff; cursor: pointer; font-family: 'Space Mono', monospace;">📥 Export</button>
+                    <button onclick="configureAlerts()" style="padding: 8px 16px; background: transparent; border: 1px solid #00ffff; color: #00ffff; cursor: pointer; font-family: 'Space Mono', monospace;">🔔 Alerts</button>
+                    <button onclick="toggleComparison()" style="padding: 8px 16px; background: transparent; border: 1px solid #00ffff; color: #00ffff; cursor: pointer; font-family: 'Space Mono', monospace;">⚖️ Compare</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Alert Banner -->
+        <div id="alertBanner" style="display: none; background: rgba(255, 68, 68, 0.15); border: 1px solid #ff4444; border-radius: 8px; padding: 15px; margin: 20px 0; color: #ff4444;">
+            <div id="alertMessage"></div>
+        </div>
+        
+        <!-- Comparison Panel -->
+        <div id="comparisonPanel" class="stat-card" style="display: none; margin-bottom: 20px;">
+            <h2>Period Comparison</h2>
+            <div id="comparisonResults" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px;">
+                <div style="color: #88ffff;">Select periods to compare...</div>
+            </div>
+        </div>
+        
+        <!-- Filter Panel -->
+        <div class="stat-card" style="margin-bottom: 20px;">
+            <h2>Filters</h2>
+            <div style="display: flex; gap: 15px; flex-wrap: wrap; align-items: center;">
+                <div>
+                    <label style="display: block; margin-bottom: 5px; color: #88ffff; font-size: 0.9em;">Time Range</label>
+                    <select id="timeRange" onchange="applyFilters()" style="padding: 8px 12px; background: var(--panel-bg); border: 1px solid var(--border-dim); border-radius: 4px; color: #00ffff; font-family: 'Space Mono', monospace;">
+                        <option value="1h">Last Hour</option>
+                        <option value="24h">Last 24 Hours</option>
+                        <option value="7d" selected>Last 7 Days</option>
+                        <option value="30d">Last 30 Days</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 5px; color: #88ffff; font-size: 0.9em;">Severity</label>
+                    <select id="severityFilter" onchange="applyFilters()" style="padding: 8px 12px; background: var(--panel-bg); border: 1px solid var(--border-dim); border-radius: 4px; color: #00ffff; font-family: 'Space Mono', monospace;">
+                        <option value="all">All Severities</option>
+                        <option value="critical">Critical</option>
+                        <option value="high">High</option>
+                        <option value="medium">Medium</option>
+                        <option value="low">Low</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 5px; color: #88ffff; font-size: 0.9em;">Status</label>
+                    <select id="statusFilter" onchange="applyFilters()" style="padding: 8px 12px; background: var(--panel-bg); border: 1px solid var(--border-dim); border-radius: 4px; color: #00ffff; font-family: 'Space Mono', monospace;">
+                        <option value="all">All Status</option>
+                        <option value="pending">Pending</option>
+                        <option value="approved">Approved</option>
+                        <option value="fixed">Fixed</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 5px; color: #88ffff; font-size: 0.9em;">Search</label>
+                    <input type="text" id="searchInput" placeholder="Search issues..." oninput="applyFilters()"
+                           style="padding: 8px 12px; background: var(--panel-bg); border: 1px solid var(--border-dim); border-radius: 4px; color: #00ffff; font-family: 'Space Mono', monospace; min-width: 200px;">
+                </div>
+            </div>
         </div>
 
         <div class="stats-grid">
@@ -157,6 +253,249 @@
             pendingFixes: 0,
             approvedFixes: 0
         };
+        
+        let codeQualityHistory = [];
+        let previousCodeQuality = null;
+        let comparisonMode = false;
+        let allIssues = [];
+        let alertSettings = {
+            criticalIssuesWarning: 5,
+            criticalIssuesCritical: 10,
+            totalIssuesWarning: 50,
+            totalIssuesCritical: 100
+        };
+        
+        // Load alert settings
+        function loadAlertSettings() {
+            const saved = localStorage.getItem('codeQualityAlertSettings');
+            if (saved) {
+                alertSettings = JSON.parse(saved);
+            }
+        }
+        
+        // Configure alerts
+        function configureAlerts() {
+            const criticalWarning = prompt('Critical Issues Warning Threshold:', alertSettings.criticalIssuesWarning);
+            if (criticalWarning !== null) {
+                alertSettings.criticalIssuesWarning = parseInt(criticalWarning);
+            }
+            const criticalCritical = prompt('Critical Issues Critical Threshold:', alertSettings.criticalIssuesCritical);
+            if (criticalCritical !== null) {
+                alertSettings.criticalIssuesCritical = parseInt(criticalCritical);
+            }
+            const totalWarning = prompt('Total Issues Warning Threshold:', alertSettings.totalIssuesWarning);
+            if (totalWarning !== null) {
+                alertSettings.totalIssuesWarning = parseInt(totalWarning);
+            }
+            localStorage.setItem('codeQualityAlertSettings', JSON.stringify(alertSettings));
+            checkAlerts();
+        }
+        
+        // Check for alerts
+        function checkAlerts() {
+            const alerts = [];
+            const totalIssues = stats.totalIssues || 0;
+            const criticalIssues = stats.criticalIssues || 0;
+            
+            if (criticalIssues >= alertSettings.criticalIssuesCritical) {
+                alerts.push({ type: 'critical', message: `Critical issues count is critically high: ${criticalIssues} (threshold: ${alertSettings.criticalIssuesCritical})` });
+            } else if (criticalIssues >= alertSettings.criticalIssuesWarning) {
+                alerts.push({ type: 'warning', message: `Critical issues count is above warning threshold: ${criticalIssues} (threshold: ${alertSettings.criticalIssuesWarning})` });
+            }
+            
+            if (totalIssues >= alertSettings.totalIssuesCritical) {
+                alerts.push({ type: 'critical', message: `Total issues count is critically high: ${totalIssues} (threshold: ${alertSettings.totalIssuesCritical})` });
+            } else if (totalIssues >= alertSettings.totalIssuesWarning) {
+                alerts.push({ type: 'warning', message: `Total issues count is above warning threshold: ${totalIssues} (threshold: ${alertSettings.totalIssuesWarning})` });
+            }
+            
+            if (alerts.length > 0) {
+                showAlerts(alerts);
+            } else {
+                hideAlerts();
+            }
+        }
+        
+        function showAlerts(alerts) {
+            const banner = document.getElementById('alertBanner');
+            const message = document.getElementById('alertMessage');
+            const criticalAlerts = alerts.filter(a => a.type === 'critical');
+            const warningAlerts = alerts.filter(a => a.type === 'warning');
+            
+            let html = '';
+            if (criticalAlerts.length > 0) {
+                html += '<div style="font-weight: 600; margin-bottom: 8px;">🔴 CRITICAL ALERTS:</div>';
+                criticalAlerts.forEach(a => {
+                    html += `<div style="margin-left: 20px; margin-bottom: 5px;">${a.message}</div>`;
+                });
+            }
+            if (warningAlerts.length > 0) {
+                html += '<div style="font-weight: 600; margin-bottom: 8px; margin-top: 10px;">⚠️ WARNINGS:</div>';
+                warningAlerts.forEach(a => {
+                    html += `<div style="margin-left: 20px; margin-bottom: 5px;">${a.message}</div>`;
+                });
+            }
+            
+            message.innerHTML = html;
+            banner.style.display = 'block';
+        }
+        
+        function hideAlerts() {
+            document.getElementById('alertBanner').style.display = 'none';
+        }
+        
+        // Export data
+        function exportData() {
+            const exportData = {
+                timestamp: new Date().toISOString(),
+                stats: {
+                    totalIssues: stats.totalIssues,
+                    criticalIssues: stats.criticalIssues,
+                    pendingFixes: stats.pendingFixes,
+                    approvedFixes: stats.approvedFixes
+                },
+                issues: allIssues,
+                history: codeQualityHistory,
+                comparison: previousCodeQuality
+            };
+            
+            const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `code-quality-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+        
+        // Toggle comparison
+        function toggleComparison() {
+            comparisonMode = !comparisonMode;
+            const panel = document.getElementById('comparisonPanel');
+            if (comparisonMode) {
+                panel.style.display = 'block';
+                loadComparison();
+            } else {
+                panel.style.display = 'none';
+            }
+        }
+        
+        // Load comparison
+        function loadComparison() {
+            const results = document.getElementById('comparisonResults');
+            results.innerHTML = '<div style="color: #88ffff;">Loading comparison...</div>';
+            
+            // Store previous code quality stats
+            if (!previousCodeQuality) {
+                if (stats.totalIssues > 0 || stats.criticalIssues > 0) {
+                    previousCodeQuality = {
+                        totalIssues: stats.totalIssues,
+                        criticalIssues: stats.criticalIssues,
+                        pendingFixes: stats.pendingFixes,
+                        approvedFixes: stats.approvedFixes,
+                        timestamp: new Date().toISOString()
+                    };
+                }
+            }
+            
+            // Get current code quality stats
+            const current = {
+                totalIssues: stats.totalIssues,
+                criticalIssues: stats.criticalIssues,
+                pendingFixes: stats.pendingFixes,
+                approvedFixes: stats.approvedFixes,
+                timestamp: new Date().toISOString()
+            };
+            
+            if (previousCodeQuality && (previousCodeQuality.totalIssues > 0 || previousCodeQuality.criticalIssues > 0)) {
+                displayComparison(current, previousCodeQuality);
+            } else {
+                results.innerHTML = '<div style="color: #88ffff;">No previous data for comparison</div>';
+            }
+        }
+        
+        // Display comparison
+        function displayComparison(current, previous) {
+            const results = document.getElementById('comparisonResults');
+            
+            const comparisons = [
+                {
+                    label: 'Total Issues',
+                    current: current.totalIssues,
+                    previous: previous.totalIssues,
+                    format: (v) => v,
+                    better: (c, p) => c < p
+                },
+                {
+                    label: 'Critical Issues',
+                    current: current.criticalIssues,
+                    previous: previous.criticalIssues,
+                    format: (v) => v,
+                    better: (c, p) => c < p
+                },
+                {
+                    label: 'Pending Fixes',
+                    current: current.pendingFixes,
+                    previous: previous.pendingFixes,
+                    format: (v) => v,
+                    better: (c, p) => c < p
+                },
+                {
+                    label: 'Approved Fixes',
+                    current: current.approvedFixes,
+                    previous: previous.approvedFixes,
+                    format: (v) => v,
+                    better: (c, p) => c > p
+                }
+            ];
+            
+            results.innerHTML = comparisons.map(comp => {
+                const diff = comp.current - comp.previous;
+                const isBetter = comp.better(comp.current, comp.previous);
+                const diffSign = diff >= 0 ? '+' : '';
+                const color = isBetter ? '#00ff00' : diff === 0 ? '#00ffff' : '#ff4444';
+                
+                return `
+                    <div class="stat-card">
+                        <div class="stat-label">${comp.label}</div>
+                        <div class="stat-value" style="color: ${color};">${comp.format(comp.current)}</div>
+                        <div style="color: ${color}; font-size: 0.9em; margin-top: 5px;">
+                            ${diffSign}${comp.format(Math.abs(diff))} vs previous
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // Apply filters
+        function applyFilters() {
+            const searchTerm = document.getElementById('searchInput')?.value.toLowerCase() || '';
+            const severityFilter = document.getElementById('severityFilter')?.value || 'all';
+            const statusFilter = document.getElementById('statusFilter')?.value || 'all';
+            
+            // Filter feed items
+            const feedItems = document.querySelectorAll('.feed-item');
+            feedItems.forEach(item => {
+                const text = item.textContent.toLowerCase();
+                let show = true;
+                
+                // Search filter
+                if (searchTerm && !text.includes(searchTerm)) {
+                    show = false;
+                }
+                
+                // Severity filter
+                if (severityFilter !== 'all') {
+                    if (severityFilter === 'critical' && !item.classList.contains('critical')) {
+                        show = false;
+                    }
+                }
+                
+                item.style.display = show ? 'block' : 'none';
+            });
+        }
 
         const statusIndicator = document.getElementById('statusIndicator');
         const statusText = document.getElementById('statusText');
@@ -168,6 +507,28 @@
             document.getElementById('criticalIssues').textContent = stats.criticalIssues;
             document.getElementById('pendingFixes').textContent = stats.pendingFixes;
             document.getElementById('approvedFixes').textContent = stats.approvedFixes;
+            
+            // Store in history
+            codeQualityHistory.push({
+                timestamp: new Date().toISOString(),
+                totalIssues: stats.totalIssues,
+                criticalIssues: stats.criticalIssues,
+                pendingFixes: stats.pendingFixes,
+                approvedFixes: stats.approvedFixes
+            });
+            
+            // Keep last 100 entries
+            if (codeQualityHistory.length > 100) {
+                codeQualityHistory = codeQualityHistory.slice(-100);
+            }
+            
+            // Check alerts
+            checkAlerts();
+            
+            // Update comparison if active
+            if (comparisonMode && previousCodeQuality) {
+                loadComparison();
+            }
         }
 
         // Add feed item
@@ -179,11 +540,26 @@
             let content = '';
             
             if (type === 'issue') {
+                // Store issue
+                const issue = {
+                    id: data.id || Date.now(),
+                    message: data.error_message || data.description || 'Unknown error',
+                    file: data.error_file || 'Unknown',
+                    severity: data.error_severity || 'medium',
+                    timestamp: new Date().toISOString()
+                };
+                allIssues.push(issue);
+                
+                // Keep last 1000 issues
+                if (allIssues.length > 1000) {
+                    allIssues = allIssues.slice(-1000);
+                }
+                
                 content = `
                     <div class="feed-time">${time}</div>
                     <strong>New Issue Detected</strong>
-                    <div>${data.error_message || data.description || 'Unknown error'}</div>
-                    <div style="color: #88ffff; font-size: 0.9em;">File: ${data.error_file || 'Unknown'}</div>
+                    <div>${issue.message}</div>
+                    <div style="color: #88ffff; font-size: 0.9em;">File: ${issue.file}</div>
                 `;
                 stats.totalIssues++;
                 if (data.error_severity === 'critical') {
@@ -206,7 +582,12 @@
                 stats.criticalIssues++;
             }
             
-            item.innerHTML = content;
+            // Fix XSS: Use safeSetHTML for feed item content (content should be sanitized)
+            if (window.DOMSanitizer && window.DOMSanitizer.safeSetHTML) {
+                window.DOMSanitizer.safeSetHTML(item, content);
+            } else {
+                item.innerHTML = content;
+            }
             feedContainer.insertBefore(item, feedContainer.firstChild);
             
             // Keep only last 50 items
@@ -315,11 +696,13 @@
 
         // Initialize
         window.addEventListener('DOMContentLoaded', () => {
+            loadAlertSettings();
             loadInitialStats();
             connectRealtime();
             updateStats();
             createCodeQualityCharts();
         });
     </script>
+    </div>
 </body>
 </html>

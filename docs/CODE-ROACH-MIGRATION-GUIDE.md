@@ -1,136 +1,141 @@
-# Code Roach - Database Migration Guide
+# Code Roach Migration Guide
 
-**Last Updated:** December 15, 2025
+**Problem:** Large migration file causes connection timeout  
+**Solution:** Apply in smaller batches or use essential tables first
 
----
+## Quick Start - Essential Tables Only
 
-## 📋 New Services Migration
+If you just need Code Roach to work, apply the minimal migration:
 
-The new services migration (`20251215000000_new_services_schema.sql`) adds support for all 12 new Code Roach services.
+1. **Open Supabase Dashboard > SQL Editor**
+2. **Open file:** `supabase/code_roach_essential_tables.sql`
+3. **Copy and paste into SQL Editor**
+4. **Run** (should complete in < 5 seconds)
 
-### **What It Adds:**
+This creates the 4 core tables needed for basic functionality:
+- ✅ `code_roach_issues` - Store issues
+- ✅ `code_roach_patterns` - Store patterns
+- ✅ `code_roach_file_health` - Track file health
+- ✅ `code_roach_file_cache` - Cache file hashes
 
-1. **Fix Monitoring Table** - Tracks applied fixes in real-time
-2. **Fix Pipelines Table** - Stores orchestration pipeline data
-3. **Pattern Ratings Table** - Marketplace pattern ratings
-4. **Team Preferences Table** - Team-specific preferences
-5. **Quality Metrics History Table** - Historical quality metrics
-6. **Additional Columns** - Adds `project_id`, `shared`, `shared_at` to patterns table
+## Full Migration - Apply in Batches
 
----
+For complete functionality, apply the full migration in batches:
 
-## 🚀 Running the Migration
+### Batch Files Location
+```
+supabase/migrations-batches/
+```
 
-### **Method 1: Via CLI (Recommended)**
+### Apply Batches One at a Time
+
+1. **Batch 1** (Core Schema - 330 lines)
+   - File: `01_batch_01_20251213213917_code_roach_schema_sql.sql`
+   - Apply this first
+   - Creates core tables and indexes
+
+2. **Batch 2-11** (SaaS Tables)
+   - Apply sequentially
+   - Each batch is ~300-450 lines
+   - Creates organizations, projects, and enhanced tables
+
+3. **Batch 12-14** (Expertise Tables)
+   - Apply sequentially
+   - Creates expertise tracking
+
+4. **Batch 15-16** (Expert Training)
+   - Apply sequentially
+   - Creates expert training tables
+
+### Batch Application Process
+
+For each batch:
+1. Open Supabase Dashboard > SQL Editor
+2. Open the batch file
+3. Copy SQL
+4. Paste into SQL Editor
+5. Click "Run"
+6. Wait for "Success"
+7. **Verify:** `node scripts/check-code-roach-tables.js`
+8. Move to next batch
+
+### Tips to Avoid Timeouts
+
+1. **Apply one batch at a time** - Don't combine batches
+2. **Wait for completion** - Don't start next batch until previous completes
+3. **Check after each batch** - Verify tables were created
+4. **If timeout occurs:**
+   - Wait 30 seconds
+   - Try the same batch again (uses `IF NOT EXISTS` - safe to retry)
+   - If still failing, try splitting that batch further
+
+## Verification
+
+After applying batches, verify with:
 
 ```bash
-# Run new services migration
-code-roach-saas db --migrate new-services
-
-# Or run all migrations
-code-roach-saas db --migrate
+node scripts/check-code-roach-tables.js
 ```
 
-**Requirements:**
-- `SUPABASE_DB_PASSWORD` set in `.env`
-- Get password from: Supabase Dashboard → Settings → Database → Connection string
-
-### **Method 2: Via Script**
-
-```bash
-# Set database password first
-export SUPABASE_DB_PASSWORD=your_password
-
-# Run migration
-node scripts/run-migration-via-config.js
+Expected output:
+```
+✅ code_roach_issues: 0 records
+✅ code_roach_patterns: 0 records
+✅ code_roach_file_health: 0 records
+✅ code_roach_file_cache: 0 records
+... (all 13 tables should show ✅)
 ```
 
-### **Method 3: Via Supabase Dashboard (Manual)**
+## Troubleshooting
 
-1. Go to: https://supabase.com/dashboard
-2. Select your project
-3. Click **"SQL Editor"** in the left sidebar
-4. Click **"New query"**
-5. Copy the SQL from: `supabase/migrations/20251215000000_new_services_schema.sql`
-6. Paste into the editor
-7. Click **"Run"** (or press Cmd/Ctrl + Enter)
+### Connection Timeout
+- **Cause:** Migration too large or complex
+- **Fix:** Use essential tables first, then apply batches
 
-### **Method 4: Via Supabase CLI**
+### "Table already exists" errors
+- **Safe to ignore** - Migrations use `IF NOT EXISTS`
+- Tables are idempotent
 
-```bash
-# If project is linked
-supabase db push
+### "Column already exists" errors
+- **Safe to ignore** - Migrations check before adding columns
+- Indicates partial migration was applied
 
-# Or with connection string
-supabase db push --db-url "postgresql://postgres:[password]@[host]:5432/postgres"
+### Missing tables after batch
+- Check which batch failed
+- Re-run that specific batch
+- Verify with checker script
+
+## Recommended Approach
+
+**For Quick Setup:**
+1. Apply `code_roach_essential_tables.sql` (4 core tables)
+2. Test Code Roach functionality
+3. Apply full batches later if needed
+
+**For Complete Setup:**
+1. Apply batches 1-16 sequentially
+2. Verify after each batch
+3. Test full functionality
+
+## Batch File List
+
+```
+01_batch_01_20251213213917_code_roach_schema_sql.sql (330 lines)
+01_batch_02_20251213_code_roach_saas_sql.sql (2 lines - header only)
+01_batch_03_20251213_code_roach_saas_sql.sql (451 lines)
+01_batch_04_20251214173708_code_roach_saas_sql.sql (2 lines - header only)
+01_batch_05_20251213_code_roach_saas_sql.sql (288 lines)
+01_batch_06_20251214174751_code_roach_saas_sql.sql (2 lines - header only)
+01_batch_07_20251213_code_roach_saas_sql.sql (288 lines)
+01_batch_08_20251214174943_code_roach_saas_sql.sql (2 lines - header only)
+01_batch_09_20251213_code_roach_saas_sql.sql (288 lines)
+01_batch_10_20251216011144_code_roach_saas_sql.sql (2 lines - header only)
+01_batch_11_20251213_code_roach_saas_sql.sql (451 lines)
+01_batch_12_20250114000000_code_roach_expertise_sql.sql (48 lines)
+01_batch_13_20251214005941_code_roach_expertise_sql.sql (49 lines)
+01_batch_14_20251214075923_code_roach_expertise_sql.sql (50 lines)
+01_batch_15_20250115000000_code_roach_expert_training_sql.sql (2 lines - header only)
+01_batch_16_20250115000000_code_roach_expert_training_sql.sql (155 lines)
 ```
 
----
-
-## ✅ Verification
-
-After running the migration, verify tables were created:
-
-```sql
--- Check new tables
-SELECT table_name 
-FROM information_schema.tables 
-WHERE table_schema = 'public' 
-AND table_name IN (
-    'code_roach_fix_monitoring',
-    'code_roach_fix_pipelines',
-    'code_roach_pattern_ratings',
-    'code_roach_team_preferences',
-    'code_roach_quality_metrics_history'
-)
-ORDER BY table_name;
-
--- Check new columns in patterns table
-SELECT column_name 
-FROM information_schema.columns 
-WHERE table_name = 'code_roach_patterns' 
-AND column_name IN ('project_id', 'shared', 'shared_at');
-```
-
----
-
-## 🔧 Troubleshooting
-
-### **"Database password not found"**
-- Set `SUPABASE_DB_PASSWORD` in `.env`
-- Get it from Supabase Dashboard → Settings → Database
-
-### **"Connection failed"**
-- Check your Supabase URL is correct in config
-- Verify database password is correct
-- Try manual migration via dashboard
-
-### **"Table already exists"**
-- Migration uses `CREATE TABLE IF NOT EXISTS` - safe to run multiple times
-- If you get errors, tables may already exist (this is OK)
-
-### **"Permission denied"**
-- Ensure you're using the service role key
-- Check RLS policies are set correctly
-
----
-
-## 📝 Migration File
-
-**Location:** `supabase/migrations/20251215000000_new_services_schema.sql`
-
-**Safe to run multiple times:** ✅ Yes (uses IF NOT EXISTS)
-
----
-
-## 🎯 Next Steps
-
-After migration:
-1. ✅ Verify tables were created
-2. ✅ Test new services
-3. ✅ Check API endpoints work
-4. ✅ Verify frontend can access new data
-
----
-
-**Need help?** Check the migration file or run it manually via Supabase Dashboard.
+**Note:** Batches with only 2 lines are just headers - you can skip those or combine with the next batch.

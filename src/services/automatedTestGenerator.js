@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/automatedTestGenerator.js
- * Last Sync: 2025-12-14T07:30:45.622Z
+ * Last Sync: 2025-12-20T22:26:03.328Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -23,14 +23,20 @@ const path = require('path');
 
 class AutomatedTestGenerator {
     constructor() {
-        this.supabase = null;
-        this.testDir = path.join(__dirname, '../../tests/generated');
-        
-        if (config.supabase?.url && config.supabase?.serviceRoleKey) {
-            this.supabase = createClient(
-                config.supabase.url,
-                config.supabase.serviceRoleKey
-            );
+        // Only create Supabase client if credentials are available
+        if (config.supabase.serviceRoleKey) {
+            try {
+                this.supabase = createClient(
+                    config.supabase.url,
+                    config.supabase.serviceRoleKey
+                );
+            } catch (error) {
+                console.warn('[automatedTestGenerator] Supabase not configured:', error.message);
+                this.supabase = null;
+            }
+        } else {
+            console.warn('[automatedTestGenerator] Supabase credentials not configured. Service will be disabled.');
+            this.supabase = null;
         }
 
         // Ensure test directory exists

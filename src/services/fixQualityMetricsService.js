@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/fixQualityMetricsService.js
- * Last Sync: 2025-12-16T00:42:39.835Z
+ * Last Sync: 2025-12-20T22:26:03.335Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -20,21 +20,20 @@ const config = require('../config');
 
 class FixQualityMetricsService {
     constructor() {
-        this.supabase = null;
-        this.slaDefinitions = {
-            fixSuccessRate: { target: 0.95, critical: 0.90 }, // 95% target, 90% critical
-            timeToFix: { target: 24, critical: 48 }, // hours
-            fixAccuracy: { target: 0.90, critical: 0.85 },
-            falsePositiveRate: { target: 0.05, critical: 0.10 },
-            developerSatisfaction: { target: 4.0, critical: 3.5 }, // out of 5
-            fixAcceptanceRate: { target: 0.85, critical: 0.75 }
-        };
-        
-        if (config.supabase?.url && config.supabase?.serviceRoleKey) {
-            this.supabase = createClient(
-                config.supabase.url,
-                config.supabase.serviceRoleKey
-            );
+        // Only create Supabase client if credentials are available
+        if (config.supabase.serviceRoleKey) {
+            try {
+                this.supabase = createClient(
+                    config.supabase.url,
+                    config.supabase.serviceRoleKey
+                );
+            } catch (error) {
+                console.warn('[fixQualityMetricsService] Supabase not configured:', error.message);
+                this.supabase = null;
+            }
+        } else {
+            console.warn('[fixQualityMetricsService] Supabase credentials not configured. Service will be disabled.');
+            this.supabase = null;
         }
     }
 

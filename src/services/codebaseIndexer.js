@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/codebaseIndexer.js
- * Last Sync: 2025-12-14T07:30:45.515Z
+ * Last Sync: 2025-12-21T02:43:02.364Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -29,13 +29,22 @@ const performanceTrackingService = require('./performanceTrackingService');
 
 class CodebaseIndexer {
     constructor() {
-        this.supabase = createClient(
-            config.supabase.url,
-            config.supabase.serviceRoleKey
-        );
-        this.openaiApiKey = process.env.OPENAI_API_KEY || config.imageGeneration?.openai?.apiKey;
-        this.indexedFiles = new Map();
-        this.sessionId = `codebase-indexer-${Date.now()}`;
+        // Only create Supabase client if credentials are available
+        if (config.supabase.serviceRoleKey) {
+            try {
+                this.supabase = createClient(
+                    config.supabase.url,
+                    config.supabase.serviceRoleKey
+                );
+            } catch (error) {
+                console.warn('[codebaseIndexer] Supabase not configured:', error.message);
+                this.supabase = null;
+            }
+        } else {
+            console.warn('[codebaseIndexer] Supabase credentials not configured. Service will be disabled.');
+            this.supabase = null;
+        }
+        
         this.excludePatterns = [
             /node_modules/,
             /\.git/,

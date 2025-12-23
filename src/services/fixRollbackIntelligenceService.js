@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/fixRollbackIntelligenceService.js
- * Last Sync: 2025-12-16T00:42:39.834Z
+ * Last Sync: 2025-12-20T22:26:03.332Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -22,15 +22,20 @@ const codebaseSearch = require('./codebaseSearch');
 
 class FixRollbackIntelligenceService {
     constructor() {
-        this.supabase = null;
-        this.rollbackPatterns = new Map();
-        this.monitoringActive = new Map(); // Track fixes being monitored
-        
-        if (config.supabase?.url && config.supabase?.serviceRoleKey) {
-            this.supabase = createClient(
-                config.supabase.url,
-                config.supabase.serviceRoleKey
-            );
+        // Only create Supabase client if credentials are available
+        if (config.supabase.serviceRoleKey) {
+            try {
+                this.supabase = createClient(
+                    config.supabase.url,
+                    config.supabase.serviceRoleKey
+                );
+            } catch (error) {
+                console.warn('[fixRollbackIntelligenceService] Supabase not configured:', error.message);
+                this.supabase = null;
+            }
+        } else {
+            console.warn('[fixRollbackIntelligenceService] Supabase credentials not configured. Service will be disabled.');
+            this.supabase = null;
         }
     }
 

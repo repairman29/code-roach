@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/expertTrainingService.js
- * Last Sync: 2025-12-16T04:14:36.744Z
+ * Last Sync: 2025-12-20T22:34:57.895Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -23,15 +23,24 @@ const customerCodebaseAnalyzer = require('./customerCodebaseAnalyzer');
 
 class ExpertTrainingService {
     constructor() {
-        this.supabase = null;
-        this.expertTemplates = new Map();
-        
-        if (config.supabase?.url && config.supabase?.serviceRoleKey) {
-            this.supabase = createClient(
-                config.supabase.url,
-                config.supabase.serviceRoleKey
-            );
+        // Only create Supabase client if credentials are available
+        if (config.supabase.serviceRoleKey) {
+            try {
+                this.supabase = createClient(
+                    config.supabase.url,
+                    config.supabase.serviceRoleKey
+                );
+            } catch (error) {
+                console.warn('[expertTrainingService] Supabase not configured:', error.message);
+                this.supabase = null;
+            }
+        } else {
+            console.warn('[expertTrainingService] Supabase credentials not configured. Service will be disabled.');
+            this.supabase = null;
         }
+
+        // Initialize expert templates map
+        this.expertTemplates = new Map();
 
         // Load expert templates (we'll create these based on our 5-expert packages)
         this.loadExpertTemplates();
@@ -123,6 +132,15 @@ class ExpertTrainingService {
         // State management expert (for frontend frameworks)
         if (analysis.architecture_patterns?.state_management) {
             expertTypes.push('state-management');
+        }
+
+        // Deployment expert (if deployment platforms detected)
+        if (analysis.tech_stack?.deployment_platforms?.length > 0) {
+            // Generate platform-specific deployment experts
+            analysis.tech_stack.deployment_platforms.forEach(platform => {
+                const platformKey = platform.toLowerCase().replace(/[^a-z0-9]/g, '-');
+                expertTypes.push(`deployment-${platformKey}`);
+            });
         }
 
         return expertTypes;
@@ -252,6 +270,11 @@ Generate the expert guide now:`;
         } else if (expertType === 'api') {
             context.api_style = analysis.architecture_patterns?.api_style;
             context.api_patterns = this.extractAPIPatterns(analysis);
+        } else if (expertType.startsWith('deployment-')) {
+            const platform = expertType.replace('deployment-', '').replace(/-/g, ' ');
+            context.deployment_platform = platform;
+            context.deployment_platforms = analysis.tech_stack?.deployment_platforms || [];
+            context.deployment_patterns = this.extractDeploymentPatterns(analysis, platform);
         }
 
         return context;
@@ -289,6 +312,19 @@ Generate the expert guide now:`;
             style: analysis.architecture_patterns?.api_style,
             routing: null, // Would detect routing patterns
             middleware: [] // Would detect middleware patterns
+        };
+    }
+
+    /**
+     * Extract deployment patterns
+     */
+    extractDeploymentPatterns(analysis, platform) {
+        return {
+            platform: platform,
+            platforms: analysis.tech_stack?.deployment_platforms || [],
+            config_files: [], // Would detect config files (railway.json, etc.)
+            scripts: [], // Would detect deployment scripts
+            cicd: [] // Would detect CI/CD configurations
         };
     }
 
@@ -664,6 +700,11 @@ module.exports = new ${className}();
      * Load expert templates
      */
     loadExpertTemplates() {
+        // Ensure expertTemplates is initialized
+        if (!this.expertTemplates) {
+            this.expertTemplates = new Map();
+        }
+        
         // Load templates based on our 5-expert packages
         // For now, use basic templates
         this.expertTemplates.set('database', {
@@ -681,6 +722,41 @@ module.exports = new ${className}();
      * Get expert template
      */
     getExpertTemplate(expertType) {
+        // For deployment-railway, we have a comprehensive guide available
+        if (expertType === 'deployment-railway') {
+            return {
+                source: 'docs/RAILWAY-EXPERTISE-GUIDE.md',
+                type: 'comprehensive',
+                includes: [
+                    'Core Railway Concepts',
+                    'CLI Commands',
+                    'Logging & Monitoring',
+                    'Deployment Strategies',
+                    'Configuration Files',
+                    'Networking & Domains',
+                    'Database & Services',
+                    'Security Best Practices',
+                    'Scaling & Performance',
+                    'Programmatic Tools',
+                    'Troubleshooting'
+                ],
+                overview: 'Railway deployment and operations expertise guide',
+                sections: []
+            };
+        }
+
+        // For other deployment platforms, use platform-specific template
+        if (expertType.startsWith('deployment-')) {
+            const platform = expertType.replace('deployment-', '');
+            return {
+                source: 'llm-generated',
+                type: 'platform-specific',
+                platform: platform,
+                overview: `${platform} deployment expertise guide`,
+                sections: []
+            };
+        }
+
         // Try to get specific template
         if (this.expertTemplates.has(expertType)) {
             return this.expertTemplates.get(expertType);
@@ -770,5 +846,16 @@ module.exports = new ${className}();
     }
 }
 
-module.exports = new ExpertTrainingService();
+// Initialize with error handling
+let serviceInstance;
+try {
+    serviceInstance = new ExpertTrainingService();
+} catch (err) {
+    console.warn('[expertTrainingService] Failed to initialize, using stub:', err.message);
+    serviceInstance = {
+        generateExperts: async () => ({ experts: [] }),
+        loadExpertTemplates: () => {}
+    };
+}
+module.exports = serviceInstance;
 

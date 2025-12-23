@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/cursorRulesLearningService.js
- * Last Sync: 2025-12-16T03:10:22.239Z
+ * Last Sync: 2025-12-20T22:26:03.326Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -22,16 +22,20 @@ const llmService = require('./llmService');
 
 class CursorRulesLearningService {
     constructor() {
-        this.supabase = null;
-        this.cursorRulesFile = path.join(__dirname, '../../.cursorrules');
-        this.rulesCache = new Map();
-        
-        // Initialize Supabase if configured
-        if (config.supabase?.url && config.supabase?.serviceRoleKey) {
-            this.supabase = createClient(
-                config.supabase.url,
-                config.supabase.serviceRoleKey
-            );
+        // Only create Supabase client if credentials are available
+        if (config.supabase.serviceRoleKey) {
+            try {
+                this.supabase = createClient(
+                    config.supabase.url,
+                    config.supabase.serviceRoleKey
+                );
+            } catch (error) {
+                console.warn('[cursorRulesLearningService] Supabase not configured:', error.message);
+                this.supabase = null;
+            }
+        } else {
+            console.warn('[cursorRulesLearningService] Supabase credentials not configured. Service will be disabled.');
+            this.supabase = null;
         }
     }
 

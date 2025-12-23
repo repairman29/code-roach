@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/fixDocumentationGenerationService.js
- * Last Sync: 2025-12-16T00:42:39.835Z
+ * Last Sync: 2025-12-19T23:29:57.651Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.

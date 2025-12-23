@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/fixOrchestrationService.js
- * Last Sync: 2025-12-16T03:55:33.881Z
+ * Last Sync: 2025-12-19T23:29:57.646Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -16,14 +16,23 @@
  * System Architecture Expert - 2025-01-15 - Added Event Bus integration
  */
 
-const fixImpactPredictionService = require('./fixImpactPredictionService');
-const fixConfidenceCalibrationService = require('./fixConfidenceCalibrationService');
-const fixVerificationService = require('./fixVerificationService');
-const fixApplicationService = require('./fixApplicationService');
-const fixRollbackIntelligenceService = require('./fixRollbackIntelligenceService');
-const explainabilityService = require('./explainabilityService');
-const fixCostBenefitAnalysisService = require('./fixCostBenefitAnalysisService');
-const issuePrioritizationService = require('./issuePrioritizationService');
+// Service Client integration - System Architecture Expert - 2025-01-15
+// Migrated from direct requires to Service Client for retry logic, circuit breakers, and logging
+let serviceClient = null;
+try {
+    serviceClient = require('./serviceClient');
+} catch (err) {
+    console.warn('[Fix Orchestration] Service Client not available, using direct requires:', err.message);
+    // Fallback to direct requires if Service Client not available
+    var fixImpactPredictionService = require('./fixImpactPredictionService');
+    var fixConfidenceCalibrationService = require('./fixConfidenceCalibrationService');
+    var fixVerificationService = require('./fixVerificationService');
+    var fixApplicationService = require('./fixApplicationService');
+    var fixRollbackIntelligenceService = require('./fixRollbackIntelligenceService');
+    var explainabilityService = require('./explainabilityService');
+    var fixCostBenefitAnalysisService = require('./fixCostBenefitAnalysisService');
+    var issuePrioritizationService = require('./issuePrioritizationService');
+}
 
 // Event Bus integration - System Architecture Expert - 2025-01-15
 let eventBus = null;
@@ -166,8 +175,10 @@ class FixOrchestrationService {
         };
 
         try {
-            // Prioritize issue
-            const priority = await issuePrioritizationService.prioritizeIssue(issue, context);
+            // Prioritize issue - System Architecture Expert - 2025-01-15 - Using Service Client
+            const priority = serviceClient 
+                ? await serviceClient.call('issuePrioritizationService', 'prioritizeIssue', { issue, context }, { retries: 2, useCircuitBreaker: true })
+                : await issuePrioritizationService.prioritizeIssue(issue, context);
             
             stage.result = {
                 priority: priority.priority,
@@ -201,10 +212,10 @@ class FixOrchestrationService {
                 confidence: context.confidence || 0.8
             };
 
-            const impact = await fixImpactPredictionService.predictImpact(mockFix, {
-                ...context,
-                issue
-            });
+            // Predict impact - System Architecture Expert - 2025-01-15 - Using Service Client
+            const impact = serviceClient
+                ? await serviceClient.call('fixImpactPredictionService', 'predictImpact', { mockFix, context: { ...context, issue } }, { retries: 2, useCircuitBreaker: true })
+                : await fixImpactPredictionService.predictImpact(mockFix, { ...context, issue });
 
             stage.result = impact.success ? impact.impact : null;
             stage.status = 'completed';
@@ -287,15 +298,15 @@ class FixOrchestrationService {
         };
 
         try {
-            const calibrated = await fixConfidenceCalibrationService.calibrateConfidence(
-                context.confidence || 0.8,
-                {
-                    method: context.method,
-                    domain: context.domain,
-                    filePath: context.filePath,
-                    issueType: issue.type
-                }
-            );
+            // Calibrate confidence - System Architecture Expert - 2025-01-15 - Using Service Client
+            const calibrated = serviceClient
+                ? await serviceClient.call('fixConfidenceCalibrationService', 'calibrateConfidence', 
+                    { confidence: context.confidence || 0.8, options: { method: context.method, domain: context.domain, filePath: context.filePath, issueType: issue.type } },
+                    { retries: 2, useCircuitBreaker: true })
+                : await fixConfidenceCalibrationService.calibrateConfidence(
+                    context.confidence || 0.8,
+                    { method: context.method, domain: context.domain, filePath: context.filePath, issueType: issue.type }
+                );
 
             stage.result = calibrated;
             stage.status = 'completed';
@@ -319,11 +330,12 @@ class FixOrchestrationService {
         };
 
         try {
-            const verification = await fixVerificationService.verifyFix(
-                context.fixedCode,
-                context.filePath,
-                context.originalCode
-            );
+            // Verify fix - System Architecture Expert - 2025-01-15 - Using Service Client
+            const verification = serviceClient
+                ? await serviceClient.call('fixVerificationService', 'verifyFix', 
+                    { fixedCode: context.fixedCode, filePath: context.filePath, originalCode: context.originalCode },
+                    { retries: 2, useCircuitBreaker: true })
+                : await fixVerificationService.verifyFix(context.fixedCode, context.filePath, context.originalCode);
 
             stage.result = verification;
             stage.status = verification.overall ? 'completed' : 'failed';
@@ -352,10 +364,12 @@ class FixOrchestrationService {
                 code: context.fixedCode
             };
 
-            const explanation = await explainabilityService.explainFixEnhanced(mockFix, {
-                ...context,
-                issue
-            });
+            // Explain fix - System Architecture Expert - 2025-01-15 - Using Service Client
+            const explanation = serviceClient
+                ? await serviceClient.call('explainabilityService', 'explainFixEnhanced', 
+                    { mockFix, context: { ...context, issue } },
+                    { retries: 2, useCircuitBreaker: true })
+                : await explainabilityService.explainFixEnhanced(mockFix, { ...context, issue });
 
             stage.result = explanation.success ? explanation.explanation : null;
             stage.status = 'completed';
@@ -467,7 +481,10 @@ class FixOrchestrationService {
                 }
             };
 
-            const result = await fixApplicationService.applyFix(fixData);
+            // Apply fix - System Architecture Expert - 2025-01-15 - Using Service Client
+            const result = serviceClient
+                ? await serviceClient.call('fixApplicationService', 'applyFix', { fixData }, { retries: 1, useCircuitBreaker: true })
+                : await fixApplicationService.applyFix(fixData);
 
             stage.result = result;
             stage.status = result.success ? 'completed' : 'failed';
@@ -492,16 +509,12 @@ class FixOrchestrationService {
 
         try {
             const fixId = `fix-${Date.now()}`;
-            const monitoring = await fixRollbackIntelligenceService.monitorFix(
-                fixId,
-                {
-                    code: context.fixedCode
-                },
-                {
-                    ...context,
-                    issue
-                }
-            );
+            // Monitor fix - System Architecture Expert - 2025-01-15 - Using Service Client
+            const monitoring = serviceClient
+                ? await serviceClient.call('fixRollbackIntelligenceService', 'monitorFix',
+                    { fixId, code: context.fixedCode, context: { ...context, issue } },
+                    { retries: 2, useCircuitBreaker: true })
+                : await fixRollbackIntelligenceService.monitorFix(fixId, { code: context.fixedCode }, { ...context, issue });
 
             stage.result = monitoring;
             stage.status = 'completed';

@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/fixApplicationService.js
- * Last Sync: 2025-12-16T04:06:34.038Z
+ * Last Sync: 2025-12-19T23:29:57.568Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -17,6 +17,8 @@ const fixSuccessTracker = require('./fixSuccessTracker');
 const agentSessionService = require('./agentSessionService');
 const expertLearningService = require('./expertLearningService');
 const expertUsageTracker = require('./expertUsageTracker');
+const fs = require('fs').promises;
+const path = require('path');
 
 class FixApplicationService {
     constructor() {
@@ -337,6 +339,188 @@ class FixApplicationService {
      */
     getHistory(limit = 100) {
         return this.fixHistory.slice(-limit).reverse();
+    }
+
+    /**
+     * Apply fix to a file
+     * This is a simplified version - in production, you'd want more sophisticated code patching
+     */
+    async applyFix(fix, options = {}) {
+        const {
+            ticketId,
+            rollbackId,
+            autoApply = false,
+            filePath = null
+        } = options;
+
+        // Validate fix first
+        const validation = this.validateFix(fix);
+        if (!validation.valid) {
+            throw new Error(`Fix validation failed: ${validation.reason}`);
+        }
+
+        // Categorize safety
+        const safety = this.categorizeSafety(fix);
+        
+        // If not auto-apply and risky, require approval
+        if (!autoApply && safety === 'risky') {
+            return {
+                success: false,
+                requiresApproval: true,
+                safety: safety,
+                fix: fix
+            };
+        }
+
+        // If file path provided, try to apply to file
+        const targetFile = filePath || fix.filePath || fix.target?.file;
+        
+        if (targetFile && fix.code) {
+            try {
+                // Read current file
+                const fullPath = path.resolve(process.cwd(), targetFile);
+                const currentContent = await fs.readFile(fullPath, 'utf8');
+                
+                // Create backup
+                const backupPath = `${fullPath}.backup.${Date.now()}`;
+                await fs.writeFile(backupPath, currentContent);
+                
+                // Apply fix based on type
+                let newContent = currentContent;
+                
+                if (fix.type === 'null-check' || fix.type === 'error-handling') {
+                    // Insert fix at appropriate location
+                    // This is simplified - in production, use AST parsing
+                    const insertPoint = this.findInsertPoint(currentContent, fix);
+                    if (insertPoint >= 0) {
+                        newContent = 
+                            currentContent.slice(0, insertPoint) +
+                            fix.code + '\n' +
+                            currentContent.slice(insertPoint);
+                    } else {
+                        // Append at end of function/file
+                        newContent = currentContent + '\n' + fix.code;
+                    }
+                } else if (fix.type === 'variable-init') {
+                    // Find variable declaration location
+                    const varMatch = currentContent.match(new RegExp(`(let|const|var)\\s+${fix.variable || '\\w+'}`));
+                    if (varMatch) {
+                        // Variable exists, update it
+                        newContent = currentContent.replace(
+                            new RegExp(`(let|const|var)\\s+${fix.variable || '\\w+'}([^=]*)=([^;]+);`),
+                            `$1 ${fix.variable || 'var'} = ${fix.code};`
+                        );
+                    } else {
+                        // Add variable at top of scope
+                        newContent = `const ${fix.variable || 'var'} = ${fix.code};\n${currentContent}`;
+                    }
+                } else {
+                    // Generic code injection
+                    const insertPoint = this.findInsertPoint(currentContent, fix);
+                    if (insertPoint >= 0) {
+                        newContent = 
+                            currentContent.slice(0, insertPoint) +
+                            fix.code + '\n' +
+                            currentContent.slice(insertPoint);
+                    } else {
+                        newContent = currentContent + '\n' + fix.code;
+                    }
+                }
+                
+                // Write new content
+                await fs.writeFile(fullPath, newContent, 'utf8');
+                
+                // Record application
+                const result = {
+                    success: true,
+                    fixId: `fix_${Date.now()}`,
+                    filePath: fullPath,
+                    backupPath: backupPath,
+                    rollbackId: rollbackId,
+                    safety: safety,
+                    applied: true
+                };
+                
+                // Record in history
+                await this.recordFixApplication(
+                    { id: ticketId || 'unknown', message: fix.description || 'Fix applied' },
+                    fix,
+                    true,
+                    rollbackId,
+                    { agentType: 'ai-support-agent', filePath: fullPath }
+                );
+                
+                return result;
+            } catch (error) {
+                console.error('[Fix Application] Error applying fix to file:', error);
+                return {
+                    success: false,
+                    error: error.message,
+                    requiresApproval: true
+                };
+            }
+        } else {
+            // No file path - return fix instructions
+            return {
+                success: true,
+                fixId: `fix_${Date.now()}`,
+                instructions: this.generateApplicationInstructions(fix, { id: ticketId || 'unknown' }),
+                requiresManualApplication: true,
+                safety: safety
+            };
+        }
+    }
+
+    /**
+     * Find insertion point for fix in code
+     */
+    findInsertPoint(content, fix) {
+        // Try to find function start
+        if (fix.target?.function) {
+            const funcMatch = content.match(new RegExp(`function\\s+${fix.target.function}\\s*\\([^)]*\\)\\s*\\{`));
+            if (funcMatch) {
+                return funcMatch.index + funcMatch[0].length;
+            }
+        }
+        
+        // Try to find class or module
+        const classMatch = content.match(/class\s+\w+\s*\{/);
+        if (classMatch) {
+            return classMatch.index + classMatch[0].length;
+        }
+        
+        // Default to end of file
+        return -1;
+    }
+
+    /**
+     * Rollback a fix
+     */
+    async rollbackFix(rollbackId) {
+        // Find rollback point
+        const rollback = this.fixHistory.find(f => f.rollbackId === rollbackId);
+        if (!rollback) {
+            throw new Error('Rollback point not found');
+        }
+        
+        // If backup file exists, restore it
+        if (rollback.backupPath) {
+            try {
+                const backupContent = await fs.readFile(rollback.backupPath, 'utf8');
+                const originalPath = rollback.backupPath.replace(/\.backup\.\d+$/, '');
+                await fs.writeFile(originalPath, backupContent, 'utf8');
+                
+                // Delete backup
+                await fs.unlink(rollback.backupPath);
+                
+                return { success: true, restored: originalPath };
+            } catch (error) {
+                console.error('[Fix Application] Error rolling back:', error);
+                throw error;
+            }
+        }
+        
+        return { success: false, error: 'No backup found' };
     }
 }
 

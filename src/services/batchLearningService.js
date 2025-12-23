@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/batchLearningService.js
- * Last Sync: 2025-12-14T07:30:45.587Z
+ * Last Sync: 2025-12-21T02:43:02.370Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -22,10 +22,21 @@ const config = require('../config');
 
 class BatchLearningService {
     constructor() {
-        this.supabase = createClient(
-            config.supabase.url,
-            config.supabase.serviceRoleKey
-        );
+        // Only create Supabase client if credentials are available
+        if (config.supabase.serviceRoleKey) {
+            try {
+                this.supabase = createClient(
+                    config.supabase.url,
+                    config.supabase.serviceRoleKey
+                );
+            } catch (error) {
+                console.warn('[batchLearningService] Supabase not configured:', error.message);
+                this.supabase = null;
+            }
+        } else {
+            console.warn('[batchLearningService] Supabase credentials not configured. Service will be disabled.');
+            this.supabase = null;
+        }
     }
 
     /**

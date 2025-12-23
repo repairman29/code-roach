@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🐛 Code Roach - Self-Learning Code Quality Platform</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 100px 0 80px;
+            color: white;
+        }
+
+        .logo {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .tagline {
+            font-size: 1.5rem;
+            opacity: 0.9;
+            margin-bottom: 40px;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background: #ff6b6b;
+            color: white;
+            padding: 15px 40px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+        }
+
+        .features {
+            background: white;
+            padding: 80px 0;
+            border-radius: 20px 20px 0 0;
+            margin-top: -40px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .features h2 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 60px;
+            color: #2c3e50;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+            margin-bottom: 60px;
+        }
+
+        .feature-card {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            transition: transform 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            border-color: #667eea;
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+
+        .feature-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+
+        .pricing {
+            background: #f8f9fa;
+            padding: 80px 0;
+        }
+
+        .pricing h2 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 60px;
+            color: #2c3e50;
+        }
+
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+        }
+
+        .pricing-card {
+            background: white;
+            padding: 40px 30px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .pricing-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .pricing-card.popular {
+            border: 3px solid #667eea;
+            transform: scale(1.05);
+        }
+
+        .price {
+            font-size: 3rem;
+            font-weight: 700;
+            color: #667eea;
+            margin: 20px 0;
+        }
+
+        .price span {
+            font-size: 1rem;
+            font-weight: 400;
+        }
+
+        .stats {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 80px 0;
+            text-align: center;
+        }
+
+        .stats h2 {
+            font-size: 2.5rem;
+            margin-bottom: 60px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 40px;
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .footer {
+            background: #2c3e50;
+            color: white;
+            padding: 40px 0;
+            text-align: center;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 20px;
+        }
+
+        .footer-links a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .footer-links a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.5rem;
+            }
+
+            .tagline {
+                font-size: 1.2rem;
+            }
+
+            .feature-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .pricing-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .footer-links {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="logo">🐛</div>
+            <h1>Code Roach</h1>
+            <p class="tagline">Self-learning code quality platform that gets smarter with every fix</p>
+            <a href="#pricing" class="cta-button">Start Free Trial</a>
+        </div>
+    </header>
+
+    <section class="features">
+        <div class="container">
+            <h2>Why Choose Code Roach?</h2>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🤖</div>
+                    <h3>Autonomous Fixing</h3>
+                    <p>Automatically detects and fixes security vulnerabilities, code smells, and performance issues without human intervention.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🧠</div>
+                    <h3>Self-Learning AI</h3>
+                    <p>Gets smarter with every fix, adapting to your coding patterns and continuously improving its accuracy.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔒</div>
+                    <h3>Enterprise Security</h3>
+                    <p>Safe, validated fixes with automatic rollback capabilities and comprehensive audit trails.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3>Team Analytics</h3>
+                    <p>Comprehensive dashboards showing code quality trends, team productivity, and improvement metrics.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔄</div>
+                    <h3>CI/CD Integration</h3>
+                    <p>Seamlessly integrates with GitHub Actions, GitLab CI, Jenkins, and other CI/CD platforms.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🌍</div>
+                    <h3>Multi-Language</h3>
+                    <p>Supports JavaScript, TypeScript, Python, Java, Go, Rust, and 10+ other programming languages.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="pricing" id="pricing">
+        <div class="container">
+            <h2>Simple, Transparent Pricing</h2>
+            <div class="pricing-grid">
+                <div class="pricing-card">
+                    <h3>Free</h3>
+                    <div class="price">$0<span>/month</span></div>
+                    <ul style="text-align: left; margin: 30px 0;">
+                        <li>100 monthly fixes</li>
+                        <li>Basic security scanning</li>
+                        <li>1 repository</li>
+                        <li>Email support</li>
+                    </ul>
+                    <a href="#" class="cta-button" style="background: #28a745;">Get Started</a>
+                </div>
+                <div class="pricing-card popular">
+                    <div style="background: #667eea; color: white; padding: 5px 15px; border-radius: 20px; display: inline-block; margin-bottom: 10px; font-size: 0.9rem;">Most Popular</div>
+                    <h3>Professional</h3>
+                    <div class="price">$499<span>/month</span></div>
+                    <ul style="text-align: left; margin: 30px 0;">
+                        <li>10,000 monthly fixes</li>
+                        <li>Advanced AI learning</li>
+                        <li>10 repositories</li>
+                        <li>Priority support</li>
+                        <li>Custom rules</li>
+                    </ul>
+                    <a href="#" class="cta-button">Start Free Trial</a>
+                </div>
+                <div class="pricing-card">
+                    <h3>Enterprise</h3>
+                    <div class="price">Custom</div>
+                    <ul style="text-align: left; margin: 30px 0;">
+                        <li>Unlimited fixes</li>
+                        <li>Unlimited repositories</li>
+                        <li>Dedicated support</li>
+                        <li>On-premise deployment</li>
+                        <li>Custom integrations</li>
+                    </ul>
+                    <a href="#" class="cta-button" style="background: #6c757d;">Contact Sales</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="stats">
+        <div class="container">
+            <h2>Trusted by Developers Worldwide</h2>
+            <div class="stats-grid">
+                <div>
+                    <div class="stat-number">500K+</div>
+                    <div>Lines of code improved</div>
+                </div>
+                <div>
+                    <div class="stat-number">85%</div>
+                    <div>Average fix accuracy</div>
+                </div>
+                <div>
+                    <div class="stat-number">50+</div>
+                    <div>Programming languages</div>
+                </div>
+                <div>
+                    <div class="stat-number">99.9%</div>
+                    <div>Uptime guarantee</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-links">
+                <a href="https://github.com/code-roach/code-roach">GitHub</a>
+                <a href="#docs">Documentation</a>
+                <a href="#support">Support</a>
+                <a href="#privacy">Privacy</a>
+                <a href="#terms">Terms</a>
+            </div>
+            <p>&copy; 2025 Code Roach. Built for developers who care about code quality.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Simple scroll animation
+        document.addEventListener('DOMContentLoaded', function() {
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const observer = new IntersectionObserver(function(entries) {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, observerOptions);
+
+            // Observe feature cards
+            document.querySelectorAll('.feature-card').forEach(card => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+                observer.observe(card);
+            });
+
+            // Observe pricing cards
+            document.querySelectorAll('.pricing-card').forEach(card => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+                observer.observe(card);
+            });
+        });
+    </script>
+</body>
+</html>

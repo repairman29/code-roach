@@ -4,36 +4,43 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Code Roach - Login</title>
+    <!-- XSS Sanitization Utility -->
+    <script src="/js/utils/domSanitizer.js"></script>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🪳</text></svg>">
+    <link rel="icon" type="image/svg+xml" href="/logo.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Roboto+Mono:wght@300;400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <!-- System 3046 Design System -->
+    <link rel="stylesheet" href="/css/system-3046-design-system.css">
+    <!-- reCAPTCHA v3 (optional - will gracefully fail if not configured) -->
+    <!-- Uncomment and add your reCAPTCHA key when ready:
+    <script src="https://www.google.com/recaptcha/api.js?render=YOUR_RECAPTCHA_SITE_KEY"></script>
+    -->
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-
-        body {
-            font-family: 'Roboto Mono', monospace;
-            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
-            color: #e0e0e0;
-            min-height: 100vh;
+        
+        /* System 3046 overrides */
+        body.system-3046 {
+            padding: 0;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 20px;
+            min-height: 100vh;
         }
 
         .login-container {
-            background: rgba(20, 25, 45, 0.95);
-            border: 2px solid #00ffff;
-            border-radius: 8px;
+            background: var(--panel-bg);
+            border: 1px solid var(--border-dim);
+            clip-path: polygon(var(--corner-cut) 0, 100% 0, 100% calc(100% - var(--corner-cut)), calc(100% - var(--corner-cut)) 100%, 0 100%, 0 var(--corner-cut));
             padding: 40px;
             max-width: 400px;
             width: 100%;
-            box-shadow: 0 0 30px rgba(0, 255, 255, 0.3);
+            box-shadow: 0 0 30px rgba(0, 240, 255, 0.3);
         }
 
         .login-header {
@@ -121,6 +128,13 @@
             transform: none;
         }
 
+        .password-strength-weak { color: #ff4444; }
+        .password-strength-fair { color: #ffaa00; }
+        .password-strength-good { color: #00ff00; }
+        .password-strength-strong { color: #00ffff; }
+        .requirement-met { color: #00ff00; }
+        .requirement-unmet { color: #ff4444; }
+        
         .error-message {
             background: rgba(255, 0, 0, 0.2);
             border: 1px solid #ff0000;
@@ -177,7 +191,27 @@
         }
     </style>
 </head>
-<body>
+<body class="system-3046">
+    <!-- Boot Sequence -->
+    <div id="sys-boot" style="position:fixed; top:0; left:0; width:100%; height:100%; background:#000; z-index:9999; display:flex; align-items:center; justify-content:center; flex-direction:column; transition: opacity 0.5s;">
+        <div style="font-family:'Space Mono'; color:#00F0FF; margin-bottom:10px;">INITIALIZING...</div>
+        <div style="width:200px; height:2px; background:#333;">
+            <div id="sys-loader-bar" style="width:0%; height:100%; background:#00F0FF; transition:width 1s ease-in-out;"></div>
+        </div>
+    </div>
+
+    <!-- HUD Overlay -->
+    <div class="sys-hud-overlay">
+        <div class="sys-hud-border">
+            <div class="sys-bracket tl"></div>
+            <div class="sys-bracket tr"></div>
+            <div class="sys-bracket bl"></div>
+            <div class="sys-bracket br"></div>
+        </div>
+    </div>
+    
+    <div class="scanlines"></div>
+    
     <div class="login-container">
         <div class="login-header">
             <h1>🪳 Code Roach</h1>
@@ -194,13 +228,35 @@
             </div>
             <div class="form-group">
                 <label>Password</label>
-                <input type="password" id="password" required autocomplete="current-password" placeholder="••••••••">
+                <input type="password" id="password" required autocomplete="current-password" placeholder="••••••••" oninput="checkPasswordStrength()">
+                <div id="password-strength" style="margin-top: 5px; font-size: 0.8em; display: none;"></div>
+                <div id="password-requirements" style="margin-top: 5px; font-size: 0.75em; color: #a0a0a0; display: none;">
+                    <div>Password must contain:</div>
+                    <ul style="margin: 5px 0 0 20px; padding: 0;">
+                        <li id="req-length">At least 8 characters</li>
+                        <li id="req-upper">One uppercase letter</li>
+                        <li id="req-lower">One lowercase letter</li>
+                        <li id="req-number">One number</li>
+                        <li id="req-special">One special character (!@#$%^&*)</li>
+                    </ul>
+                </div>
+            </div>
+            <div id="recaptcha-badge" style="margin-bottom: 10px; font-size: 0.7em; color: #a0a0a0; text-align: center;">
+                This site is protected by reCAPTCHA
             </div>
             <button type="submit" class="btn primary" id="loginBtn">Sign In</button>
             <div class="loading" id="loading">
                 <div class="pulse">Signing in...</div>
             </div>
         </form>
+
+        <!-- OAuth Sign In -->
+        <div style="margin: 20px 0; text-align: center;">
+            <div style="margin: 15px 0; color: #a0a0a0; font-size: 0.9em;">or</div>
+            <button type="button" class="btn" id="googleSignInBtn" onclick="handleGoogleSignIn()" style="width: 100%; background: rgba(66, 133, 244, 0.2); border-color: #4285f4; color: #4285f4;">
+                <span style="margin-right: 8px;">🔵</span> Continue with Google
+            </button>
+        </div>
 
         <div class="form-footer">
             <p>Don't have an account? <a href="#" onclick="showSignUp(); return false;">Sign up</a></p>
@@ -212,6 +268,112 @@
     <script src="/js/codeRoachAuth.js"></script>
     <script>
         let isSignUp = false;
+        let recaptchaSiteKey = null; // Set to your reCAPTCHA site key when ready
+        
+        // Password strength checker
+        function checkPasswordStrength() {
+            const password = document.getElementById('password').value;
+            const strengthDiv = document.getElementById('password-strength');
+            const requirementsDiv = document.getElementById('password-requirements');
+            
+            if (!password) {
+                strengthDiv.style.display = 'none';
+                requirementsDiv.style.display = 'none';
+                return;
+            }
+            
+            // Show requirements on sign-up
+            if (isSignUp) {
+                requirementsDiv.style.display = 'block';
+            }
+            
+            // Check requirements
+            const hasLength = password.length >= 8;
+            const hasUpper = /[A-Z]/.test(password);
+            const hasLower = /[a-z]/.test(password);
+            const hasNumber = /[0-9]/.test(password);
+            const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+            
+            // Update requirement indicators
+            if (isSignUp) {
+                document.getElementById('req-length').className = hasLength ? 'requirement-met' : 'requirement-unmet';
+                document.getElementById('req-upper').className = hasUpper ? 'requirement-met' : 'requirement-unmet';
+                document.getElementById('req-lower').className = hasLower ? 'requirement-met' : 'requirement-unmet';
+                document.getElementById('req-number').className = hasNumber ? 'requirement-met' : 'requirement-unmet';
+                document.getElementById('req-special').className = hasSpecial ? 'requirement-met' : 'requirement-unmet';
+            }
+            
+            // Calculate strength
+            let strength = 0;
+            if (hasLength) strength++;
+            if (hasUpper) strength++;
+            if (hasLower) strength++;
+            if (hasNumber) strength++;
+            if (hasSpecial) strength++;
+            
+            // Show strength indicator
+            if (isSignUp && password.length > 0) {
+                strengthDiv.style.display = 'block';
+                if (strength < 3) {
+                    strengthDiv.textContent = 'Password strength: Weak';
+                    strengthDiv.className = 'password-strength-weak';
+                } else if (strength < 4) {
+                    strengthDiv.textContent = 'Password strength: Fair';
+                    strengthDiv.className = 'password-strength-fair';
+                } else if (strength < 5) {
+                    strengthDiv.textContent = 'Password strength: Good';
+                    strengthDiv.className = 'password-strength-good';
+                } else {
+                    strengthDiv.textContent = 'Password strength: Strong';
+                    strengthDiv.className = 'password-strength-strong';
+                }
+            }
+            
+            return { hasLength, hasUpper, hasLower, hasNumber, hasSpecial, strength };
+        }
+        
+        // Validate password requirements
+        function validatePassword(password) {
+            const checks = checkPasswordStrength();
+            if (!checks) return false;
+            
+            if (isSignUp) {
+                // For sign-up, require all criteria
+                return checks.hasLength && checks.hasUpper && checks.hasLower && 
+                       checks.hasNumber && checks.hasSpecial;
+            } else {
+                // For sign-in, just require minimum length
+                return password.length >= 6;
+            }
+        }
+        
+        // Get reCAPTCHA token
+        async function getRecaptchaToken(action = 'submit') {
+            return new Promise((resolve) => {
+                if (!recaptchaSiteKey) {
+                    // reCAPTCHA not configured, skip
+                    resolve(null);
+                    return;
+                }
+                
+                if (typeof grecaptcha === 'undefined') {
+                    console.warn('reCAPTCHA not loaded, skipping');
+                    resolve(null);
+                    return;
+                }
+                
+                grecaptcha.ready(() => {
+                    grecaptcha.execute(recaptchaSiteKey, { action: action })
+                        .then((token) => {
+                            resolve(token);
+                        })
+                        .catch((error) => {
+                            console.warn('reCAPTCHA error:', error);
+                            resolve(null);
+                        });
+                });
+            });
+        }
 
         async function handleLogin(event) {
             event.preventDefault();
@@ -230,21 +392,81 @@
             loading.style.display = 'block';
 
             try {
+                // Ensure auth is initialized
+                if (!window.codeRoachAuth || !window.codeRoachAuth.supabase) {
+                    await window.codeRoachAuth.initialize();
+                }
+
+                if (!window.codeRoachAuth.supabase) {
+                    throw new Error('Supabase client not available. Please check your configuration.');
+                }
+
                 if (isSignUp) {
                     // Sign up
-                    await window.codeRoachAuth.signUp(email, password);
-                    successMsg.textContent = 'Account created! Please check your email to verify your account.';
-                    successMsg.style.display = 'block';
+                    const result = await window.codeRoachAuth.signUp(email, password);
+                    
+                    // Check if email confirmation is required
+                    if (result.user && !result.session) {
+                        successMsg.textContent = 'Account created! Please check your email to verify your account before signing in.';
+                        successMsg.style.display = 'block';
+                        // Switch to sign in mode after 3 seconds
+                        setTimeout(() => {
+                            showSignIn();
+                            successMsg.style.display = 'none';
+                        }, 3000);
+                    } else if (result.session) {
+                        // Auto-confirmed, redirect
+                        successMsg.textContent = 'Account created! Redirecting...';
+                        successMsg.style.display = 'block';
+                        const urlParams = new URLSearchParams(window.location.search);
+                        let redirect = urlParams.get('redirect') || '/code-roach-dashboard.html';
+                        // Normalize redirect URL
+                        if (redirect === '/code-roach-projects.html') {
+                            redirect = '/code-roach-projects';
+                        }
+                        setTimeout(() => {
+                            window.location.href = redirect;
+                        }, 1000);
+                    } else {
+                        successMsg.textContent = 'Account created successfully!';
+                        successMsg.style.display = 'block';
+                    }
                 } else {
                     // Sign in
                     await window.codeRoachAuth.signIn(email, password);
                     // Redirect to original page or dashboard
                     const urlParams = new URLSearchParams(window.location.search);
-                    const redirect = urlParams.get('redirect') || '/code-roach-dashboard.html';
+                    let redirect = urlParams.get('redirect') || '/code-roach-dashboard.html';
+                    // Normalize redirect URL
+                    if (redirect === '/code-roach-projects.html') {
+                        redirect = '/code-roach-projects';
+                    }
                     window.location.href = redirect;
                 }
             } catch (error) {
-                errorMsg.textContent = error.message || 'Authentication failed';
+                console.error('Auth error:', error);
+                let errorMessage = 'Authentication failed';
+                
+                if (error.message) {
+                    errorMessage = error.message;
+                } else if (error.error_description) {
+                    errorMessage = error.error_description;
+                } else if (typeof error === 'string') {
+                    errorMessage = error;
+                }
+                
+                // User-friendly error messages
+                if (errorMessage.includes('already registered') || errorMessage.includes('already exists')) {
+                    errorMessage = 'This email is already registered. Please sign in instead.';
+                } else if (errorMessage.includes('Invalid login')) {
+                    errorMessage = 'Invalid email or password. Please try again.';
+                } else if (errorMessage.includes('Email not confirmed')) {
+                    errorMessage = 'Please check your email and confirm your account before signing in.';
+                } else if (errorMessage.includes('Password')) {
+                    errorMessage = 'Password must be at least 6 characters long.';
+                }
+                
+                errorMsg.textContent = errorMessage;
                 errorMsg.style.display = 'block';
             } finally {
                 loginBtn.disabled = false;
@@ -255,25 +477,187 @@
         function showSignUp() {
             isSignUp = true;
             document.getElementById('loginBtn').textContent = 'Sign Up';
-            document.querySelector('.form-footer p:first-child').innerHTML = 
-                'Already have an account? <a href="#" onclick="showSignIn(); return false;">Sign in</a>';
+            // Fix XSS: Use safeSetHTML for form footer (static content, but use safeSetHTML for consistency)
+            const formFooter = document.querySelector('.form-footer p:first-child');
+            const footerHTML = 'Already have an account? <a href="#" onclick="showSignIn(); return false;">Sign in</a>';
+            if (window.DOMSanitizer && window.DOMSanitizer.safeSetHTML) {
+                window.DOMSanitizer.safeSetHTML(formFooter, footerHTML);
+            } else if (window.DOMSanitizer && window.DOMSanitizer.sanitizeHTML) {
+                formFooter.innerHTML = window.DOMSanitizer.sanitizeHTML(footerHTML);
+            } else {
+                const div = document.createElement('div');
+                div.textContent = footerHTML;
+                formFooter.innerHTML = div.innerHTML;
+            }
+            // Show password requirements
+            const passwordInput = document.getElementById('password');
+            if (passwordInput.value) {
+                checkPasswordStrength();
+            }
+            document.getElementById('password-requirements').style.display = 'block';
         }
 
         function showSignIn() {
             isSignUp = false;
             document.getElementById('loginBtn').textContent = 'Sign In';
-            document.querySelector('.form-footer p:first-child').innerHTML = 
-                'Don\'t have an account? <a href="#" onclick="showSignUp(); return false;">Sign up</a>';
+            // Fix XSS: Use safeSetHTML for form footer (static content, but use safeSetHTML for consistency)
+            const formFooter = document.querySelector('.form-footer p:first-child');
+            const footerHTML = 'Don\'t have an account? <a href="#" onclick="showSignUp(); return false;">Sign up</a>';
+            if (window.DOMSanitizer && window.DOMSanitizer.safeSetHTML) {
+                window.DOMSanitizer.safeSetHTML(formFooter, footerHTML);
+            } else if (window.DOMSanitizer && window.DOMSanitizer.sanitizeHTML) {
+                formFooter.innerHTML = window.DOMSanitizer.sanitizeHTML(footerHTML);
+            } else {
+                const div = document.createElement('div');
+                div.textContent = footerHTML;
+                formFooter.innerHTML = div.innerHTML;
+            }
+            // Hide password requirements
+            document.getElementById('password-requirements').style.display = 'none';
+            document.getElementById('password-strength').style.display = 'none';
+        }
+
+        // Google OAuth sign-in handler
+        async function handleGoogleSignIn() {
+            const googleBtn = document.getElementById('googleSignInBtn');
+            const errorMsg = document.getElementById('error-message');
+            const successMsg = document.getElementById('success-message');
+            
+            // Hide messages
+            errorMsg.style.display = 'none';
+            successMsg.style.display = 'none';
+            googleBtn.disabled = true;
+            // Fix XSS: Use safeSetHTML for button text (static content, but use safeSetHTML for consistency)
+            if (window.DOMSanitizer && window.DOMSanitizer.safeSetHTML) {
+                window.DOMSanitizer.safeSetHTML(googleBtn, '🔵 Connecting to Google...');
+            } else {
+                // Fix XSS: Use safeSetHTML for button text (static text, but use safeSetHTML for consistency)
+                if (window.DOMSanitizer && window.DOMSanitizer.safeSetHTML) {
+                    window.DOMSanitizer.safeSetHTML(googleBtn, '🔵 Connecting to Google...');
+                } else if (window.DOMSanitizer && window.DOMSanitizer.sanitizeHTML) {
+                    googleBtn.innerHTML = window.DOMSanitizer.sanitizeHTML('🔵 Connecting to Google...');
+                } else {
+                    googleBtn.textContent = '🔵 Connecting to Google...';
+                }
+            }
+            
+            try {
+                // Ensure auth is initialized - wait for it
+                if (!window.codeRoachAuth) {
+                    throw new Error('Code Roach Auth not loaded. Please refresh the page.');
+                }
+                
+                // Wait for initialization to complete
+                if (!window.codeRoachAuth.supabase) {
+                    await window.codeRoachAuth.initialize();
+                    // Wait a bit more for async operations
+                    await new Promise(resolve => setTimeout(resolve, 200));
+                }
+
+                if (!window.codeRoachAuth.supabase || !window.codeRoachAuth.supabase.auth) {
+                    console.error('[Google OAuth] Supabase client state:', {
+                        hasSupabase: !!window.codeRoachAuth.supabase,
+                        hasAuth: !!(window.codeRoachAuth.supabase && window.codeRoachAuth.supabase.auth),
+                        windowSupabase: !!window.supabase
+                    });
+                    throw new Error('Supabase client not available. Please check your configuration and refresh the page.');
+                }
+
+                // Get redirect URL
+                const urlParams = new URLSearchParams(window.location.search);
+                let redirect = urlParams.get('redirect') || '/code-roach-dashboard.html';
+                
+                // Normalize redirect URL (remove .html if route exists without it)
+                if (redirect === '/code-roach-projects.html') {
+                    redirect = '/code-roach-projects';
+                }
+                
+                // Initiate Google OAuth
+                await window.codeRoachAuth.signInWithOAuth('google', {
+                    redirectTo: window.location.origin + redirect
+                });
+                
+                // Note: User will be redirected, so we won't reach here
+                successMsg.textContent = 'Redirecting to Google...';
+                successMsg.style.display = 'block';
+            } catch (error) {
+                console.error('Google OAuth error:', error);
+                errorMsg.textContent = error.message || 'Google sign-in failed. Please try again.';
+                errorMsg.style.display = 'block';
+                googleBtn.disabled = false;
+                googleBtn.innerHTML = '<span style="margin-right: 8px;">🔵</span> Continue with Google';
+            }
         }
 
         // Check if already authenticated
         window.addEventListener('DOMContentLoaded', async () => {
-            await window.codeRoachAuth.initialize();
-            if (window.codeRoachAuth.isAuthenticated()) {
-                // Redirect to original page or dashboard
+            try {
+                // Load Supabase config first if not already available
+                if (!window.SUPABASE_URL || !window.SUPABASE_ANON_KEY) {
+                    try {
+                        const configResponse = await fetch('/api/supabase/config');
+                        if (configResponse.ok) {
+                            const config = await configResponse.json();
+                            window.SUPABASE_URL = config.url || config.SUPABASE_URL;
+                            window.SUPABASE_ANON_KEY = config.anonKey || config.SUPABASE_ANON_KEY || config.key;
+                        }
+                    } catch (err) {
+                        console.warn('[Login] Failed to load Supabase config from API:', err);
+                    }
+                }
+                
+                await window.codeRoachAuth.initialize();
+                
+                // Check for OAuth callback (code in URL)
                 const urlParams = new URLSearchParams(window.location.search);
-                const redirect = urlParams.get('redirect') || '/code-roach-dashboard.html';
-                window.location.href = redirect;
+                if (urlParams.get('code')) {
+                    // OAuth callback - wait a moment for session to be established
+                    setTimeout(() => {
+                        if (window.codeRoachAuth.isAuthenticated()) {
+                            // Check multiple sources for redirect URL
+                            let redirect = urlParams.get('redirect') || 
+                                         new URLSearchParams(window.location.hash.substring(1)).get('redirect') ||
+                                         (window.location.hash ? new URLSearchParams(window.location.hash.replace('#', '?')).get('redirect') : null) ||
+                                         '/code-roach-dashboard.html';
+                            
+                            // Normalize redirect URL - handle both absolute and relative
+                            if (redirect) {
+                                // If it's a full URL, extract the path
+                                try {
+                                    const url = new URL(redirect, window.location.origin);
+                                    redirect = url.pathname;
+                                } catch (e) {
+                                    // Not a full URL, use as-is
+                                }
+                                
+                                // Normalize common patterns
+                                if (redirect === '/code-roach-projects.html' || redirect.endsWith('/code-roach-projects.html')) {
+                                    redirect = '/code-roach-projects';
+                                }
+                                
+                                // Remove any query params or hash from redirect path
+                                redirect = redirect.split('?')[0].split('#')[0];
+                            }
+                            
+                            // Force navigation to clean URL
+                            window.location.replace(redirect || '/code-roach-dashboard.html');
+                        }
+                    }, 1500);
+                    return;
+                }
+                
+                if (window.codeRoachAuth.isAuthenticated()) {
+                    // Redirect to original page or dashboard
+                    let redirect = urlParams.get('redirect') || '/code-roach-dashboard.html';
+                    // Normalize redirect URL
+                    if (redirect === '/code-roach-projects.html') {
+                        redirect = '/code-roach-projects';
+                    }
+                    window.location.href = redirect;
+                }
+            } catch (error) {
+                console.warn('[Login] Auth initialization error:', error);
+                // Continue without redirect - user can still sign in/up
             }
         });
     </script>

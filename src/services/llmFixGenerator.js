@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/llmFixGenerator.js
- * Last Sync: 2025-12-16T04:06:34.037Z
+ * Last Sync: 2025-12-19T23:29:57.562Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -205,10 +205,38 @@ class LLMFixGenerator {
         });
 
         try {
-            const response = await llmService.generateOpenAI('', prompt, 'gpt-4o-mini');
+            // Use new multi-provider LLM system with context-aware routing
+            // Determine cost mode based on issue severity
+            const costMode = issue.severity === 'critical' || issue.severity === 'high' 
+                ? 'quality'  // Use best quality for critical issues
+                : 'balanced'; // Smart routing for others
+            
+            // Determine context type for routing
+            const contextType = this.getContextTypeForIssue(issue);
+            
+            // Generate fix using new LLM service with smart routing
+            const response = await llmService.generateNarrative({
+                userMessage: prompt,
+                gameStateContext: this.buildContextForFix(issue, code, filePath, context),
+                costMode: costMode,
+                source: 'code-roach-fix', // Track Code Roach usage
+                // Context for smart routing
+                context: {
+                    contextType: contextType,
+                    importance: issue.severity === 'critical' ? 'critical' : 
+                               issue.severity === 'high' ? 'high' : 'medium',
+                    isCritical: issue.severity === 'critical'
+                }
+            });
 
             // Parse LLM response
-            const fix = this.parseFixResponse(response, issue, code);
+            const fix = this.parseFixResponse(response.narrative, issue, code);
+            
+            // Add provider info to fix metadata
+            fix.provider = response.provider;
+            fix.model = response.model;
+            fix.cost = response.cost;
+            fix.responseTime = response.responseTime;
 
             return fix;
         } catch (err) {
@@ -216,6 +244,33 @@ class LLMFixGenerator {
             // Fallback to pattern-based fix
             return this.generatePatternBasedFix(issue, code, filePath);
         }
+    }
+
+    /**
+     * Get context type for issue (for smart routing)
+     */
+    getContextTypeForIssue(issue) {
+        const typeMap = {
+            'syntax-error': 'routine',
+            'type-error': 'routine',
+            'reference-error': 'routine',
+            'security-issue': 'critical',
+            'logic-error': 'complex',
+            'async-error': 'complex',
+            'performance-issue': 'high',
+            'race-condition': 'complex',
+            'database-error': 'high',
+            'api-error': 'high'
+        };
+        return typeMap[issue.type] || 'routine';
+    }
+
+    /**
+     * Build context string for fix generation
+     */
+    buildContextForFix(issue, code, filePath, context) {
+        const codeSnippet = this.getCodeSnippet(code, issue.line || 1, 10);
+        return `File: ${filePath}\nIssue: ${issue.type}\nSeverity: ${issue.severity}\nCode:\n${codeSnippet}`;
     }
 
     /**

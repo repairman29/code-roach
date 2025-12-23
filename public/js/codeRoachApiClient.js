@@ -7,6 +7,7 @@ class CodeRoachApiClient {
     constructor(baseUrl = '/api/code-roach') {
         this.baseUrl = baseUrl;
         this.authToken = null;
+        this.csrfToken = null;
     }
 
     /**
@@ -26,6 +27,31 @@ class CodeRoachApiClient {
                 this.setAuthToken(token);
             }
         }
+        
+        // Load CSRF token
+        await this.loadCsrfToken();
+    }
+    
+    /**
+     * Load CSRF token from server
+     */
+    async loadCsrfToken() {
+        try {
+            const response = await fetch('/api/csrf-token', {
+                method: 'GET',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            if (response.ok) {
+                const data = await response.json();
+                this.csrfToken = data.csrfToken;
+            }
+        } catch (error) {
+            // Don't log CSRF token errors as warnings - it's optional
+            // console.warn('[Code Roach API] Failed to load CSRF token:', error);
+        }
     }
 
     /**
@@ -38,6 +64,12 @@ class CodeRoachApiClient {
         if (this.authToken) {
             headers['Authorization'] = `Bearer ${this.authToken}`;
         }
+        
+        // Add CSRF token if available
+        if (this.csrfToken) {
+            headers['X-CSRF-Token'] = this.csrfToken;
+        }
+        
         return headers;
     }
 
@@ -47,6 +79,7 @@ class CodeRoachApiClient {
     async request(endpoint, options = {}) {
         const url = `${this.baseUrl}${endpoint}`;
         const config = {
+            method: options.method || 'GET',
             ...options,
             headers: {
                 ...this.getHeaders(),
@@ -54,8 +87,26 @@ class CodeRoachApiClient {
             }
         };
 
+        // Handle body for POST/PUT requests
+        if (options.body && typeof options.body === 'string') {
+            config.body = options.body;
+        } else if (options.body && typeof options.body === 'object') {
+            config.body = JSON.stringify(options.body);
+        }
+
+        // Add credentials for CORS
+        config.credentials = 'include';
+        
         try {
             const response = await fetch(url, config);
+            
+            // Check if response is actually JSON
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                const text = await response.text();
+                throw new Error(`Expected JSON but got ${contentType}. Response: ${text.substring(0, 100)}`);
+            }
+            
             const data = await response.json();
             
             if (!response.ok) {
@@ -64,6 +115,14 @@ class CodeRoachApiClient {
             
             return data;
         } catch (error) {
+            // Provide more helpful error messages
+            if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
+                console.error(`[Code Roach API] Network error for ${endpoint}. Check:`);
+                console.error('  1. Is the server running?');
+                console.error('  2. Is the URL correct?', url);
+                console.error('  3. Are there CORS issues?');
+                throw new Error(`Network error: Unable to reach ${url}. Make sure the server is running.`);
+            }
             console.error(`[Code Roach API] Error: ${endpoint}`, error);
             throw error;
         }

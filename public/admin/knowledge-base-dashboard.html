@@ -4,15 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Knowledge Base Analytics Dashboard</title>
+    <link rel="icon" type="image/svg+xml" href="/logo.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <!-- System 3046 Design System -->
+    <link rel="stylesheet" href="/css/system-3046-design-system.css">
+    <!-- XSS Sanitization Utility -->
+    <script src="/js/utils/domSanitizer.js"></script>
     <link rel="stylesheet" href="/css/admin.css">
     <link rel="stylesheet" href="/css/shared/navigation.css">
     <link rel="stylesheet" href="/css/shared/toast.css">
     <link rel="stylesheet" href="/css/shared/loading.css">
     <style>
-        body {
-            font-family: 'Roboto Mono', monospace;
-            background: #0a0e27;
-            color: #00ffff;
+        /* System 3046 overrides */
+        body.system-3046 {
             padding: 0;
         }
         .dashboard {
@@ -32,9 +38,9 @@
             margin-bottom: 30px;
         }
         .stat-card {
-            background: #1a1f3a;
-            border: 1px solid #00ffff;
-            border-radius: 8px;
+            background: var(--panel-bg);
+            border: 1px solid var(--border-dim);
+            clip-path: polygon(var(--corner-cut) 0, 100% 0, 100% calc(100% - var(--corner-cut)), calc(100% - var(--corner-cut)) 100%, 0 100%, 0 var(--corner-cut));
             padding: 20px;
         }
         .stat-value {
@@ -104,6 +110,7 @@
             background: #88ffff;
         }
     </style>
+    <script src="/js/admin-hub-utils.js"></script>
 </head>
 <body>
     <script src="/js/shared/navigation.js"></script>
@@ -113,12 +120,69 @@
     <div class="dashboard-container">
     <div class="dashboard">
         <div class="header">
-            <h1>🧠 Knowledge Base Analytics Dashboard</h1>
-            <p>Track knowledge base effectiveness and learning progress</p>
-            <button onclick="loadStats()">Refresh</button>
-            <button onclick="loadTopKnowledge('success')">Top by Success</button>
-            <button onclick="loadTopKnowledge('usage')">Top by Usage</button>
-            <button onclick="loadEffectiveness()">Effectiveness</button>
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                <div>
+                    <h1>🧠 Knowledge Base Analytics Dashboard</h1>
+                    <p>Track knowledge base effectiveness and learning progress</p>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button onclick="exportData()" style="padding: 8px 16px; background: transparent; border: 1px solid #00ffff; color: #00ffff; cursor: pointer; font-family: 'Space Mono', monospace;">📥 Export</button>
+                    <button onclick="configureAlerts()" style="padding: 8px 16px; background: transparent; border: 1px solid #00ffff; color: #00ffff; cursor: pointer; font-family: 'Space Mono', monospace;">🔔 Alerts</button>
+                    <button onclick="toggleComparison()" style="padding: 8px 16px; background: transparent; border: 1px solid #00ffff; color: #00ffff; cursor: pointer; font-family: 'Space Mono', monospace;">⚖️ Compare</button>
+                </div>
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap;">
+                <button onclick="loadStats()">🔄 Refresh</button>
+                <button onclick="loadTopKnowledge('success')">⭐ Top by Success</button>
+                <button onclick="loadTopKnowledge('usage')">📊 Top by Usage</button>
+                <button onclick="loadEffectiveness()">📈 Effectiveness</button>
+            </div>
+        </div>
+        
+        <!-- Alert Banner -->
+        <div id="alertBanner" style="display: none; background: rgba(255, 68, 68, 0.15); border: 1px solid #ff4444; border-radius: 8px; padding: 15px; margin: 20px 0; color: #ff4444;">
+            <div id="alertMessage"></div>
+        </div>
+        
+        <!-- Comparison Panel -->
+        <div class="stat-card" id="comparisonPanel" style="display: none; margin-bottom: 20px;">
+            <h2>Period Comparison</h2>
+            <div id="comparisonResults" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px;">
+                <div style="color: #88ffff;">Select periods to compare...</div>
+            </div>
+        </div>
+        
+        <!-- Filter Panel -->
+        <div class="stat-card" style="margin-bottom: 20px;">
+            <h2>Filters</h2>
+            <div style="display: flex; gap: 15px; flex-wrap: wrap; align-items: center;">
+                <div>
+                    <label style="display: block; margin-bottom: 5px; color: #88ffff; font-size: 0.9em;">Time Range</label>
+                    <select id="timeRange" onchange="applyFilters()" style="padding: 8px 12px; background: var(--panel-bg); border: 1px solid var(--border-dim); border-radius: 4px; color: #00ffff; font-family: 'Space Mono', monospace;">
+                        <option value="all">All Time</option>
+                        <option value="7d" selected>Last 7 Days</option>
+                        <option value="30d">Last 30 Days</option>
+                        <option value="90d">Last 90 Days</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 5px; color: #88ffff; font-size: 0.9em;">Type</label>
+                    <select id="typeFilter" onchange="applyFilters()" style="padding: 8px 12px; background: var(--panel-bg); border: 1px solid var(--border-dim); border-radius: 4px; color: #00ffff; font-family: 'Space Mono', monospace;">
+                        <option value="all">All Types</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 5px; color: #88ffff; font-size: 0.9em;">Source Agent</label>
+                    <select id="sourceFilter" onchange="applyFilters()" style="padding: 8px 12px; background: var(--panel-bg); border: 1px solid var(--border-dim); border-radius: 4px; color: #00ffff; font-family: 'Space Mono', monospace;">
+                        <option value="all">All Sources</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 5px; color: #88ffff; font-size: 0.9em;">Search</label>
+                    <input type="text" id="searchInput" placeholder="Search knowledge..." oninput="applyFilters()"
+                           style="padding: 8px 12px; background: var(--panel-bg); border: 1px solid var(--border-dim); border-radius: 4px; color: #00ffff; font-family: 'Space Mono', monospace; min-width: 200px;">
+                </div>
+            </div>
         </div>
 
         <div class="stats-grid" id="statsGrid">
@@ -142,12 +206,17 @@
 
         <div class="chart-container">
             <h2>Knowledge by Type</h2>
-            <div id="typeChart"></div>
+            <canvas id="typeChart"></canvas>
         </div>
 
         <div class="chart-container">
             <h2>Knowledge by Source Agent</h2>
-            <div id="sourceChart"></div>
+            <canvas id="sourceChart"></canvas>
+        </div>
+        
+        <div class="chart-container">
+            <h2>Knowledge Trends Over Time</h2>
+            <canvas id="trendsChart"></canvas>
         </div>
 
         <div class="knowledge-list">
@@ -161,7 +230,264 @@
         </div>
     </div>
 
+    <script src="/js/shared/charts.js"></script>
+    <script src="/js/shared/chart-helpers.js"></script>
+    <script src="/js/shared/data-export.js"></script>
     <script>
+        let knowledgeHistory = [];
+        let previousKnowledge = null;
+        let comparisonMode = false;
+        let allKnowledge = [];
+        let currentStats = null;
+        let typeChart = null;
+        let sourceChart = null;
+        let trendsChart = null;
+        let alertSettings = {
+            lowSuccessRateWarning: 50,
+            lowSuccessRateCritical: 30,
+            lowUsageWarning: 5,
+            lowUsageCritical: 2
+        };
+        
+        // Load alert settings
+        function loadAlertSettings() {
+            const saved = localStorage.getItem('knowledgeBaseAlertSettings');
+            if (saved) {
+                alertSettings = JSON.parse(saved);
+            }
+        }
+        
+        // Configure alerts
+        function configureAlerts() {
+            const lowSuccessRateWarning = prompt('Low Success Rate Warning Threshold (%):', alertSettings.lowSuccessRateWarning);
+            if (lowSuccessRateWarning !== null) {
+                alertSettings.lowSuccessRateWarning = parseInt(lowSuccessRateWarning);
+            }
+            const lowSuccessRateCritical = prompt('Low Success Rate Critical Threshold (%):', alertSettings.lowSuccessRateCritical);
+            if (lowSuccessRateCritical !== null) {
+                alertSettings.lowSuccessRateCritical = parseInt(lowSuccessRateCritical);
+            }
+            const lowUsageWarning = prompt('Low Usage Warning Threshold:', alertSettings.lowUsageWarning);
+            if (lowUsageWarning !== null) {
+                alertSettings.lowUsageWarning = parseInt(lowUsageWarning);
+            }
+            const lowUsageCritical = prompt('Low Usage Critical Threshold:', alertSettings.lowUsageCritical);
+            if (lowUsageCritical !== null) {
+                alertSettings.lowUsageCritical = parseInt(lowUsageCritical);
+            }
+            localStorage.setItem('knowledgeBaseAlertSettings', JSON.stringify(alertSettings));
+            checkAlerts();
+        }
+        
+        // Check for alerts
+        function checkAlerts() {
+            if (!currentStats) return;
+            
+            const alerts = [];
+            const avgSuccessRate = (currentStats.avgSuccessRate || 0) * 100;
+            const avgUsage = currentStats.avgUsage || 0;
+            
+            if (avgSuccessRate <= alertSettings.lowSuccessRateCritical) {
+                alerts.push({ type: 'critical', message: `Average success rate is critically low: ${avgSuccessRate.toFixed(1)}% (threshold: ${alertSettings.lowSuccessRateCritical}%)` });
+            } else if (avgSuccessRate <= alertSettings.lowSuccessRateWarning) {
+                alerts.push({ type: 'warning', message: `Average success rate is below warning threshold: ${avgSuccessRate.toFixed(1)}% (threshold: ${alertSettings.lowSuccessRateWarning}%)` });
+            }
+            
+            if (avgUsage <= alertSettings.lowUsageCritical) {
+                alerts.push({ type: 'critical', message: `Average usage is critically low: ${avgUsage.toFixed(1)} (threshold: ${alertSettings.lowUsageCritical})` });
+            } else if (avgUsage <= alertSettings.lowUsageWarning) {
+                alerts.push({ type: 'warning', message: `Average usage is below warning threshold: ${avgUsage.toFixed(1)} (threshold: ${alertSettings.lowUsageWarning})` });
+            }
+            
+            if (alerts.length > 0) {
+                showAlerts(alerts);
+            } else {
+                hideAlerts();
+            }
+        }
+        
+        function showAlerts(alerts) {
+            const banner = document.getElementById('alertBanner');
+            const message = document.getElementById('alertMessage');
+            const criticalAlerts = alerts.filter(a => a.type === 'critical');
+            const warningAlerts = alerts.filter(a => a.type === 'warning');
+            
+            let html = '';
+            if (criticalAlerts.length > 0) {
+                html += '<div style="font-weight: 600; margin-bottom: 8px;">🔴 CRITICAL ALERTS:</div>';
+                criticalAlerts.forEach(a => {
+                    html += `<div style="margin-left: 20px; margin-bottom: 5px;">${a.message}</div>`;
+                });
+            }
+            if (warningAlerts.length > 0) {
+                html += '<div style="font-weight: 600; margin-bottom: 8px; margin-top: 10px;">⚠️ WARNINGS:</div>';
+                warningAlerts.forEach(a => {
+                    html += `<div style="margin-left: 20px; margin-bottom: 5px;">${a.message}</div>`;
+                });
+            }
+            
+            message.innerHTML = html;
+            banner.style.display = 'block';
+        }
+        
+        function hideAlerts() {
+            document.getElementById('alertBanner').style.display = 'none';
+        }
+        
+        // Export data
+        function exportData() {
+            const exportData = {
+                timestamp: new Date().toISOString(),
+                stats: currentStats,
+                knowledge: allKnowledge,
+                history: knowledgeHistory,
+                comparison: previousKnowledge
+            };
+            
+            const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `knowledge-base-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+        
+        // Toggle comparison
+        function toggleComparison() {
+            comparisonMode = !comparisonMode;
+            const panel = document.getElementById('comparisonPanel');
+            if (comparisonMode) {
+                panel.style.display = 'block';
+                loadComparison();
+            } else {
+                panel.style.display = 'none';
+            }
+        }
+        
+        // Load comparison
+        function loadComparison() {
+            const results = document.getElementById('comparisonResults');
+            results.innerHTML = '<div style="color: #88ffff;">Loading comparison...</div>';
+            
+            // Store previous knowledge stats
+            if (!previousKnowledge && currentStats) {
+                previousKnowledge = {
+                    total: currentStats.total,
+                    avgConfidence: currentStats.avgConfidence,
+                    avgSuccessRate: currentStats.avgSuccessRate,
+                    avgUsage: currentStats.avgUsage,
+                    timestamp: new Date().toISOString()
+                };
+            }
+            
+            // Get current knowledge stats
+            const current = currentStats ? {
+                total: currentStats.total,
+                avgConfidence: currentStats.avgConfidence,
+                avgSuccessRate: currentStats.avgSuccessRate,
+                avgUsage: currentStats.avgUsage,
+                timestamp: new Date().toISOString()
+            } : null;
+            
+            if (previousKnowledge && current) {
+                displayComparison(current, previousKnowledge);
+            } else {
+                results.innerHTML = '<div style="color: #88ffff;">No previous data for comparison</div>';
+            }
+        }
+        
+        // Display comparison
+        function displayComparison(current, previous) {
+            const results = document.getElementById('comparisonResults');
+            
+            const comparisons = [
+                {
+                    label: 'Total Knowledge',
+                    current: current.total,
+                    previous: previous.total,
+                    format: (v) => v,
+                    better: (c, p) => c > p
+                },
+                {
+                    label: 'Avg Confidence',
+                    current: (current.avgConfidence * 100).toFixed(1),
+                    previous: (previous.avgConfidence * 100).toFixed(1),
+                    format: (v) => v + '%',
+                    better: (c, p) => parseFloat(c) > parseFloat(p)
+                },
+                {
+                    label: 'Avg Success Rate',
+                    current: ((current.avgSuccessRate || 0) * 100).toFixed(1),
+                    previous: ((previous.avgSuccessRate || 0) * 100).toFixed(1),
+                    format: (v) => v + '%',
+                    better: (c, p) => parseFloat(c) > parseFloat(p)
+                },
+                {
+                    label: 'Avg Usage',
+                    current: (current.avgUsage || 0).toFixed(1),
+                    previous: (previous.avgUsage || 0).toFixed(1),
+                    format: (v) => v,
+                    better: (c, p) => parseFloat(c) > parseFloat(p)
+                }
+            ];
+            
+            results.innerHTML = comparisons.map(comp => {
+                const diff = parseFloat(comp.current) - parseFloat(comp.previous);
+                const isBetter = comp.better(comp.current, comp.previous);
+                const diffSign = diff >= 0 ? '+' : '';
+                const color = isBetter ? '#00ff00' : diff === 0 ? '#00ffff' : '#ff4444';
+                
+                return `
+                    <div class="stat-card">
+                        <div class="stat-label">${comp.label}</div>
+                        <div class="stat-value" style="color: ${color};">${comp.format(comp.current)}</div>
+                        <div style="color: ${color}; font-size: 0.9em; margin-top: 5px;">
+                            ${diffSign}${comp.format(Math.abs(diff))} vs previous
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // Apply filters
+        function applyFilters() {
+            const searchTerm = document.getElementById('searchInput')?.value.toLowerCase() || '';
+            const typeFilter = document.getElementById('typeFilter')?.value || 'all';
+            const sourceFilter = document.getElementById('sourceFilter')?.value || 'all';
+            
+            // Filter knowledge items
+            const knowledgeItems = document.querySelectorAll('.knowledge-item');
+            knowledgeItems.forEach(item => {
+                const text = item.textContent.toLowerCase();
+                let show = true;
+                
+                // Search filter
+                if (searchTerm && !text.includes(searchTerm)) {
+                    show = false;
+                }
+                
+                // Type filter
+                if (typeFilter !== 'all') {
+                    if (!item.classList.contains(typeFilter)) {
+                        show = false;
+                    }
+                }
+                
+                // Source filter (check if source agent matches)
+                if (sourceFilter !== 'all') {
+                    const sourceText = item.querySelector('div[style*="Source:"]')?.textContent || '';
+                    if (!sourceText.toLowerCase().includes(sourceFilter.toLowerCase())) {
+                        show = false;
+                    }
+                }
+                
+                item.style.display = show ? 'block' : 'none';
+            });
+        }
+        
         async function loadStats() {
             try {
                 if (window.loading) loading.show('statsContainer', 'Loading statistics...');
@@ -170,20 +496,46 @@
                 
                 if (result.success) {
                     const stats = result.data;
+                    currentStats = stats;
+                    allKnowledge = stats.topKnowledge || [];
                     
                     document.getElementById('totalKnowledge').textContent = stats.total;
                     document.getElementById('avgConfidence').textContent = (stats.avgConfidence * 100).toFixed(1) + '%';
-                    document.getElementById('avgSuccessRate').textContent = (stats.avgSuccessRate || 0).toFixed(1) + '%';
+                    document.getElementById('avgSuccessRate').textContent = ((stats.avgSuccessRate || 0) * 100).toFixed(1) + '%';
                     document.getElementById('avgUsage').textContent = (stats.avgUsage || 0).toFixed(1);
                     
-                    // Render type chart
-                    renderTypeChart(stats.byType);
+                    // Update filter options
+                    updateFilterOptions(stats);
                     
-                    // Render source chart
+                    // Render charts
+                    renderTypeChart(stats.byType);
                     renderSourceChart(stats.bySource);
+                    renderTrendsChart();
                     
                     // Render top knowledge
                     renderTopKnowledge(stats.topKnowledge);
+                    
+                    // Store in history
+                    knowledgeHistory.push({
+                        timestamp: new Date().toISOString(),
+                        total: stats.total,
+                        avgConfidence: stats.avgConfidence,
+                        avgSuccessRate: stats.avgSuccessRate,
+                        avgUsage: stats.avgUsage
+                    });
+                    
+                    // Keep last 100 entries
+                    if (knowledgeHistory.length > 100) {
+                        knowledgeHistory = knowledgeHistory.slice(-100);
+                    }
+                    
+                    // Check alerts
+                    checkAlerts();
+                    
+                    // Update comparison if active
+                    if (comparisonMode && previousKnowledge) {
+                        loadComparison();
+                    }
                 }
             } catch (err) {
                 console.error('Error loading stats:', err);
@@ -213,98 +565,308 @@
                     const container = document.getElementById('effectivenessContainer');
                     container.style.display = 'block';
                     
-                    container.innerHTML = `
+                    // Fix XSS: Sanitize effectiveness data before setting innerHTML
+                    const safeTotalDecisions = window.DOMSanitizer ? window.DOMSanitizer.escapeHTML(String(eff.totalDecisions)) : String(eff.totalDecisions);
+                    const safeDecisionsWithKnowledge = window.DOMSanitizer ? window.DOMSanitizer.escapeHTML(String(eff.decisionsWithKnowledge)) : String(eff.decisionsWithKnowledge);
+                    const safeSuccessRate = window.DOMSanitizer ? window.DOMSanitizer.escapeHTML(eff.successRate.toFixed(1)) : eff.successRate.toFixed(1);
+                    const safeAvgConfidence = window.DOMSanitizer ? window.DOMSanitizer.escapeHTML(eff.avgConfidence.toFixed(2)) : eff.avgConfidence.toFixed(2);
+                    const effectivenessHTML = `
                         <h2>Knowledge Base Effectiveness (Last 7 Days)</h2>
                         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
                             <div class="stat-card">
-                                <div class="stat-value">${eff.totalDecisions}</div>
+                                <div class="stat-value">${safeTotalDecisions}</div>
                                 <div class="stat-label">Total Decisions</div>
                             </div>
                             <div class="stat-card">
-                                <div class="stat-value">${eff.decisionsWithKnowledge}</div>
+                                <div class="stat-value">${safeDecisionsWithKnowledge}</div>
                                 <div class="stat-label">Used Knowledge</div>
                             </div>
                             <div class="stat-card">
-                                <div class="stat-value">${eff.successRate.toFixed(1)}%</div>
+                                <div class="stat-value">${safeSuccessRate}%</div>
                                 <div class="stat-label">Success Rate</div>
                             </div>
                             <div class="stat-card">
-                                <div class="stat-value">${eff.avgConfidence.toFixed(2)}</div>
+                                <div class="stat-value">${safeAvgConfidence}</div>
                                 <div class="stat-label">Avg Confidence</div>
                             </div>
                         </div>
                         <h3 style="margin-top: 30px;">By Agent</h3>
                         <div id="agentStats"></div>
                     `;
+                    if (window.DOMSanitizer && window.DOMSanitizer.safeSetHTML) {
+                        window.DOMSanitizer.safeSetHTML(container, effectivenessHTML);
+                    } else {
+                        container.innerHTML = effectivenessHTML;
+                    }
                     
                     // Render agent stats
                     const agentStats = document.getElementById('agentStats');
-                    agentStats.innerHTML = Object.entries(eff.byAgent).map(([agent, data]) => `
+                    // Fix XSS: Sanitize agent stats data before setting innerHTML
+                    const agentStatsHTML = Object.entries(eff.byAgent).map(([agent, data]) => {
+                        const safeAgent = window.DOMSanitizer ? window.DOMSanitizer.escapeHTML(agent || '') : (agent || '');
+                        const safeTotal = window.DOMSanitizer ? window.DOMSanitizer.escapeHTML(String(data.total)) : String(data.total);
+                        const safeWithKnowledge = window.DOMSanitizer ? window.DOMSanitizer.escapeHTML(String(data.withKnowledge)) : String(data.withKnowledge);
+                        const safeSuccess = window.DOMSanitizer ? window.DOMSanitizer.escapeHTML(String(data.success)) : String(data.success);
+                        const safeSuccessRate = window.DOMSanitizer ? window.DOMSanitizer.escapeHTML(data.successRate.toFixed(1)) : data.successRate.toFixed(1);
+                        const safeKnowledgeUsageRate = window.DOMSanitizer ? window.DOMSanitizer.escapeHTML(data.knowledgeUsageRate.toFixed(1)) : data.knowledgeUsageRate.toFixed(1);
+                        return `
                         <div class="stat-card" style="margin-bottom: 10px;">
-                            <strong>${agent}</strong>
-                            <div>Total: ${data.total} | With Knowledge: ${data.withKnowledge} | Success: ${data.success}</div>
-                            <div>Success Rate: ${data.successRate.toFixed(1)}% | Knowledge Usage: ${data.knowledgeUsageRate.toFixed(1)}%</div>
+                            <strong>${safeAgent}</strong>
+                            <div>Total: ${safeTotal} | With Knowledge: ${safeWithKnowledge} | Success: ${safeSuccess}</div>
+                            <div>Success Rate: ${safeSuccessRate}% | Knowledge Usage: ${safeKnowledgeUsageRate}%</div>
                         </div>
-                    `).join('');
+                    `;
+                    }).join('');
+                    if (window.DOMSanitizer && window.DOMSanitizer.safeSetHTML) {
+                        window.DOMSanitizer.safeSetHTML(agentStats, agentStatsHTML);
+                    } else {
+                        agentStats.innerHTML = agentStatsHTML;
+                    }
                 }
             } catch (err) {
                 console.error('Error loading effectiveness:', err);
             }
         }
 
+        function updateFilterOptions(stats) {
+            // Update type filter
+            const typeFilter = document.getElementById('typeFilter');
+            const types = Object.keys(stats.byType || {});
+            typeFilter.innerHTML = '<option value="all">All Types</option>' + types.map(t => 
+                `<option value="${t}">${t}</option>`
+            ).join('');
+            
+            // Update source filter
+            const sourceFilter = document.getElementById('sourceFilter');
+            const sources = Object.keys(stats.bySource || {});
+            sourceFilter.innerHTML = '<option value="all">All Sources</option>' + sources.map(s => 
+                `<option value="${s}">${s}</option>`
+            ).join('');
+        }
+        
         function renderTypeChart(byType) {
-            const chart = document.getElementById('typeChart');
-            chart.innerHTML = Object.entries(byType).map(([type, count]) => `
-                <div style="margin-bottom: 10px;">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                        <span>${type}</span>
-                        <span>${count}</span>
-                    </div>
-                    <div style="background: #0f1429; height: 20px; border-radius: 4px; overflow: hidden;">
-                        <div style="background: #00ffff; height: 100%; width: ${(count / Math.max(...Object.values(byType))) * 100}%"></div>
-                    </div>
-                </div>
-            `).join('');
+            const ctx = document.getElementById('typeChart');
+            if (!ctx) return;
+            
+            if (typeChart) {
+                typeChart.destroy();
+            }
+            
+            const labels = Object.keys(byType);
+            const data = Object.values(byType);
+            
+            typeChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Knowledge Items',
+                        data: data,
+                        backgroundColor: 'rgba(0, 255, 255, 0.6)',
+                        borderColor: '#00ffff',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                color: '#88ffff'
+                            },
+                            grid: {
+                                color: 'rgba(136, 255, 255, 0.1)'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: '#88ffff'
+                            },
+                            grid: {
+                                color: 'rgba(136, 255, 255, 0.1)'
+                            }
+                        }
+                    }
+                }
+            });
         }
 
         function renderSourceChart(bySource) {
-            const chart = document.getElementById('sourceChart');
-            chart.innerHTML = Object.entries(bySource).map(([source, count]) => `
-                <div style="margin-bottom: 10px;">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                        <span>${source}</span>
-                        <span>${count}</span>
-                    </div>
-                    <div style="background: #0f1429; height: 20px; border-radius: 4px; overflow: hidden;">
-                        <div style="background: #ffaa00; height: 100%; width: ${(count / Math.max(...Object.values(bySource))) * 100}%"></div>
-                    </div>
-                </div>
-            `).join('');
+            const ctx = document.getElementById('sourceChart');
+            if (!ctx) return;
+            
+            if (sourceChart) {
+                sourceChart.destroy();
+            }
+            
+            const labels = Object.keys(bySource);
+            const data = Object.values(bySource);
+            
+            sourceChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: [
+                            'rgba(0, 255, 255, 0.6)',
+                            'rgba(255, 170, 0, 0.6)',
+                            'rgba(68, 255, 68, 0.6)',
+                            'rgba(255, 68, 68, 0.6)',
+                            'rgba(136, 136, 255, 0.6)'
+                        ],
+                        borderColor: '#00ffff',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                color: '#88ffff'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function renderTrendsChart() {
+            const ctx = document.getElementById('trendsChart');
+            if (!ctx || knowledgeHistory.length < 2) return;
+            
+            if (trendsChart) {
+                trendsChart.destroy();
+            }
+            
+            // Get last 30 entries
+            const recentHistory = knowledgeHistory.slice(-30);
+            const labels = recentHistory.map(h => new Date(h.timestamp).toLocaleDateString());
+            const totalData = recentHistory.map(h => h.total);
+            const confidenceData = recentHistory.map(h => (h.avgConfidence * 100).toFixed(1));
+            const successRateData = recentHistory.map(h => ((h.avgSuccessRate || 0) * 100).toFixed(1));
+            
+            trendsChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Total Knowledge',
+                            data: totalData,
+                            borderColor: '#00ffff',
+                            backgroundColor: 'rgba(0, 255, 255, 0.1)',
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Avg Confidence (%)',
+                            data: confidenceData,
+                            borderColor: '#ffaa00',
+                            backgroundColor: 'rgba(255, 170, 0, 0.1)',
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Avg Success Rate (%)',
+                            data: successRateData,
+                            borderColor: '#44ff44',
+                            backgroundColor: 'rgba(68, 255, 68, 0.1)',
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#88ffff'
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                color: '#88ffff'
+                            },
+                            grid: {
+                                color: 'rgba(136, 255, 255, 0.1)'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: '#88ffff'
+                            },
+                            grid: {
+                                color: 'rgba(136, 255, 255, 0.1)'
+                            }
+                        }
+                    }
+                }
+            });
         }
 
         function renderTopKnowledge(knowledge) {
             const container = document.getElementById('topKnowledge');
-            container.innerHTML = knowledge.map(k => `
-                <div class="knowledge-item ${k.type}">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                        <strong>${k.type.toUpperCase()}</strong>
-                        <div>
-                            ${k.successRate ? `<span class="badge success">${k.successRate.toFixed(1)}% success</span>` : ''}
-                            ${k.usageCount ? `<span class="badge usage">${k.usageCount} uses</span>` : ''}
-                            ${k.confidence ? `<span class="badge confidence">${(k.confidence * 100).toFixed(0)}% conf</span>` : ''}
+            if (!knowledge || knowledge.length === 0) {
+                if (window.DOMSanitizer && window.DOMSanitizer.safeSetHTML) {
+                    window.DOMSanitizer.safeSetHTML(container, '<p>No knowledge items available</p>');
+                } else {
+                    container.innerHTML = '<p>No knowledge items available</p>';
+                }
+                return;
+            }
+            
+            // Fix XSS: Sanitize knowledge data before setting innerHTML
+            const knowledgeHTML = knowledge.map(k => {
+                const safeType = window.DOMSanitizer ? window.DOMSanitizer.escapeHTML((k.type || '').toUpperCase()) : (k.type || '').toUpperCase();
+                const safeSuccessRate = k.successRate ? (window.DOMSanitizer ? window.DOMSanitizer.escapeHTML(k.successRate.toFixed(1)) : k.successRate.toFixed(1)) : '';
+                const safeUsageCount = k.usageCount ? (window.DOMSanitizer ? window.DOMSanitizer.escapeHTML(String(k.usageCount)) : String(k.usageCount)) : '';
+                const safeConfidence = k.confidence ? (window.DOMSanitizer ? window.DOMSanitizer.escapeHTML((k.confidence * 100).toFixed(0)) : (k.confidence * 100).toFixed(0)) : '';
+                const safeSourceAgent = window.DOMSanitizer ? window.DOMSanitizer.escapeHTML(k.sourceAgent || 'unknown') : (k.sourceAgent || 'unknown');
+                const safeContent = window.DOMSanitizer ? window.DOMSanitizer.escapeHTML(k.content || '') : (k.content || '');
+                
+                return `
+                    <div class="knowledge-item ${k.type}">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                            <strong>${safeType}</strong>
+                            <div>
+                                ${safeSuccessRate ? `<span class="badge success">${safeSuccessRate}% success</span>` : ''}
+                                ${safeUsageCount ? `<span class="badge usage">${safeUsageCount} uses</span>` : ''}
+                                ${safeConfidence ? `<span class="badge confidence">${safeConfidence}% conf</span>` : ''}
+                            </div>
                         </div>
+                        <div style="color: #88ffff; font-size: 0.9em; margin-bottom: 5px;">Source: ${safeSourceAgent}</div>
+                        <div>${safeContent}</div>
                     </div>
-                    <div style="color: #88ffff; font-size: 0.9em; margin-bottom: 5px;">Source: ${k.sourceAgent || 'unknown'}</div>
-                    <div>${k.content}</div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
+            
+            if (window.DOMSanitizer && window.DOMSanitizer.safeSetHTML) {
+                window.DOMSanitizer.safeSetHTML(container, knowledgeHTML);
+            } else {
+                container.innerHTML = knowledgeHTML;
+            }
         }
 
         // Load on page load
         window.addEventListener('DOMContentLoaded', () => {
+            loadAlertSettings();
             loadStats();
         });
     </script>
+    </div>
     </div>
 </body>
 </html>

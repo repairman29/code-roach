@@ -4,18 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Code Roach IDE Integration</title>
+    <link rel="icon" type="image/svg+xml" href="/logo.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <!-- System 3046 Design System -->
+    <link rel="stylesheet" href="/css/system-3046-design-system.css">
+    <script src="/js/utils/domSanitizer.js"></script>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-
-        body {
-            font-family: 'Courier New', monospace;
-            background: #1e1e1e;
-            color: #d4d4d4;
-            padding: 20px;
+        
+        /* System 3046 overrides */
+        body.system-3046 {
+            padding: 0;
         }
 
         .container {
@@ -29,16 +34,17 @@
         }
 
         .section {
-            background: #252526;
-            border: 1px solid #3e3e42;
+            background: var(--panel-bg);
+            border: 1px solid var(--border-dim);
+            clip-path: polygon(var(--corner-cut) 0, 100% 0, 100% calc(100% - var(--corner-cut)), calc(100% - var(--corner-cut)) 100%, 0 100%, 0 var(--corner-cut));
             padding: 20px;
             margin-bottom: 20px;
-            border-radius: 4px;
         }
 
         .section h2 {
-            color: #4ec9b0;
+            color: var(--neon-cyan);
             margin-bottom: 15px;
+            font-family: var(--font-tech);
         }
 
         .status {
@@ -150,8 +156,39 @@
         }
     </style>
 </head>
-<body>
-    <div class="container">
+<body class="system-3046">
+    <!-- Boot Sequence -->
+    <div id="sys-boot" style="position:fixed; top:0; left:0; width:100%; height:100%; background:#000; z-index:9999; display:flex; align-items:center; justify-content:center; flex-direction:column; transition: opacity 0.5s;">
+        <div style="font-family:'Space Mono'; color:#00F0FF; margin-bottom:10px;">INITIALIZING...</div>
+        <div style="width:200px; height:2px; background:#333;">
+            <div id="sys-loader-bar" style="width:0%; height:100%; background:#00F0FF; transition:width 1s ease-in-out;"></div>
+        </div>
+    </div>
+
+    <!-- HUD Overlay -->
+    <div class="sys-hud-overlay">
+        <div class="sys-hud-border">
+            <div class="sys-bracket tl"></div>
+            <div class="sys-bracket tr"></div>
+            <div class="sys-bracket bl"></div>
+            <div class="sys-bracket br"></div>
+        </div>
+    </div>
+    
+    <div class="scanlines"></div>
+    
+    <!-- Navigation -->
+    <nav style="position: sticky; top: 0; z-index: 1000; background: rgba(5, 5, 5, 0.95); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border-dim); padding: 1rem 2rem;">
+        <div style="max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center;">
+            <a href="/" class="sys-font text-cyan" style="font-size: 1.2rem; text-decoration: none;">SMUGGLER</a>
+            <div style="display: flex; gap: 2rem;">
+                <a href="/code-roach-dashboard.html" style="color: var(--text-muted); text-decoration: none; font-family: var(--font-tech); font-size: 0.9rem;">DASHBOARD</a>
+                <a href="/code-roach-ide.html" style="color: var(--neon-cyan); text-decoration: none; font-family: var(--font-tech); font-size: 0.9rem;">IDE</a>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="sys-container" style="max-width: 1200px; margin: 2rem auto; padding: 2rem;">
         <h1>🪳 Code Roach IDE Integration</h1>
         <p>Connect Code Roach to your IDE (VS Code / Cursor)</p>
 
@@ -250,41 +287,82 @@
             const filePath = document.getElementById('filePath').value;
             const resultEl = document.getElementById('healthResult');
             
+            // Sanitize helper
+            const escapeHTML = (text) => {
+                if (!window.DOMSanitizer) return String(text || '');
+                return window.DOMSanitizer.escapeHTML(String(text || ''));
+            };
+            
             if (!filePath) {
-                resultEl.innerHTML = '<p class="error">Please enter a file path</p>';
+                const errorHTML = '<p class="error">Please enter a file path</p>';
+                if (window.DOMSanitizer && window.DOMSanitizer.safeSetHTML) {
+                    window.DOMSanitizer.safeSetHTML(resultEl, errorHTML);
+                } else {
+                    resultEl.innerHTML = errorHTML;
+                }
                 return;
             }
             
-            resultEl.innerHTML = '<p>Loading...</p>';
+            const loadingHTML = '<p>Loading...</p>';
+            if (window.DOMSanitizer && window.DOMSanitizer.safeSetHTML) {
+                window.DOMSanitizer.safeSetHTML(resultEl, loadingHTML);
+            } else {
+                resultEl.innerHTML = loadingHTML;
+            }
             
             try {
                 const response = await fetch(`${serverUrl}/api/code-roach/health-score?filePath=${encodeURIComponent(filePath)}`);
                 const data = await response.json();
                 
                 if (data.success) {
-                    const score = data.score;
-                    const className = score.overall >= 80 ? '' : score.overall >= 60 ? 'medium' : 'low';
+                    // Sanitize file path and score data
+                    const safeFilePath = escapeHTML(filePath);
+                    const safeScore = Number(score.overall) || 0;
+                    const safeGrade = escapeHTML(score.grade || 'N/A');
+                    const safeErrorRate = Number(score.components.errorRate) || 0;
+                    const safeComplexity = Number(score.components.complexity) || 0;
+                    const safeSecurity = Number(score.components.security) || 0;
+                    const safePerformance = Number(score.components.performance) || 0;
+                    const className = safeScore >= 80 ? '' : safeScore >= 60 ? 'medium' : 'low';
                     
-                    resultEl.innerHTML = `
+                    const healthHTML = `
                         <div class="health-score">
-                            <div style="min-width: 200px;">${filePath}</div>
+                            <div style="min-width: 200px;">${safeFilePath}</div>
                             <div class="health-bar">
-                                <div class="health-fill ${className}" style="width: ${score.overall}%"></div>
+                                <div class="health-fill ${className}" style="width: ${safeScore}%"></div>
                             </div>
-                            <div style="min-width: 100px;">${score.overall}/100 (${score.grade})</div>
+                            <div style="min-width: 100px;">${safeScore}/100 (${safeGrade})</div>
                         </div>
                         <div style="margin-top: 10px;">
-                            <p>Error Rate: ${score.components.errorRate}/100</p>
-                            <p>Complexity: ${score.components.complexity}/100</p>
-                            <p>Security: ${score.components.security}/100</p>
-                            <p>Performance: ${score.components.performance}/100</p>
+                            <p>Error Rate: ${safeErrorRate}/100</p>
+                            <p>Complexity: ${safeComplexity}/100</p>
+                            <p>Security: ${safeSecurity}/100</p>
+                            <p>Performance: ${safePerformance}/100</p>
                         </div>
                     `;
+                    
+                    if (window.DOMSanitizer && window.DOMSanitizer.safeSetHTML) {
+                        window.DOMSanitizer.safeSetHTML(resultEl, healthHTML);
+                    } else {
+                        resultEl.innerHTML = healthHTML;
+                    }
                 } else {
-                    resultEl.innerHTML = `<p class="error">Error: ${data.error}</p>`;
+                    const safeError = escapeHTML(data.error || 'Unknown error');
+                    const errorHTML = `<p class="error">Error: ${safeError}</p>`;
+                    if (window.DOMSanitizer && window.DOMSanitizer.safeSetHTML) {
+                        window.DOMSanitizer.safeSetHTML(resultEl, errorHTML);
+                    } else {
+                        resultEl.innerHTML = errorHTML;
+                    }
                 }
             } catch (error) {
-                resultEl.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+                const safeErrorMessage = escapeHTML(error.message || 'Unknown error');
+                const errorHTML = `<p class="error">Error: ${safeErrorMessage}</p>`;
+                if (window.DOMSanitizer && window.DOMSanitizer.safeSetHTML) {
+                    window.DOMSanitizer.safeSetHTML(resultEl, errorHTML);
+                } else {
+                    resultEl.innerHTML = errorHTML;
+                }
             }
         }
 
@@ -293,12 +371,28 @@
             const query = document.getElementById('query').value;
             const resultEl = document.getElementById('queryResult');
             
+            // Sanitize helper
+            const escapeHTML = (text) => {
+                if (!window.DOMSanitizer) return String(text || '');
+                return window.DOMSanitizer.escapeHTML(String(text || ''));
+            };
+            
             if (!query) {
-                resultEl.innerHTML = '<p class="error">Please enter a question</p>';
+                const errorHTML = '<p class="error">Please enter a question</p>';
+                if (window.DOMSanitizer && window.DOMSanitizer.safeSetHTML) {
+                    window.DOMSanitizer.safeSetHTML(resultEl, errorHTML);
+                } else {
+                    resultEl.innerHTML = errorHTML;
+                }
                 return;
             }
             
-            resultEl.innerHTML = '<p>Asking Code Roach...</p>';
+            const loadingHTML = '<p>Asking Code Roach...</p>';
+            if (window.DOMSanitizer && window.DOMSanitizer.safeSetHTML) {
+                window.DOMSanitizer.safeSetHTML(resultEl, loadingHTML);
+            } else {
+                resultEl.innerHTML = loadingHTML;
+            }
             
             try {
                 const response = await fetch(`${serverUrl}/api/code-roach/nl-query`, {
@@ -309,18 +403,41 @@
                 const data = await response.json();
                 
                 if (data.success) {
-                    resultEl.innerHTML = `
+                    // Sanitize response data
+                    const safeTitle = escapeHTML(data.response.title || 'Answer');
+                    const safeAnswer = escapeHTML(data.response.answer || data.response || '');
+                    const safeCode = data.response.code ? escapeHTML(data.response.code) : '';
+                    
+                    const queryHTML = `
                         <div class="query-result">
-                            <h3>${data.response.title || 'Answer'}</h3>
-                            <p>${data.response.answer || data.response}</p>
-                            ${data.response.code ? `<pre class="code-block">${data.response.code}</pre>` : ''}
+                            <h3>${safeTitle}</h3>
+                            <p>${safeAnswer}</p>
+                            ${safeCode ? `<pre class="code-block">${safeCode}</pre>` : ''}
                         </div>
                     `;
+                    
+                    if (window.DOMSanitizer && window.DOMSanitizer.safeSetHTML) {
+                        window.DOMSanitizer.safeSetHTML(resultEl, queryHTML);
+                    } else {
+                        resultEl.innerHTML = queryHTML;
+                    }
                 } else {
-                    resultEl.innerHTML = `<p class="error">Error: ${data.error}</p>`;
+                    const safeError = escapeHTML(data.error || 'Unknown error');
+                    const errorHTML = `<p class="error">Error: ${safeError}</p>`;
+                    if (window.DOMSanitizer && window.DOMSanitizer.safeSetHTML) {
+                        window.DOMSanitizer.safeSetHTML(resultEl, errorHTML);
+                    } else {
+                        resultEl.innerHTML = errorHTML;
+                    }
                 }
             } catch (error) {
-                resultEl.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+                const safeErrorMessage = escapeHTML(error.message || 'Unknown error');
+                const errorHTML = `<p class="error">Error: ${safeErrorMessage}</p>`;
+                if (window.DOMSanitizer && window.DOMSanitizer.safeSetHTML) {
+                    window.DOMSanitizer.safeSetHTML(resultEl, errorHTML);
+                } else {
+                    resultEl.innerHTML = errorHTML;
+                }
             }
         }
 
@@ -329,12 +446,28 @@
             const code = document.getElementById('codeToReview').value;
             const resultEl = document.getElementById('reviewResult');
             
+            // Sanitize helper
+            const escapeHTML = (text) => {
+                if (!window.DOMSanitizer) return String(text || '');
+                return window.DOMSanitizer.escapeHTML(String(text || ''));
+            };
+            
             if (!code) {
-                resultEl.innerHTML = '<p class="error">Please enter code to review</p>';
+                const errorHTML = '<p class="error">Please enter code to review</p>';
+                if (window.DOMSanitizer && window.DOMSanitizer.safeSetHTML) {
+                    window.DOMSanitizer.safeSetHTML(resultEl, errorHTML);
+                } else {
+                    resultEl.innerHTML = errorHTML;
+                }
                 return;
             }
             
-            resultEl.innerHTML = '<p>Reviewing code...</p>';
+            const loadingHTML = '<p>Reviewing code...</p>';
+            if (window.DOMSanitizer && window.DOMSanitizer.safeSetHTML) {
+                window.DOMSanitizer.safeSetHTML(resultEl, loadingHTML);
+            } else {
+                resultEl.innerHTML = loadingHTML;
+            }
             
             try {
                 const response = await fetch(`${serverUrl}/api/code-roach/code-review`, {
@@ -370,12 +503,29 @@
                     }
                     
                     html += '</div>';
-                    resultEl.innerHTML = html;
+                    
+                    if (window.DOMSanitizer && window.DOMSanitizer.safeSetHTML) {
+                        window.DOMSanitizer.safeSetHTML(resultEl, html);
+                    } else {
+                        resultEl.innerHTML = html;
+                    }
                 } else {
-                    resultEl.innerHTML = `<p class="error">Error: ${data.error}</p>`;
+                    const safeError = escapeHTML(data.error || 'Unknown error');
+                    const errorHTML = `<p class="error">Error: ${safeError}</p>`;
+                    if (window.DOMSanitizer && window.DOMSanitizer.safeSetHTML) {
+                        window.DOMSanitizer.safeSetHTML(resultEl, errorHTML);
+                    } else {
+                        resultEl.innerHTML = errorHTML;
+                    }
                 }
             } catch (error) {
-                resultEl.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+                const safeErrorMessage = escapeHTML(error.message || 'Unknown error');
+                const errorHTML = `<p class="error">Error: ${safeErrorMessage}</p>`;
+                if (window.DOMSanitizer && window.DOMSanitizer.safeSetHTML) {
+                    window.DOMSanitizer.safeSetHTML(resultEl, errorHTML);
+                } else {
+                    resultEl.innerHTML = errorHTML;
+                }
             }
         }
 

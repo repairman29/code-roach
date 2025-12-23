@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/aiCodeGenerator.js
- * Last Sync: 2025-12-14T07:30:45.620Z
+ * Last Sync: 2025-12-20T22:26:03.327Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -21,13 +21,20 @@ const codebaseSearch = require('./codebaseSearch');
 
 class AICodeGenerator {
     constructor() {
-        this.supabase = null;
-        
-        if (config.supabase?.url && config.supabase?.serviceRoleKey) {
-            this.supabase = createClient(
-                config.supabase.url,
-                config.supabase.serviceRoleKey
-            );
+        // Only create Supabase client if credentials are available
+        if (config.supabase.serviceRoleKey) {
+            try {
+                this.supabase = createClient(
+                    config.supabase.url,
+                    config.supabase.serviceRoleKey
+                );
+            } catch (error) {
+                console.warn('[aiCodeGenerator] Supabase not configured:', error.message);
+                this.supabase = null;
+            }
+        } else {
+            console.warn('[aiCodeGenerator] Supabase credentials not configured. Service will be disabled.');
+            this.supabase = null;
         }
     }
 

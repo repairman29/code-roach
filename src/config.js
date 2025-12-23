@@ -38,10 +38,18 @@ const config = {
         ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim()).filter(o => o !== '*') // Remove wildcards
         : (process.env.NODE_ENV === 'production' 
             ? [
+                'https://playsmuggler.com',
+                'https://www.playsmuggler.com',
+                'https://d6consortium.com',
+                'https://www.d6consortium.com',
                 'https://smugglers-production.up.railway.app',
                 'https://smuggler-d1b4a.web.app',
-                'https://smuggler-d1b4a.firebaseapp.com'
-                // Removed localhost from production - use ALLOWED_ORIGINS env var if needed
+                'https://smuggler-d1b4a.firebaseapp.com',
+                // Allow localhost for development/testing (can be removed in production if needed)
+                'http://localhost:3000',
+                'http://localhost:5000',
+                'http://127.0.0.1:3000',
+                'http://127.0.0.1:5000'
               ]
             : [
                 'http://localhost:3000', 
@@ -76,25 +84,56 @@ const config = {
     },
     
     // OAuth
+    // SECURITY FIX: Removed hardcoded placeholder credentials - must be set via environment variables
     oauth: {
         google: {
-            clientId: process.env.GOOGLE_CLIENT_ID || 'YOUR_GOOGLE_CLIENT_ID',
-            clientSecret: process.env.GOOGLE_CLIENT_SECRET || 'YOUR_GOOGLE_CLIENT_SECRET'
+            clientId: process.env.GOOGLE_CLIENT_ID || null,
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET || (() => {
+                if (process.env.NODE_ENV === 'production') {
+                    console.error('❌ CRITICAL: GOOGLE_CLIENT_SECRET must be set in production');
+                }
+                return null;
+            })()
         },
         github: {
-            clientId: process.env.GITHUB_CLIENT_ID || 'YOUR_GITHUB_CLIENT_ID',
-            clientSecret: process.env.GITHUB_CLIENT_SECRET || 'YOUR_GITHUB_CLIENT_SECRET'
+            clientId: process.env.GITHUB_CLIENT_ID || null,
+            clientSecret: process.env.GITHUB_CLIENT_SECRET || (() => {
+                if (process.env.NODE_ENV === 'production') {
+                    console.error('❌ CRITICAL: GITHUB_CLIENT_SECRET must be set in production');
+                }
+                return null;
+            })()
         }
     },
     
     // Push Notifications (VAPID)
+    // SECURITY FIX: Removed hardcoded placeholder key
     vapid: {
-        publicKey: process.env.VAPID_PUBLIC_KEY || 'PLACEHOLDER_KEY',
+        publicKey: process.env.VAPID_PUBLIC_KEY || null,
         privateKey: process.env.VAPID_PRIVATE_KEY || null
     },
     
     // Server URL
     serverUrl: process.env.SERVER_URL || 'http://localhost:3000',
+    
+    // Stripe Payment Processing
+    stripe: {
+        // Use production keys in production environment, test keys otherwise
+        secretKey: (process.env.NODE_ENV === 'production' || process.env.USE_PRODUCTION_STRIPE === 'true')
+            ? (process.env.STRIPE_SECRET_KEY_LIVE || process.env.STRIPE_SECRET_KEY || null)
+            : (process.env.STRIPE_SECRET_KEY || null),
+        publishableKey: (process.env.NODE_ENV === 'production' || process.env.USE_PRODUCTION_STRIPE === 'true')
+            ? (process.env.STRIPE_PUBLISHABLE_KEY_LIVE || process.env.STRIPE_PUBLISHABLE_KEY || null)
+            : (process.env.STRIPE_PUBLISHABLE_KEY || null),
+        webhookSecret: process.env.STRIPE_WEBHOOK_SECRET || null,
+        // Test mode detection
+        isTestMode: () => {
+            const key = (process.env.NODE_ENV === 'production' || process.env.USE_PRODUCTION_STRIPE === 'true')
+                ? (process.env.STRIPE_SECRET_KEY_LIVE || process.env.STRIPE_SECRET_KEY || '')
+                : (process.env.STRIPE_SECRET_KEY || '');
+            return key.startsWith('sk_test_');
+        }
+    },
     
     // HTTPS Enforcement
     // SECURITY: Enforce HTTPS in production
@@ -144,12 +183,72 @@ const config = {
     },
     
     // Phase 16: Supabase Configuration
+    // SECURITY: All keys must be in environment variables - no hardcoded fallbacks
     supabase: {
         url: process.env.SUPABASE_URL || 'https://rbfzlqmkwhbvrrfdcain.supabase.co',
-        anonKey: process.env.SUPABASE_ANON_KEY || 'sb_publishable__0QE-QKqJ1jBSzadCtNNhg_ztWxCn32', 
-            // Client-side key (safe to expose)
-        serviceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY || 
-            'sb_secret_zvJ_wjanuj9msZmRBEecSA_G1L1nla5' // Server-side only (NEVER expose)
+        // SECURITY FIX: Removed hardcoded anon key - must be set via environment variable
+        // Note: Anon key is safe to expose client-side, but should still use env var for configuration
+        anonKey: process.env.SUPABASE_ANON_KEY || (() => {
+            if (process.env.NODE_ENV === 'production') {
+                console.error('❌ CRITICAL: SUPABASE_ANON_KEY must be set in production');
+                console.error('⚠️  Server will start but Supabase-dependent features will be disabled.');
+            }
+            return null;
+        })(),
+        // SECURITY FIX: Removed hardcoded service role key - CRITICAL security vulnerability
+        // Service role key bypasses ALL Row Level Security policies - NEVER hardcode
+        serviceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY || (() => {
+            if (process.env.NODE_ENV === 'production') {
+                console.error('❌ CRITICAL: SUPABASE_SERVICE_ROLE_KEY must be set in production');
+                console.error('⚠️  Server will start but Supabase-dependent features will be disabled.');
+                // Don't throw - services handle missing credentials gracefully
+                // throw new Error('SUPABASE_SERVICE_ROLE_KEY is required in production');
+            }
+            console.warn('⚠️  WARNING: SUPABASE_SERVICE_ROLE_KEY not set. Supabase operations will fail.');
+            return null;
+        })()
+    },
+
+    // Phase 17: Redis Configuration (Upstash)
+    // Oracle AI services, caching, and neural network state persistence
+    redis: {
+        // Primary Redis URL (Upstash or other Redis)
+        url: process.env.REDIS_URL || process.env.UPSTASH_REDIS_REST_URL || null,
+        // Redis REST API URL (for Upstash REST API)
+        restUrl: process.env.UPSTASH_REDIS_REST_URL || null,
+        // Redis REST API Token (for Upstash REST API)
+        restToken: process.env.UPSTASH_REDIS_REST_TOKEN || null,
+        // Oracle-specific Redis configuration
+        oracle: {
+            // Neural network state persistence
+            neuralNetwork: {
+                enabled: process.env.REDIS_URL || process.env.UPSTASH_REDIS_REST_URL ? true : false,
+                keyPrefix: 'oracle:nn:',
+                ttl: 24 * 60 * 60 * 1000, // 24 hours
+                maxMemory: 50 * 1024 * 1024 // 50MB for neural network data
+            },
+            // Predictive intelligence cache
+            predictive: {
+                enabled: process.env.REDIS_URL || process.env.UPSTASH_REDIS_REST_URL ? true : false,
+                keyPrefix: 'oracle:predictive:',
+                ttl: 60 * 60 * 1000, // 1 hour
+                maxMemory: 100 * 1024 * 1024 // 100MB for predictive data
+            },
+            // Oracle knowledge cache
+            knowledge: {
+                enabled: process.env.REDIS_URL || process.env.UPSTASH_REDIS_REST_URL ? true : false,
+                keyPrefix: 'oracle:knowledge:',
+                ttl: 6 * 60 * 60 * 1000, // 6 hours
+                maxMemory: 200 * 1024 * 1024 // 200MB for knowledge cache
+            },
+            // Usage analytics
+            analytics: {
+                enabled: process.env.REDIS_URL || process.env.UPSTASH_REDIS_REST_URL ? true : false,
+                keyPrefix: 'oracle:analytics:',
+                ttl: 7 * 24 * 60 * 60 * 1000, // 7 days
+                maxMemory: 10 * 1024 * 1024 // 10MB for analytics
+            }
+        }
     }
 };
 

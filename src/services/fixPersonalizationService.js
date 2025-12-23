@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/fixPersonalizationService.js
- * Last Sync: 2025-12-16T00:42:39.835Z
+ * Last Sync: 2025-12-20T22:26:03.336Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -21,14 +21,20 @@ const codebaseSearch = require('./codebaseSearch');
 
 class FixPersonalizationService {
     constructor() {
-        this.supabase = null;
-        this.teamProfiles = new Map();
-        
-        if (config.supabase?.url && config.supabase?.serviceRoleKey) {
-            this.supabase = createClient(
-                config.supabase.url,
-                config.supabase.serviceRoleKey
-            );
+        // Only create Supabase client if credentials are available
+        if (config.supabase.serviceRoleKey) {
+            try {
+                this.supabase = createClient(
+                    config.supabase.url,
+                    config.supabase.serviceRoleKey
+                );
+            } catch (error) {
+                console.warn('[fixPersonalizationService] Supabase not configured:', error.message);
+                this.supabase = null;
+            }
+        } else {
+            console.warn('[fixPersonalizationService] Supabase credentials not configured. Service will be disabled.');
+            this.supabase = null;
         }
     }
 

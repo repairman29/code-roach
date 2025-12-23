@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/performanceTrackingService.js
- * Last Sync: 2025-12-14T07:30:45.704Z
+ * Last Sync: 2025-12-20T21:10:13.789Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -18,16 +18,28 @@ const config = require('../config');
 
 class PerformanceTrackingService {
     constructor() {
-        this.supabase = createClient(
-            config.supabase.url,
-            config.supabase.serviceRoleKey
-        );
+        // Only create Supabase client if credentials are available
+        if (config.supabase.serviceRoleKey) {
+            try {
+                this.supabase = createClient(
+                    config.supabase.url,
+                    config.supabase.serviceRoleKey
+                );
+            } catch (error) {
+                console.warn('[PerformanceTrackingService] Supabase not configured:', error.message);
+                this.supabase = null;
+            }
+        } else {
+            console.warn('[PerformanceTrackingService] Supabase credentials not configured. Performance tracking will be disabled.');
+            this.supabase = null;
+        }
     }
 
     /**
      * Log slow query
      */
     async logSlowQuery(queryData) {
+        if (!this.supabase) return false;
         try {
             const { error } = await this.supabase.rpc('log_slow_query', {
                 query_type_param: queryData.queryType,
@@ -50,6 +62,7 @@ class PerformanceTrackingService {
      * Get slow queries
      */
     async getSlowQueries(hours = 24, minMs = 1000) {
+        if (!this.supabase) return [];
         try {
             const { data, error } = await this.supabase.rpc('get_slow_queries', {
                 p_hours: hours,
@@ -68,6 +81,7 @@ class PerformanceTrackingService {
      * Track API cost
      */
     async trackAPICost(costData) {
+        if (!this.supabase) return false;
         try {
             const { error } = await this.supabase
                 .from('api_cost_tracking')
@@ -93,6 +107,7 @@ class PerformanceTrackingService {
      * Get API costs summary
      */
     async getAPICostsSummary(days = 7, service = null) {
+        if (!this.supabase) return [];
         try {
             const { data, error } = await this.supabase.rpc('get_api_costs_summary', {
                 p_days: days,
@@ -111,6 +126,7 @@ class PerformanceTrackingService {
      * Track cache metrics
      */
     async trackCacheMetrics(metrics) {
+        if (!this.supabase) return false;
         try {
             const { error } = await this.supabase
                 .from('cache_metrics')
@@ -136,6 +152,7 @@ class PerformanceTrackingService {
      * Get cache effectiveness
      */
     async getCacheEffectiveness(cacheType = null, hours = 24) {
+        if (!this.supabase) return [];
         try {
             const { data, error } = await this.supabase.rpc('get_cache_effectiveness', {
                 p_cache_type: cacheType,
@@ -154,6 +171,7 @@ class PerformanceTrackingService {
      * Track system resource
      */
     async trackSystemResource(resource) {
+        if (!this.supabase) return false;
         try {
             const { error } = await this.supabase
                 .from('system_resources')

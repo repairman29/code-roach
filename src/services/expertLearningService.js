@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/expertLearningService.js
- * Last Sync: 2025-12-16T04:14:36.745Z
+ * Last Sync: 2025-12-20T22:26:03.341Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -20,14 +20,20 @@ const expertTrainingService = require('./expertTrainingService');
 
 class ExpertLearningService {
     constructor() {
-        this.supabase = null;
-        this.learningCache = new Map();
-        
-        if (config.supabase?.url && config.supabase?.serviceRoleKey) {
-            this.supabase = createClient(
-                config.supabase.url,
-                config.supabase.serviceRoleKey
-            );
+        // Only create Supabase client if credentials are available
+        if (config.supabase.serviceRoleKey) {
+            try {
+                this.supabase = createClient(
+                    config.supabase.url,
+                    config.supabase.serviceRoleKey
+                );
+            } catch (error) {
+                console.warn('[expertLearningService] Supabase not configured:', error.message);
+                this.supabase = null;
+            }
+        } else {
+            console.warn('[expertLearningService] Supabase credentials not configured. Service will be disabled.');
+            this.supabase = null;
         }
     }
 

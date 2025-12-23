@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/agentSessionService.js
- * Last Sync: 2025-12-14T07:30:45.566Z
+ * Last Sync: 2025-12-20T22:26:03.325Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -18,16 +18,31 @@ const config = require('../config');
 
 class AgentSessionService {
     constructor() {
-        this.supabase = createClient(
-            config.supabase.url,
-            config.supabase.serviceRoleKey
-        );
+        // Only create Supabase client if credentials are available
+        if (config.supabase.serviceRoleKey) {
+            try {
+                this.supabase = createClient(
+                    config.supabase.url,
+                    config.supabase.serviceRoleKey
+                );
+            } catch (error) {
+                console.warn('[AgentSessionService] Supabase not configured:', error.message);
+                this.supabase = null;
+            }
+        } else {
+            console.warn('[AgentSessionService] Supabase credentials not configured. Agent session service will be disabled.');
+            this.supabase = null;
+        }
     }
 
     /**
      * Get or create agent session
      */
     async getOrCreateSession(agentType, sessionId, context = {}) {
+        if (!this.supabase) {
+            console.warn('[AgentSessionService] Cannot get session: Supabase not configured');
+            return null;
+        }
         try {
             const { data, error } = await this.supabase.rpc('get_or_create_agent_session', {
                 p_agent_type: agentType,
@@ -47,6 +62,7 @@ class AgentSessionService {
      * Record successful action
      */
     async recordSuccess(agentType, sessionId, action) {
+        if (!this.supabase) return false;
         try {
             const { error } = await this.supabase.rpc('record_agent_success', {
                 p_agent_type: agentType,
@@ -66,6 +82,7 @@ class AgentSessionService {
      * Record failed action
      */
     async recordFailure(agentType, sessionId, action) {
+        if (!this.supabase) return false;
         try {
             const { error } = await this.supabase.rpc('record_agent_failure', {
                 p_agent_type: agentType,
@@ -85,6 +102,7 @@ class AgentSessionService {
      * Record agent decision
      */
     async recordDecision(decision) {
+        if (!this.supabase) return false;
         try {
             const { error } = await this.supabase
                 .from('agent_decisions')
@@ -113,6 +131,7 @@ class AgentSessionService {
      * Get learned patterns from session
      */
     async getLearnedPatterns(agentType, sessionId) {
+        if (!this.supabase) return { patterns: [], successfulActions: [] };
         try {
             const { data, error } = await this.supabase
                 .from('agent_sessions')
@@ -136,6 +155,7 @@ class AgentSessionService {
      * Get decision statistics
      */
     async getDecisionStats(agentType, days = 7) {
+        if (!this.supabase) return [];
         try {
             const { data, error } = await this.supabase.rpc('get_agent_decision_stats', {
                 p_agent_type: agentType,

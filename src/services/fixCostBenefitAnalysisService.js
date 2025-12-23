@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/fixCostBenefitAnalysisService.js
- * Last Sync: 2025-12-16T00:42:39.834Z
+ * Last Sync: 2025-12-20T22:26:03.333Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -21,22 +21,20 @@ const codeHealthScoring = require('./codeHealthScoring');
 
 class FixCostBenefitAnalysisService {
     constructor() {
-        this.supabase = null;
-        this.costModels = {
-            developerHourlyRate: 100, // Default $100/hour
-            criticalBugCost: 10000, // Cost of critical bug in production
-            highBugCost: 5000,
-            mediumBugCost: 1000,
-            lowBugCost: 100,
-            maintenanceCostPerLine: 0.5, // $0.50 per line of code per year
-            technicalDebtMultiplier: 1.5 // Technical debt costs 1.5x more
-        };
-        
-        if (config.supabase?.url && config.supabase?.serviceRoleKey) {
-            this.supabase = createClient(
-                config.supabase.url,
-                config.supabase.serviceRoleKey
-            );
+        // Only create Supabase client if credentials are available
+        if (config.supabase.serviceRoleKey) {
+            try {
+                this.supabase = createClient(
+                    config.supabase.url,
+                    config.supabase.serviceRoleKey
+                );
+            } catch (error) {
+                console.warn('[fixCostBenefitAnalysisService] Supabase not configured:', error.message);
+                this.supabase = null;
+            }
+        } else {
+            console.warn('[fixCostBenefitAnalysisService] Supabase credentials not configured. Service will be disabled.');
+            this.supabase = null;
         }
     }
 

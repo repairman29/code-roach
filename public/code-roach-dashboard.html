@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Code Roach Analytics Dashboard</title>
+    <script src="/js/utils/domSanitizer.js"></script>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🪳</text></svg>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -24,25 +25,21 @@
             padding: 20px;
         }
 
-        .dashboard-container {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
+        /* Container now uses sys-container */
 
         .dashboard-header {
             text-align: center;
             margin-bottom: 30px;
             padding: 20px;
-            background: rgba(0, 255, 255, 0.1);
-            border: 2px solid #00ffff;
-            border-radius: 8px;
+            background: var(--panel-bg);
+            border: 1px solid var(--border-dim);
+            clip-path: polygon(var(--corner-cut) 0, 100% 0, 100% calc(100% - var(--corner-cut)), calc(100% - var(--corner-cut)) 100%, 0 100%, 0 var(--corner-cut));
         }
 
         .dashboard-header h1 {
-            font-family: 'Orbitron', sans-serif;
+            font-family: var(--font-tech);
             font-size: 2.5em;
-            color: #00ffff;
-            text-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+            color: var(--neon-cyan);
             margin-bottom: 10px;
         }
 
@@ -59,9 +56,9 @@
         }
 
         .stat-card {
-            background: rgba(20, 25, 45, 0.8);
-            border: 1px solid #00ffff;
-            border-radius: 8px;
+            background: var(--panel-bg);
+            border: 1px solid var(--border-dim);
+            clip-path: polygon(var(--corner-cut) 0, 100% 0, 100% calc(100% - var(--corner-cut)), calc(100% - var(--corner-cut)) 100%, 0 100%, 0 var(--corner-cut));
             padding: 20px;
             text-align: center;
             transition: transform 0.3s, box-shadow 0.3s;
@@ -69,22 +66,24 @@
 
         .stat-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
         }
 
         .stat-card h3 {
-            color: #00ffff;
+            color: var(--neon-cyan);
             font-size: 0.9em;
             margin-bottom: 10px;
             text-transform: uppercase;
             letter-spacing: 2px;
+            font-family: var(--font-tech);
         }
 
         .stat-card .value {
             font-size: 2.5em;
             font-weight: bold;
-            color: #ffffff;
-            font-family: 'Orbitron', sans-serif;
+            color: var(--text-main);
+            font-family: var(--font-tech);
         }
 
         .stat-card .label {
@@ -343,12 +342,11 @@
     </style>
 </head>
 <body>
-    <div class="dashboard-container">
-        <div class="dashboard-header">
+    <div class="dashboard-header">
             <h1>🪳 Code Roach Analytics Dashboard</h1>
             <p>Real-time error tracking, fix analytics, and insights</p>
             <div class="header-controls" style="margin-bottom: 15px;">
-                <a href="/code-roach-projects.html" class="header-btn">📁 Projects</a>
+                <a href="/code-roach-projects" class="header-btn">📁 Projects</a>
                 <a href="/code-roach-issues.html" class="header-btn">🐛 Issues</a>
                 <a href="/code-roach-dashboard.html" class="header-btn">📊 Dashboard</a>
             </div>
@@ -458,11 +456,16 @@
         
         // Initialize auth and check authentication
         (async () => {
-            await window.codeRoachAuth.initialize();
-            await api.initializeAuth();
+            try {
+                await window.codeRoachAuth.initialize();
+                await api.initializeAuth();
+            } catch (error) {
+                console.warn('[Dashboard] Auth initialization failed, continuing without auth:', error);
+            }
             
             // Check if authentication is required (can be disabled for development)
-            const requireAuth = window.REQUIRE_AUTH !== 'false';
+            // Default to false for local development
+            const requireAuth = window.REQUIRE_AUTH === 'true' || (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1');
             if (requireAuth && !window.codeRoachAuth.isAuthenticated()) {
                 // Redirect to login if not authenticated
                 window.location.href = '/code-roach-login.html?redirect=' + encodeURIComponent(window.location.pathname);
@@ -482,7 +485,12 @@
                 const response = await api.getProjects();
                 projects = response.projects || [];
                 const select = document.getElementById('projectSelect');
-                select.innerHTML = '<option value="">All Projects</option>';
+                // XSS Protection: Use safeSetHTML for select options
+                if (window.DOMSanitizer && window.DOMSanitizer.safeSetHTML) {
+                    window.DOMSanitizer.safeSetHTML(select, '<option value="">All Projects</option>');
+                } else {
+                    select.innerHTML = '<option value="">All Projects</option>';
+                }
                 projects.forEach(project => {
                     const option = document.createElement('option');
                     option.value = project.id;
@@ -517,15 +525,22 @@
         // Helper function to safely fetch with error handling
         async function safeFetch(url, fallback = { success: false }) {
             try {
-                const response = await fetch(url);
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include' // Include cookies for session
+                });
                 if (!response.ok) {
                     console.warn(`[Dashboard] ${url} returned ${response.status}`);
                     return fallback;
                 }
-                return await response.json();
+                const data = await response.json();
+                return { ...data, success: true };
             } catch (error) {
                 // Only log if it's not a connection refused (server down)
-                if (error.message && !error.message.includes('ERR_CONNECTION_REFUSED') && !error.message.includes('ERR_EMPTY_RESPONSE')) {
+                if (error.message && !error.message.includes('ERR_CONNECTION_REFUSED') && !error.message.includes('ERR_EMPTY_RESPONSE') && !error.message.includes('Failed to fetch')) {
                     console.warn(`[Dashboard] Error fetching ${url}:`, error.message);
                 }
                 return fallback;
@@ -558,7 +573,16 @@
                         'priority': 'High Priority Files',
                         'quick': 'Quick Scan (50 Files)'
                     };
-                    loadingDiv.innerHTML = `<div class="pulse">🚀 Starting ${typeNames[crawlType] || crawlType} crawl... This may take a few moments.</div>`;
+                    // XSS Protection: Sanitize crawl type name
+                    const safeCrawlType = window.DOMSanitizer ? window.DOMSanitizer.escapeHTML(typeNames[crawlType] || crawlType) : (typeNames[crawlType] || crawlType);
+                    const loadingHTML = `<div class="pulse">🚀 Starting ${safeCrawlType} crawl... This may take a few moments.</div>`;
+                    if (window.DOMSanitizer && window.DOMSanitizer.safeSetHTML) {
+                        window.DOMSanitizer.safeSetHTML(loadingDiv, loadingHTML);
+                    } else if (window.DOMSanitizer && window.DOMSanitizer.sanitizeHTML) {
+                        loadingDiv.innerHTML = window.DOMSanitizer.sanitizeHTML(loadingHTML);
+                    } else {
+                        loadingDiv.textContent = `Starting ${safeCrawlType} crawl... This may take a few moments.`;
+                    }
                 }
                 
                 // Build options based on crawl type
@@ -595,14 +619,25 @@
                         break;
                 }
                 
+                // Include projectId if a project is selected
+                const requestBody = {
+                    options: options
+                };
+                
+                // Add projectId if a project is selected
+                if (currentProjectId) {
+                    requestBody.projectId = currentProjectId;
+                    console.log(`[Dashboard] Starting crawl for project: ${currentProjectId}`);
+                } else {
+                    console.warn('[Dashboard] No project selected - crawl will not associate issues with a project');
+                }
+                
                 const response = await fetch('/api/code-roach/crawl', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({
-                        options: options
-                    })
+                    body: JSON.stringify(requestBody)
                 });
                 
                 const result = await response.json();
@@ -610,7 +645,13 @@
                 if (result.success) {
                     // Show success message
                     if (loadingDiv) {
-                        loadingDiv.innerHTML = '<div style="color: #00ff00;">✅ Crawl started successfully! Refreshing dashboard...</div>';
+                        if (window.DOMSanitizer && window.DOMSanitizer.safeSetHTML) {
+                            window.DOMSanitizer.safeSetHTML(loadingDiv, '<div style="color: #00ff00;">✅ Crawl started successfully! Refreshing dashboard...</div>');
+                        } else if (window.DOMSanitizer && window.DOMSanitizer.sanitizeHTML) {
+                            loadingDiv.innerHTML = window.DOMSanitizer.sanitizeHTML('<div style="color: #00ff00;">✅ Crawl started successfully! Refreshing dashboard...</div>');
+                        } else {
+                            loadingDiv.textContent = '✅ Crawl started successfully! Refreshing dashboard...';
+                        }
                     }
                     
                     // Wait a moment then refresh dashboard
@@ -625,7 +666,15 @@
                 const errorDiv = document.getElementById('error-message');
                 if (errorDiv) {
                     errorDiv.style.display = 'block';
-                    errorDiv.innerHTML = `<strong>❌ Error starting crawl:</strong><br>${error.message}`;
+                    const errorMsg = window.DOMSanitizer ? window.DOMSanitizer.escapeHTML(error.message) : error.message;
+                    const errorHTML = `<strong>❌ Error starting crawl:</strong><br>${errorMsg}`;
+                    if (window.DOMSanitizer && window.DOMSanitizer.safeSetHTML) {
+                        window.DOMSanitizer.safeSetHTML(errorDiv, errorHTML);
+                    } else if (window.DOMSanitizer && window.DOMSanitizer.sanitizeHTML) {
+                        errorDiv.innerHTML = window.DOMSanitizer.sanitizeHTML(errorHTML);
+                    } else {
+                        errorDiv.textContent = `Error starting crawl: ${errorMsg}`;
+                    }
                 }
                 
                 const loadingDiv = document.getElementById('loading');
@@ -659,7 +708,7 @@
                     safeFetch('/api/code-roach/crawl/status', { success: false, stats: {} }),
                     safeFetch('/api/code-roach/ip-analytics' + projectParam, { success: false }),
                     safeFetch('/api/code-roach/ip-analytics/roi' + projectParam, { success: false }),
-                    safeFetch('/api/code-roach/issues' + projectParam + (projectParam ? '&' : '?') + 'limit=1000', { success: false, issues: [] }),
+                    safeFetch('/api/code-roach/issues' + projectParam + (projectParam ? '&' : '?') + 'limit=1000', { success: false, issues: [], total: 0 }),
                     safeFetch('/api/code-roach/stats' + projectParam, { success: false, statistics: {} })
                 ]);
 
@@ -670,8 +719,9 @@
                     consecutiveFailures++;
                     if (consecutiveFailures >= MAX_CONSECUTIVE_FAILURES) {
                         // Show helpful error message
-                        document.getElementById('error-message').style.display = 'block';
-                        document.getElementById('error-message').innerHTML = `
+                        const errorMsgEl = document.getElementById('error-message');
+                        errorMsgEl.style.display = 'block';
+                        const connectionErrorHTML = `
                             <strong>⚠️ Server Connection Issue</strong><br>
                             The Code Roach server is not responding. Please ensure the server is running:<br>
                             <code>npm run dev</code> or <code>node server/server.js</code><br>
@@ -701,13 +751,18 @@
                 console.log('Crawl status:', crawlStatus);
                 console.log('Crawl stats:', crawlStats);
 
+                // Extract issues data (database count is the source of truth)
+                // issuesData is from Promise.all above
+                const databaseIssueCount = (issuesData && issuesData.total !== undefined) ? issuesData.total : 0;
+                const issuesList = (issuesData && issuesData.issues) ? issuesData.issues : [];
+
                 // Safely extract nested stats with defaults
                 const historyStatsData = (historyStats && historyStats.stats) ? historyStats.stats : (historyStats || {});
                 const learningStatsData = (learningStats && learningStats.stats) ? learningStats.stats : (learningStats || {});
                 const patternsData = (patterns && patterns.patterns) ? patterns.patterns : (Array.isArray(patterns) ? patterns : []);
 
-                // Update stats (include crawl stats)
-                updateStats(historyStatsData, learningStatsData, crawlStats);
+                // Update stats (include crawl stats and database count)
+                updateStats(historyStatsData, learningStatsData, crawlStats, databaseIssueCount, issuesList);
 
                 // Update charts (include crawl stats) - use safe data
                 updateCharts(historyStatsData, patternsData, learningStatsData, crawlStats);
@@ -743,15 +798,32 @@
             }
         }
 
-        function updateStats(historyStats, learningStats, crawlStats = {}) {
+        function updateStats(historyStats, learningStats, crawlStats = {}, databaseIssueCount = 0, issuesList = []) {
             const statsGrid = document.getElementById('stats-grid');
-            statsGrid.innerHTML = '';
+            // XSS Protection: Use safeSetHTML for clearing
+            if (window.DOMSanitizer && window.DOMSanitizer.safeSetHTML) {
+                window.DOMSanitizer.safeSetHTML(statsGrid, '');
+            } else {
+                statsGrid.innerHTML = '';
+            }
 
             // Handle null/undefined values from API with safe access
             const filesScanned = (crawlStats && crawlStats.filesScanned !== null && crawlStats.filesScanned !== undefined) ? crawlStats.filesScanned : 0;
-            const issuesFound = (crawlStats && crawlStats.issuesFound !== null && crawlStats.issuesFound !== undefined) ? crawlStats.issuesFound : ((historyStats && historyStats.totalErrors) || 0);
-            const issuesAutoFixed = (crawlStats && crawlStats.issuesAutoFixed !== null && crawlStats.issuesAutoFixed !== undefined) ? crawlStats.issuesAutoFixed : ((historyStats && historyStats.successfulFixes) || 0);
-            const issuesNeedingReview = (crawlStats && crawlStats.issuesNeedingReview !== null && crawlStats.issuesNeedingReview !== undefined) ? crawlStats.issuesNeedingReview : 0;
+            
+            // Use database count as source of truth for issues (more accurate than crawl stats)
+            const issuesFound = databaseIssueCount > 0 ? databaseIssueCount : 
+                ((crawlStats && crawlStats.issuesFound !== null && crawlStats.issuesFound !== undefined) ? crawlStats.issuesFound : ((historyStats && historyStats.totalErrors) || 0));
+            
+            // Calculate auto-fixed and needing review from actual issues in database
+            const issuesAutoFixed = issuesList.filter(i => 
+                (i.fixApplied === true || i.fix_applied === true) || 
+                (i.reviewStatus === 'resolved' || i.review_status === 'resolved')
+            ).length;
+            
+            const issuesNeedingReview = issuesList.filter(i => 
+                (i.reviewStatus === 'pending' || i.review_status === 'pending') &&
+                !(i.fixApplied === true || i.fix_applied === true)
+            ).length;
             const successRate = (historyStats && historyStats.successRate !== null && historyStats.successRate !== undefined) ? historyStats.successRate : 0;
             const uniquePatterns = (historyStats && historyStats.uniquePatterns !== null && historyStats.uniquePatterns !== undefined) ? historyStats.uniquePatterns : 0;
             const avgQuality = (learningStats && learningStats.averageQuality !== null && learningStats.averageQuality !== undefined) ? learningStats.averageQuality : 0;
@@ -781,10 +853,22 @@
             stats.forEach(stat => {
                 const card = document.createElement('div');
                 card.className = 'stat-card';
-                card.innerHTML = `
-                    <h3>${stat.label}</h3>
-                    <div class="value" style="color: ${stat.color}">${stat.value}</div>
+                // Fix XSS: Sanitize stat label and value
+                const safeLabel = window.DOMSanitizer ? window.DOMSanitizer.escapeHTML(String(stat.label)) : String(stat.label);
+                const safeValue = window.DOMSanitizer ? window.DOMSanitizer.escapeHTML(String(stat.value)) : String(stat.value);
+                const statHTML = `
+                    <h3>${safeLabel}</h3>
+                    <div class="value" style="color: ${stat.color}">${safeValue}</div>
                 `;
+                if (window.DOMSanitizer && window.DOMSanitizer.safeSetHTML) {
+                    window.DOMSanitizer.safeSetHTML(card, statHTML);
+                } else if (window.DOMSanitizer && window.DOMSanitizer.sanitizeHTML) {
+                    card.innerHTML = window.DOMSanitizer.sanitizeHTML(statHTML);
+                } else {
+                    const div = document.createElement('div');
+                    div.textContent = statHTML;
+                    card.innerHTML = div.innerHTML;
+                }
                 statsGrid.appendChild(card);
             });
         }
@@ -943,11 +1027,23 @@
 
         function updatePatternsList(patterns) {
             const list = document.getElementById('patterns-list');
-            list.innerHTML = '';
+            // XSS Protection: Use safeSetHTML for clearing
+            if (window.DOMSanitizer && window.DOMSanitizer.safeSetHTML) {
+                window.DOMSanitizer.safeSetHTML(list, '');
+            } else {
+                list.innerHTML = '';
+            }
 
             // Sort by occurrences with safe access
             if (!Array.isArray(patterns)) {
-                list.innerHTML = '<p style="color: #a0a0a0; text-align: center; padding: 20px;">No error patterns yet. Errors will appear here as they occur.</p>';
+                const emptyMsg = '<p style="color: #a0a0a0; text-align: center; padding: 20px;">No error patterns yet. Errors will appear here as they occur.</p>';
+                if (window.DOMSanitizer && window.DOMSanitizer.safeSetHTML) {
+                    window.DOMSanitizer.safeSetHTML(list, emptyMsg);
+                } else if (window.DOMSanitizer && window.DOMSanitizer.sanitizeHTML) {
+                    list.innerHTML = window.DOMSanitizer.sanitizeHTML(emptyMsg);
+                } else {
+                    list.textContent = 'No error patterns yet. Errors will appear here as they occur.';
+                }
                 return;
             }
 
@@ -967,11 +1063,13 @@
                 const patternStats = pattern.stats || {};
                 const item = document.createElement('div');
                 item.className = 'pattern-item';
-                item.innerHTML = `
-                    <h4>${errorPattern.message || 'Unknown Error'}</h4>
+                // Fix XSS: Sanitize error pattern message
+                const safeMessage = window.DOMSanitizer ? window.DOMSanitizer.escapeHTML(errorPattern.message || 'Unknown Error') : (errorPattern.message || 'Unknown Error');
+                const patternHTML = `
+                    <h4>${safeMessage}</h4>
                     <div style="color: #a0a0a0; font-size: 0.9em; margin-top: 5px;">
-                        Type: ${errorPattern.type || 'Unknown'} | 
-                        Source: ${errorPattern.source || 'Unknown'}
+                        Type: ${window.DOMSanitizer ? window.DOMSanitizer.escapeHTML(errorPattern.type || 'Unknown') : (errorPattern.type || 'Unknown')} | 
+                        Source: ${window.DOMSanitizer ? window.DOMSanitizer.escapeHTML(errorPattern.source || 'Unknown') : (errorPattern.source || 'Unknown')}
                     </div>
                     <div class="pattern-stats">
                         <div class="stat">
@@ -1031,7 +1129,12 @@
         function updateIPAnalytics(ipAnalytics) {
             const grid = document.getElementById('ip-analytics-grid');
             if (!grid) return;
-            grid.innerHTML = '';
+            // XSS Protection: Use safeSetHTML for clearing
+            if (window.DOMSanitizer && window.DOMSanitizer.safeSetHTML) {
+                window.DOMSanitizer.safeSetHTML(grid, '');
+            } else {
+                grid.innerHTML = '';
+            }
 
             const stats = [
                 {
@@ -1063,11 +1166,24 @@
             stats.forEach(stat => {
                 const card = document.createElement('div');
                 card.className = 'stat-card';
-                card.innerHTML = `
-                    <h3>${stat.label}</h3>
-                    <div class="value" style="color: ${stat.color}">${stat.value}</div>
-                    <div class="label">${stat.sublabel}</div>
+                // XSS Protection: Sanitize stat data
+                const safeLabel = window.DOMSanitizer ? window.DOMSanitizer.escapeHTML(stat.label) : stat.label;
+                const safeValue = window.DOMSanitizer ? window.DOMSanitizer.escapeHTML(String(stat.value)) : String(stat.value);
+                const safeSublabel = window.DOMSanitizer ? window.DOMSanitizer.escapeHTML(stat.sublabel) : stat.sublabel;
+                const cardHTML = `
+                    <h3>${safeLabel}</h3>
+                    <div class="value" style="color: ${stat.color}">${safeValue}</div>
+                    <div class="label">${safeSublabel}</div>
                 `;
+                if (window.DOMSanitizer && window.DOMSanitizer.safeSetHTML) {
+                    window.DOMSanitizer.safeSetHTML(card, cardHTML);
+                } else if (window.DOMSanitizer && window.DOMSanitizer.sanitizeHTML) {
+                    card.innerHTML = window.DOMSanitizer.sanitizeHTML(cardHTML);
+                } else {
+                    const div = document.createElement('div');
+                    div.textContent = cardHTML;
+                    card.innerHTML = div.innerHTML;
+                }
                 grid.appendChild(card);
             });
         }
@@ -1075,7 +1191,12 @@
         function updateROIMetrics(roiMetrics) {
             const grid = document.getElementById('roi-metrics-grid');
             if (!grid) return;
-            grid.innerHTML = '';
+            // XSS Protection: Use safeSetHTML for clearing
+            if (window.DOMSanitizer && window.DOMSanitizer.safeSetHTML) {
+                window.DOMSanitizer.safeSetHTML(grid, '');
+            } else {
+                grid.innerHTML = '';
+            }
 
             const timeSaved = roiMetrics.timeSaved || {};
             const costSavings = roiMetrics.costSavings || {};
@@ -1206,10 +1327,22 @@
             stats.forEach(stat => {
                 const card = document.createElement('div');
                 card.className = 'stat-card';
-                card.innerHTML = `
-                    <h3>${stat.label}</h3>
-                    <div class="value" style="color: ${stat.color}">${stat.value}</div>
+                // XSS Protection: Sanitize stat data
+                const safeLabel = window.DOMSanitizer ? window.DOMSanitizer.escapeHTML(stat.label) : stat.label;
+                const safeValue = window.DOMSanitizer ? window.DOMSanitizer.escapeHTML(String(stat.value)) : String(stat.value);
+                const cardHTML = `
+                    <h3>${safeLabel}</h3>
+                    <div class="value" style="color: ${stat.color}">${safeValue}</div>
                 `;
+                if (window.DOMSanitizer && window.DOMSanitizer.safeSetHTML) {
+                    window.DOMSanitizer.safeSetHTML(card, cardHTML);
+                } else if (window.DOMSanitizer && window.DOMSanitizer.sanitizeHTML) {
+                    card.innerHTML = window.DOMSanitizer.sanitizeHTML(cardHTML);
+                } else {
+                    const div = document.createElement('div');
+                    div.textContent = cardHTML;
+                    card.innerHTML = div.innerHTML;
+                }
                 grid.appendChild(card);
             });
         }
@@ -1225,8 +1358,10 @@
                 'critical': '#ff0000',
                 'unknown': '#a0a0a0'
             }[overallStatus] || '#a0a0a0';
-
-            container.innerHTML = `
+            
+            // XSS Protection: Sanitize compliance data
+            const safeStatus = window.DOMSanitizer ? window.DOMSanitizer.escapeHTML(overallStatus) : overallStatus;
+            const containerHTML = `
                 <div style="padding: 15px; background: rgba(0, 255, 255, 0.05); border-radius: 8px; border-left: 4px solid ${statusColor};">
                     <h3 style="color: #00ffff; margin-bottom: 10px;">Overall SLA Status: <span style="color: ${statusColor};">${overallStatus.toUpperCase()}</span></h3>
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px;">
@@ -1421,6 +1556,7 @@
             }
         });
     </script>
+    </div>
 </body>
 </html>
 

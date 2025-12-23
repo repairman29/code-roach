@@ -1,16 +1,14 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/featureEngineering.js
- * Last Sync: 2025-12-14T07:30:45.619Z
+ * Last Sync: 2025-12-19T23:29:57.600Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
  * For standalone-specific changes, see .standalone-overrides/
  */
 
-if (undefined != null) {
-    /**
-}
+/**
  * Feature Engineering Service
  * 
  * Extracts and engineers features for ML model training and prediction.

@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/crossProjectLearningService.js
- * Last Sync: 2025-12-15T16:06:58.602Z
+ * Last Sync: 2025-12-20T22:26:03.325Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -22,16 +22,20 @@ const codebaseSearch = require('./codebaseSearch');
 
 class CrossProjectLearningService {
     constructor() {
-        this.supabase = null;
-        this.learnedPatterns = new Map();
-        this.patternCache = new Map();
-        this.cacheTTL = 3600000; // 1 hour
-        
-        if (config.supabase?.url && config.supabase?.serviceRoleKey) {
-            this.supabase = createClient(
-                config.supabase.url,
-                config.supabase.serviceRoleKey
-            );
+        // Only create Supabase client if credentials are available
+        if (config.supabase.serviceRoleKey) {
+            try {
+                this.supabase = createClient(
+                    config.supabase.url,
+                    config.supabase.serviceRoleKey
+                );
+            } catch (error) {
+                console.warn('[crossProjectLearningService] Supabase not configured:', error.message);
+                this.supabase = null;
+            }
+        } else {
+            console.warn('[crossProjectLearningService] Supabase credentials not configured. Service will be disabled.');
+            this.supabase = null;
         }
     }
 
