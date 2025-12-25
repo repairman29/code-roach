@@ -2,17 +2,20 @@
 // Audit server file server/config.js for security, performance, error handling, and best practices
 
 /**
-const { createLogger } = require('./utils/logger');
-const { createLogger } = require('../utils/logger');
-const log = createLogger('config');
-
-const log = createLogger('Config');
  * Server Configuration
  * Centralized environment variable management
  */
 
 // Load environment variables
 require("dotenv").config();
+
+// Logger setup - simple console logger for now
+const log = {
+  info: (...args) => console.log('[INFO]', ...args),
+  warn: (...args) => console.warn('[WARN]', ...args),
+  error: (...args) => console.error('[ERROR]', ...args),
+  debug: (...args) => console.debug('[DEBUG]', ...args)
+};
 
 /**
  * Server configuration object
