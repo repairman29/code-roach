@@ -19,6 +19,7 @@ This document outlines the complete execution plan to transform Code Roach from 
 ### 🆕 Expert Training System (NEW)
 
 Code Roach now includes an **Expert Training System** that automatically trains AI agents to be experts on each customer's tech stack. This enables:
+
 - **Automatic Onboarding**: Analyzes customer codebase and generates expert guides
 - **Context-Aware Fixes**: Fixes respect customer patterns and architecture
 - **Self-Learning**: System improves experts based on fix outcomes
@@ -31,10 +32,13 @@ Code Roach now includes an **Expert Training System** that automatically trains 
 ## 📅 Product Roadmap
 
 ### Phase 1: MVP Launch (Months 1-3)
+
 **Goal:** Launch a working product with core features
 
 #### Month 1: Foundation
+
 **Infrastructure:**
+
 - [ ] Set up production hosting (Railway/Render/AWS)
 - [ ] Configure Supabase production database
 - [ ] Set up CI/CD pipeline
@@ -42,6 +46,7 @@ Code Roach now includes an **Expert Training System** that automatically trains 
 - [ ] Set up error tracking (Sentry)
 
 **Product:**
+
 - [ ] Core crawler functionality
 - [ ] Basic auto-fix capabilities
 - [ ] Simple web dashboard
@@ -49,6 +54,7 @@ Code Roach now includes an **Expert Training System** that automatically trains 
 - [ ] User authentication (Supabase Auth)
 
 **Deliverables:**
+
 - ✅ Working SaaS product
 - ✅ GitHub integration
 - ✅ Basic dashboard
@@ -57,7 +63,9 @@ Code Roach now includes an **Expert Training System** that automatically trains 
 ---
 
 #### Month 2: Core Features
+
 **Product:**
+
 - [ ] Advanced fix generation (LLM-powered)
 - [ ] Fix preview and approval
 - [ ] Issue prioritization
@@ -65,12 +73,14 @@ Code Roach now includes an **Expert Training System** that automatically trains 
 - [ ] Basic analytics dashboard
 
 **Infrastructure:**
+
 - [ ] Rate limiting and quotas
 - [ ] Usage tracking
 - [ ] Billing integration (Stripe)
 - [ ] API rate limiting
 
 **Deliverables:**
+
 - ✅ Full auto-fix capabilities
 - ✅ User-facing dashboard
 - ✅ Basic billing
@@ -78,7 +88,9 @@ Code Roach now includes an **Expert Training System** that automatically trains 
 ---
 
 #### Month 3: Polish & Launch
+
 **Product:**
+
 - [ ] Onboarding improvements
 - [ ] Documentation site
 - [ ] Support system integration
@@ -86,12 +98,14 @@ Code Roach now includes an **Expert Training System** that automatically trains 
 - [ ] Security audit
 
 **Marketing:**
+
 - [ ] Landing page
 - [ ] Product Hunt launch
 - [ ] Developer community outreach
 - [ ] Content marketing (blog posts)
 
 **Deliverables:**
+
 - ✅ Production-ready product
 - ✅ Public launch
 - ✅ First paying customers
@@ -99,21 +113,25 @@ Code Roach now includes an **Expert Training System** that automatically trains 
 ---
 
 ### Phase 2: Growth (Months 4-6)
+
 **Goal:** Scale to 1,000+ users, improve product-market fit
 
 #### Month 4: Team Features
+
 - [ ] Team management
 - [ ] Team dashboards
 - [ ] Collaboration features
 - [ ] Role-based access control
 
 #### Month 5: Advanced Features
+
 - [ ] Multi-language support expansion
 - [ ] Custom fix patterns
 - [ ] Advanced analytics
 - [ ] API for integrations
 
 #### Month 6: Enterprise Readiness
+
 - [ ] SSO (SAML, OAuth)
 - [ ] Audit logs
 - [ ] Compliance features (SOC2 prep)
@@ -122,15 +140,18 @@ Code Roach now includes an **Expert Training System** that automatically trains 
 ---
 
 ### Phase 3: Scale (Months 7-12)
+
 **Goal:** Enterprise customers, $2M+ ARR
 
 #### Months 7-9: Enterprise Features
+
 - [ ] Full SSO implementation
 - [ ] Advanced security features
 - [ ] Custom integrations
 - [ ] Dedicated support channels
 
 #### Months 10-12: Market Leadership
+
 - [ ] Industry-specific optimizations
 - [ ] Partner integrations
 - [ ] Marketplace for patterns
@@ -143,6 +164,7 @@ Code Roach now includes an **Expert Training System** that automatically trains 
 ### Current State Analysis
 
 **Existing Infrastructure:**
+
 - ✅ Supabase (PostgreSQL + Auth + Storage)
 - ✅ Node.js/Express backend
 - ✅ GitHub Actions (CI/CD)
@@ -150,6 +172,7 @@ Code Roach now includes an **Expert Training System** that automatically trains 
 - ✅ Sentry (error tracking)
 
 **Gaps:**
+
 - ❌ Production-grade hosting
 - ❌ Scalable architecture
 - ❌ Monitoring and observability
@@ -162,18 +185,22 @@ Code Roach now includes an **Expert Training System** that automatically trains 
 ### Target Architecture
 
 #### Option 1: Serverless-First (Recommended for MVP)
+
 **Pros:**
+
 - Low operational overhead
 - Auto-scaling
 - Pay-per-use pricing
 - Fast to deploy
 
 **Cons:**
+
 - Cold starts
 - Vendor lock-in
 - Limited control
 
 **Stack:**
+
 - **Compute:** Vercel/Netlify Functions or AWS Lambda
 - **Database:** Supabase (PostgreSQL)
 - **Storage:** Supabase Storage or S3
@@ -186,18 +213,22 @@ Code Roach now includes an **Expert Training System** that automatically trains 
 ---
 
 #### Option 2: Container-Based (Recommended for Scale)
+
 **Pros:**
+
 - Full control
 - Better performance
 - Easier debugging
 - Portable
 
 **Cons:**
+
 - More operational overhead
 - Manual scaling
 - Higher baseline costs
 
 **Stack:**
+
 - **Compute:** Railway, Render, or AWS ECS/Fargate
 - **Database:** Supabase (PostgreSQL) or AWS RDS
 - **Storage:** Supabase Storage or S3
@@ -211,16 +242,20 @@ Code Roach now includes an **Expert Training System** that automatically trains 
 ---
 
 #### Option 3: Hybrid (Recommended for Growth)
+
 **Pros:**
+
 - Best of both worlds
 - Flexible scaling
 - Cost optimization
 
 **Cons:**
+
 - More complex
 - Multiple systems to manage
 
 **Stack:**
+
 - **API/Web:** Vercel/Netlify (serverless)
 - **Workers:** Railway/Render (containers)
 - **Database:** Supabase (PostgreSQL)
@@ -235,18 +270,21 @@ Code Roach now includes an **Expert Training System** that automatically trains 
 ### Recommended: Hybrid Architecture
 
 **Phase 1 (MVP):** Serverless-First
+
 - Vercel for API/Web
 - Supabase for database
 - Upstash Redis for cache/queue
 - Cloudflare for CDN
 
 **Phase 2 (Growth):** Add Containers
+
 - Keep Vercel for API/Web
 - Add Railway for background workers
 - Add BullMQ for job processing
 - Scale Redis
 
 **Phase 3 (Enterprise):** Full Container
+
 - Migrate to Railway/Render or AWS
 - Full container orchestration
 - Advanced monitoring
@@ -259,6 +297,7 @@ Code Roach now includes an **Expert Training System** that automatically trains 
 ### Development Tools
 
 #### Code Quality
+
 - **Linting:** ESLint (already in use)
 - **Formatting:** Prettier
 - **Type Checking:** TypeScript (gradual migration)
@@ -270,6 +309,7 @@ Code Roach now includes an **Expert Training System** that automatically trains 
 **Current:** GitHub Actions (basic)
 
 **Recommended Enhancement:**
+
 ```yaml
 # .github/workflows/code-roach-ci.yml
 name: Code Roach CI/CD
@@ -287,12 +327,12 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
-          node-version: '18'
+          node-version: "18"
       - run: npm ci
       - run: npm run test:unit
       - run: npm run test:integration
       - run: npm run test:security
-      
+
   build:
     needs: test
     runs-on: ubuntu-latest
@@ -305,7 +345,7 @@ jobs:
         with:
           name: build
           path: dist/
-          
+
   deploy-staging:
     needs: build
     if: github.ref == 'refs/heads/develop'
@@ -315,7 +355,7 @@ jobs:
       - uses: railway-app/railway-action@v1
         with:
           service: code-roach-staging
-          
+
   deploy-production:
     needs: build
     if: github.ref == 'refs/heads/main'
@@ -333,17 +373,20 @@ jobs:
 ### Monitoring & Observability
 
 #### Application Monitoring
+
 - **APM:** Sentry (already in use) or Datadog
 - **Uptime:** UptimeRobot or Pingdom
 - **Logs:** Logtail, LogRocket, or Datadog
 - **Metrics:** Prometheus + Grafana (self-hosted) or Datadog
 
 #### Business Metrics
+
 - **Analytics:** PostHog or Mixpanel
 - **User Tracking:** PostHog or Amplitude
 - **Revenue:** Stripe Dashboard + custom analytics
 
 #### Recommended Stack (MVP):
+
 - **Sentry** - Error tracking (already in use)
 - **Logtail** - Log aggregation ($29/month)
 - **UptimeRobot** - Uptime monitoring (free tier)
@@ -356,23 +399,28 @@ jobs:
 ### Database & Storage
 
 #### Current: Supabase
+
 **Pros:**
+
 - ✅ Already integrated
 - ✅ PostgreSQL + Auth + Storage
 - ✅ Real-time subscriptions
 - ✅ Good free tier
 
 **Cons:**
+
 - ⚠️ Vendor lock-in
 - ⚠️ Scaling costs can grow
 
 #### Recommendation: Stay with Supabase (Phase 1-2)
+
 - Proven and working
 - Good developer experience
 - Reasonable pricing
 - Can migrate later if needed
 
 #### Future Considerations:
+
 - **AWS RDS** - For enterprise customers
 - **PlanetScale** - For MySQL option
 - **CockroachDB** - For multi-region
@@ -384,20 +432,22 @@ jobs:
 #### Current: In-memory (not scalable)
 
 #### Recommended: BullMQ + Redis
+
 ```javascript
 // server/services/jobQueue.js
-const { Queue } = require('bullmq');
-const Redis = require('ioredis');
+const { Queue } = require("bullmq");
+const Redis = require("ioredis");
 
 const connection = new Redis(process.env.REDIS_URL);
 
-const crawlQueue = new Queue('codebase-crawl', { connection });
-const fixQueue = new Queue('fix-application', { connection });
+const crawlQueue = new Queue("codebase-crawl", { connection });
+const fixQueue = new Queue("fix-application", { connection });
 
 module.exports = { crawlQueue, fixQueue };
 ```
 
 **Why BullMQ:**
+
 - ✅ Built for Node.js
 - ✅ Redis-backed (reliable)
 - ✅ Job prioritization
@@ -405,6 +455,7 @@ module.exports = { crawlQueue, fixQueue };
 - ✅ Progress tracking
 
 **Redis Provider:**
+
 - **Upstash** - Serverless Redis ($0.20/100K commands)
 - **Redis Cloud** - Managed Redis ($5/month)
 - **AWS ElastiCache** - Enterprise option
@@ -416,9 +467,10 @@ module.exports = { crawlQueue, fixQueue };
 #### Current: In-memory (not shared)
 
 #### Recommended: Redis Cache
+
 ```javascript
 // server/services/cache.js
-const Redis = require('ioredis');
+const Redis = require("ioredis");
 
 const cache = new Redis(process.env.REDIS_URL);
 
@@ -435,6 +487,7 @@ module.exports = { get, set };
 ```
 
 **Cache Layers:**
+
 1. **File hash cache** - Skip unchanged files
 2. **Pattern cache** - Known fix patterns
 3. **Issue cache** - Recent issues
@@ -447,6 +500,7 @@ module.exports = { get, set };
 ### Security Requirements
 
 #### Phase 1 (MVP):
+
 - [ ] HTTPS everywhere
 - [ ] Environment variable security
 - [ ] Rate limiting
@@ -457,6 +511,7 @@ module.exports = { get, set };
 - [ ] Secure authentication (Supabase Auth)
 
 #### Phase 2 (Growth):
+
 - [ ] Security audit
 - [ ] Penetration testing
 - [ ] Bug bounty program
@@ -464,6 +519,7 @@ module.exports = { get, set };
 - [ ] Incident response plan
 
 #### Phase 3 (Enterprise):
+
 - [ ] SOC2 Type II certification
 - [ ] ISO 27001 compliance
 - [ ] GDPR compliance
@@ -475,6 +531,7 @@ module.exports = { get, set };
 ### Data Privacy
 
 #### Requirements:
+
 - [ ] User data encryption at rest
 - [ ] User data encryption in transit
 - [ ] Data retention policies
@@ -484,6 +541,7 @@ module.exports = { get, set };
 - [ ] Terms of service
 
 #### Implementation:
+
 - Supabase handles encryption
 - Add data export/deletion endpoints
 - Implement retention policies
@@ -495,41 +553,42 @@ module.exports = { get, set };
 
 ### Phase 1: MVP (1,000 users)
 
-| Service | Provider | Cost/Month |
-|---------|----------|------------|
-| Hosting | Vercel/Railway | $100-300 |
-| Database | Supabase | $25-100 |
-| Redis | Upstash | $20-50 |
-| CDN | Cloudflare | $0-20 |
-| Monitoring | Sentry + Logtail | $50-100 |
-| LLM API | OpenAI/Anthropic | $200-500 |
-| **Total** | | **$395-1,070** |
+| Service    | Provider         | Cost/Month     |
+| ---------- | ---------------- | -------------- |
+| Hosting    | Vercel/Railway   | $100-300       |
+| Database   | Supabase         | $25-100        |
+| Redis      | Upstash          | $20-50         |
+| CDN        | Cloudflare       | $0-20          |
+| Monitoring | Sentry + Logtail | $50-100        |
+| LLM API    | OpenAI/Anthropic | $200-500       |
+| **Total**  |                  | **$395-1,070** |
 
 ### Phase 2: Growth (10,000 users)
 
-| Service | Provider | Cost/Month |
-|---------|----------|------------|
-| Hosting | Railway/Render | $500-1,500 |
-| Database | Supabase | $200-500 |
-| Redis | Upstash/Redis Cloud | $100-300 |
-| CDN | Cloudflare | $20-100 |
-| Monitoring | Sentry + Datadog | $200-500 |
-| LLM API | OpenAI/Anthropic | $2,000-5,000 |
-| **Total** | | **$3,020-7,900** |
+| Service    | Provider            | Cost/Month       |
+| ---------- | ------------------- | ---------------- |
+| Hosting    | Railway/Render      | $500-1,500       |
+| Database   | Supabase            | $200-500         |
+| Redis      | Upstash/Redis Cloud | $100-300         |
+| CDN        | Cloudflare          | $20-100          |
+| Monitoring | Sentry + Datadog    | $200-500         |
+| LLM API    | OpenAI/Anthropic    | $2,000-5,000     |
+| **Total**  |                     | **$3,020-7,900** |
 
 ### Phase 3: Enterprise (100,000 users)
 
-| Service | Provider | Cost/Month |
-|---------|----------|------------|
-| Hosting | AWS/Railway | $2,000-5,000 |
-| Database | AWS RDS/Supabase | $500-2,000 |
-| Redis | AWS ElastiCache | $200-1,000 |
-| CDN | Cloudflare Pro | $200-500 |
-| Monitoring | Datadog | $500-2,000 |
-| LLM API | OpenAI/Anthropic | $20,000-50,000 |
-| **Total** | | **$23,400-60,500** |
+| Service    | Provider         | Cost/Month         |
+| ---------- | ---------------- | ------------------ |
+| Hosting    | AWS/Railway      | $2,000-5,000       |
+| Database   | AWS RDS/Supabase | $500-2,000         |
+| Redis      | AWS ElastiCache  | $200-1,000         |
+| CDN        | Cloudflare Pro   | $200-500           |
+| Monitoring | Datadog          | $500-2,000         |
+| LLM API    | OpenAI/Anthropic | $20,000-50,000     |
+| **Total**  |                  | **$23,400-60,500** |
 
 **Note:** LLM costs are the biggest variable. Consider:
+
 - Caching LLM responses
 - Using cheaper models for simple fixes
 - Fine-tuning models for better efficiency
@@ -541,14 +600,17 @@ module.exports = { get, set };
 ### Team Structure
 
 #### Phase 1: MVP (Months 1-3)
+
 **Team Size:** 2-3 people
 
 **Roles:**
+
 - **Full-Stack Engineer** (1) - Product development
 - **DevOps Engineer** (0.5) - Infrastructure setup
 - **Product Manager** (0.5) - Product strategy, user research
 
 **Key Responsibilities:**
+
 - Build MVP features
 - Set up infrastructure
 - Launch product
@@ -557,9 +619,11 @@ module.exports = { get, set };
 ---
 
 #### Phase 2: Growth (Months 4-6)
+
 **Team Size:** 4-6 people
 
 **Roles:**
+
 - **Full-Stack Engineers** (2) - Feature development
 - **DevOps Engineer** (1) - Infrastructure, scaling
 - **Product Manager** (1) - Product strategy
@@ -567,6 +631,7 @@ module.exports = { get, set };
 - **Customer Success** (0.5) - Support, onboarding
 
 **Key Responsibilities:**
+
 - Scale product
 - Improve user experience
 - Support growing user base
@@ -575,9 +640,11 @@ module.exports = { get, set };
 ---
 
 #### Phase 3: Scale (Months 7-12)
+
 **Team Size:** 8-12 people
 
 **Roles:**
+
 - **Engineers** (4-5) - Feature development, scaling
 - **DevOps/SRE** (1-2) - Infrastructure, reliability
 - **Product Manager** (1) - Product strategy
@@ -587,6 +654,7 @@ module.exports = { get, set };
 - **Marketing** (0.5) - Growth, content
 
 **Key Responsibilities:**
+
 - Enterprise features
 - Market leadership
 - Scale operations
@@ -597,6 +665,7 @@ module.exports = { get, set };
 ## 📊 Success Metrics
 
 ### Phase 1: MVP Launch
+
 - **Users:** 100+ signups
 - **Paying Customers:** 10+
 - **MRR:** $1,000+
@@ -604,6 +673,7 @@ module.exports = { get, set };
 - **Uptime:** 99%+
 
 ### Phase 2: Growth
+
 - **Users:** 1,000+
 - **Paying Customers:** 100+
 - **MRR:** $10,000+
@@ -612,6 +682,7 @@ module.exports = { get, set };
 - **NPS:** 50+
 
 ### Phase 3: Scale
+
 - **Users:** 10,000+
 - **Paying Customers:** 1,000+
 - **MRR:** $100,000+
@@ -626,6 +697,7 @@ module.exports = { get, set };
 ### Launch Strategy
 
 #### Pre-Launch (Month 1-2)
+
 - [ ] Build landing page
 - [ ] Create demo video
 - [ ] Write launch blog post
@@ -634,6 +706,7 @@ module.exports = { get, set };
 - [ ] Set up waitlist
 
 #### Launch (Month 3)
+
 - [ ] Product Hunt launch
 - [ ] Hacker News post
 - [ ] Twitter/X announcement
@@ -642,6 +715,7 @@ module.exports = { get, set };
 - [ ] Press outreach
 
 #### Post-Launch (Month 4+)
+
 - [ ] Content marketing (blog posts)
 - [ ] Developer community engagement
 - [ ] Case studies
@@ -654,6 +728,7 @@ module.exports = { get, set };
 ## 📋 Implementation Checklist
 
 ### Infrastructure Setup (Week 1-2)
+
 - [ ] Choose hosting provider (Vercel/Railway)
 - [ ] Set up production Supabase
 - [ ] Configure Redis (Upstash)
@@ -664,6 +739,7 @@ module.exports = { get, set };
 - [ ] Set up staging environment
 
 ### Product Development (Week 3-8)
+
 - [ ] User authentication
 - [ ] Web dashboard
 - [ ] GitHub integration
@@ -673,6 +749,7 @@ module.exports = { get, set };
 - [ ] Basic analytics
 
 ### Launch Preparation (Week 9-12)
+
 - [ ] Security audit
 - [ ] Performance optimization
 - [ ] Documentation
@@ -686,6 +763,7 @@ module.exports = { get, set };
 ## 🎯 Next Steps
 
 ### Immediate (This Week)
+
 1. **Review and approve this roadmap**
 2. **Choose infrastructure stack** (recommend Hybrid)
 3. **Set up production environment**
@@ -693,6 +771,7 @@ module.exports = { get, set };
 5. **Assign initial tasks**
 
 ### Short-term (This Month)
+
 1. **Set up CI/CD pipeline**
 2. **Configure monitoring**
 3. **Build MVP features**
@@ -700,6 +779,7 @@ module.exports = { get, set };
 5. **Prepare launch materials**
 
 ### Medium-term (Next 3 Months)
+
 1. **Launch MVP**
 2. **Get first customers**
 3. **Iterate based on feedback**

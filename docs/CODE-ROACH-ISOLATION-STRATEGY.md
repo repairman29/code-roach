@@ -9,18 +9,22 @@
 ### Code Roach Components (Isolated)
 
 **Services:**
+
 - `server/services/jobQueue.js` - Job queue (optional, fails gracefully)
 - `server/services/cacheService.js` - Cache (optional, fails gracefully)
 - `server/services/projectService.js` - Project management (optional)
 - `server/middleware/auth.js` - Auth middleware (optional)
 
 **Workers:**
+
 - `server/workers/crawlWorker.js` - Background worker (optional)
 
 **Routes:**
+
 - `server/routes/codeRoachAPI.js` - All Code Roach endpoints under `/api/code-roach/*`
 
 **Database:**
+
 - `supabase/migrations/20251213_code_roach_saas.sql` - Separate schema
 
 ---
@@ -28,33 +32,40 @@
 ## ✅ Isolation Mechanisms
 
 ### 1. Optional Dependencies
+
 All Code Roach services use try/catch and fail gracefully:
 
 ```javascript
 try {
-    jobQueue = require('./services/jobQueue');
-    jobQueue.initialize().catch(err => {
-        console.warn('⚠️ Job queue not available');
-    });
+  jobQueue = require("./services/jobQueue");
+  jobQueue.initialize().catch((err) => {
+    console.warn("⚠️ Job queue not available");
+  });
 } catch (err) {
-    // Code Roach not available - game continues normally
+  // Code Roach not available - game continues normally
 }
 ```
 
 ### 2. Separate API Routes
+
 All Code Roach endpoints are under `/api/code-roach/*`:
+
 - No conflicts with game routes
 - Can be disabled by not registering the router
 - Game routes remain untouched
 
 ### 3. Separate Database Tables
+
 Code Roach uses its own tables:
+
 - `organizations`, `projects`, `code_roach_*` tables
 - No interference with game tables
 - Can be in same database or separate
 
 ### 4. Environment-Based Activation
+
 Code Roach features only activate if:
+
 - Environment variables are set
 - Services initialize successfully
 - No errors if missing
@@ -64,6 +75,7 @@ Code Roach features only activate if:
 ## 🔧 How to Disable Code Roach
 
 ### Option 1: Don't Set Environment Variables
+
 ```bash
 # Don't set these:
 # REDIS_URL=
@@ -71,7 +83,9 @@ Code Roach features only activate if:
 ```
 
 ### Option 2: Don't Register Routes
+
 In `server/routes/api.js`, comment out:
+
 ```javascript
 // Code Roach API routes
 // try {
@@ -81,10 +95,12 @@ In `server/routes/api.js`, comment out:
 ```
 
 ### Option 3: Feature Flag
+
 Add to `server/config.js`:
+
 ```javascript
 codeRoach: {
-    enabled: process.env.CODE_ROACH_ENABLED !== 'false'
+  enabled: process.env.CODE_ROACH_ENABLED !== "false";
 }
 ```
 
@@ -93,6 +109,7 @@ codeRoach: {
 ## 📁 Recommended Organization
 
 ### Current (Good):
+
 ```
 server/
   services/
@@ -109,6 +126,7 @@ server/
 ```
 
 ### Alternative (Better Isolation):
+
 ```
 server/
   code-roach/           # All Code Roach code
@@ -145,6 +163,7 @@ server/
 ## ✅ Safety Checks
 
 ### What Won't Break:
+
 - ✅ Game functionality
 - ✅ Game API routes
 - ✅ Game database tables
@@ -153,6 +172,7 @@ server/
 - ✅ Game state management
 
 ### What's Isolated:
+
 - ✅ Code Roach API routes (`/api/code-roach/*`)
 - ✅ Code Roach services (optional)
 - ✅ Code Roach database tables
@@ -163,6 +183,7 @@ server/
 ## 🎯 Best Practices
 
 ### 1. Use Feature Flags
+
 ```javascript
 // server/config.js
 codeRoach: {
@@ -172,18 +193,22 @@ codeRoach: {
 ```
 
 ### 2. Graceful Degradation
+
 All Code Roach code should:
+
 - Try/catch all requires
 - Fail silently if not available
 - Not block server startup
 - Log warnings, not errors
 
 ### 3. Separate Testing
+
 - Game tests: `tests/game/*`
 - Code Roach tests: `tests/code-roach/*`
 - No cross-dependencies
 
 ### 4. Environment Separation
+
 ```bash
 # Game development
 NODE_ENV=development
@@ -204,6 +229,7 @@ If we want even better isolation:
 
 1. **Create `server/code-roach/` directory**
 2. **Move Code Roach files:**
+
    ```bash
    mv server/services/jobQueue.js server/code-roach/services/
    mv server/services/cacheService.js server/code-roach/services/
@@ -212,9 +238,10 @@ If we want even better isolation:
    ```
 
 3. **Update requires:**
+
    ```javascript
    // server/routes/api.js
-   const codeRoachAPI = require('../code-roach/routes/codeRoachAPI');
+   const codeRoachAPI = require("../code-roach/routes/codeRoachAPI");
    ```
 
 4. **Benefits:**

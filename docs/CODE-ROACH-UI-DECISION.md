@@ -5,6 +5,7 @@
 ### Implementation
 
 **For Regular Users:**
+
 - ✅ Code Roach runs 100% invisibly in background
 - ✅ No UI widget at all
 - ✅ All errors fixed silently
@@ -12,6 +13,7 @@
 - ✅ Zero visual clutter
 
 **For Admins:**
+
 - ✅ Full widget visible
 - ✅ Access to dashboard at `/code-roach-dashboard`
 - ✅ All controls and features
@@ -61,6 +63,7 @@
 ### Admin Detection
 
 Code Roach checks for admin status by:
+
 1. `localStorage.getItem('admin_token')` or `adminKey`
 2. `window.adminKey` exists
 3. On admin dashboard page (`/admin` or `/admin-dashboard`)
@@ -68,6 +71,7 @@ Code Roach checks for admin status by:
 ### Critical Error Notifications
 
 For non-admin users, only critical errors that can't be auto-fixed show a toast:
+
 - Minimal, non-intrusive
 - Bottom-right corner
 - Auto-dismisses
@@ -77,10 +81,10 @@ For non-admin users, only critical errors that can't be auto-fixed show a toast:
 ### Dashboard Access
 
 Admins can access full analytics at:
+
 - `/code-roach-dashboard`
 - Or via widget dashboard button (if widget visible)
 
 ---
 
 **Result: Code Roach is now invisible infrastructure for users, full visibility for admins!** 🎯
-

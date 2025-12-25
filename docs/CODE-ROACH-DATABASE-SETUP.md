@@ -78,6 +78,7 @@ All tables should show ✅ with record counts.
 ## Migration Files
 
 The combined migration includes:
+
 - `20251213213917_code_roach_schema.sql` - Core schema
 - `20251213_code_roach_saas.sql` - SaaS tables
 - `20251214173708_code_roach_saas.sql` - Additional SaaS
@@ -92,22 +93,25 @@ The combined migration includes:
 ## Troubleshooting
 
 ### "Table already exists" errors
+
 - Migrations use `CREATE TABLE IF NOT EXISTS` - safe to re-run
 - Some migrations alter existing tables - also safe
 
 ### Connection errors
+
 - Verify `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` in `.env`
 - Check Supabase project is active
 
 ### Permission errors
+
 - Ensure using service role key (not anon key)
 - Check RLS policies if needed
 
 ## Next Steps
 
 After tables are created:
+
 1. ✅ Code Roach can store issues
 2. ✅ Learning system can persist data
 3. ✅ Analytics can track metrics
 4. ✅ All Code Roach features will work
-

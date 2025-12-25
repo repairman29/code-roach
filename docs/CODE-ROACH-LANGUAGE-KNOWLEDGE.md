@@ -1,4 +1,5 @@
 # Code Roach: Language Knowledge from 1000+ Developers
+
 ## Advanced Training on Common Programming Languages
 
 ---
@@ -34,6 +35,7 @@
 ## ✅ What's Built
 
 ### 1. **Language Knowledge Service**
+
 - ✅ Detects programming language
 - ✅ Retrieves aggregated patterns
 - ✅ Gets best practices from community
@@ -41,6 +43,7 @@
 - ✅ Calculates language expertise
 
 ### 2. **Knowledge Aggregation**
+
 - ✅ Patterns from 1000+ developers
 - ✅ Anonymized contributions
 - ✅ Deduplication via hashing
@@ -48,6 +51,7 @@
 - ✅ Success rate tracking
 
 ### 3. **Supported Languages**
+
 - ✅ JavaScript, TypeScript
 - ✅ Python, Java, C#
 - ✅ C++, C, Go, Rust
@@ -56,6 +60,7 @@
 - ✅ HTML, CSS, SQL
 
 ### 4. **Privacy-Preserving**
+
 - ✅ Anonymized patterns
 - ✅ No source code shared
 - ✅ No PII
@@ -103,6 +108,7 @@
 ### Automatic (Recommended)
 
 Code Roach automatically:
+
 1. Detects language from file
 2. Retrieves language knowledge
 3. Uses patterns from 1000+ developers
@@ -111,21 +117,27 @@ Code Roach automatically:
 ### Manual Access
 
 ```javascript
-const languageKnowledgeService = require('./server/services/languageKnowledgeService');
+const languageKnowledgeService = require("./server/services/languageKnowledgeService");
 
 // Get knowledge for a file
 const knowledge = await languageKnowledgeService.getLanguageKnowledge(
-    'server/services/myService.js',
-    code
+  "server/services/myService.js",
+  code,
 );
 
 // Get best practices
-const practices = await languageKnowledgeService.getBestPractices('javascript', {
-    category: 'async'
-});
+const practices = await languageKnowledgeService.getBestPractices(
+  "javascript",
+  {
+    category: "async",
+  },
+);
 
 // Get common issues
-const issues = await languageKnowledgeService.getCommonIssues('javascript', 'syntax');
+const issues = await languageKnowledgeService.getCommonIssues(
+  "javascript",
+  "syntax",
+);
 ```
 
 ---
@@ -133,11 +145,13 @@ const issues = await languageKnowledgeService.getCommonIssues('javascript', 'syn
 ## 📊 API Endpoints
 
 ### Get Language Knowledge
+
 ```bash
 GET /api/language-knowledge/:language
 ```
 
 ### Detect Language
+
 ```bash
 POST /api/language-knowledge/detect
 {
@@ -147,16 +161,19 @@ POST /api/language-knowledge/detect
 ```
 
 ### Get Best Practices
+
 ```bash
 GET /api/language-knowledge/:language/best-practices?category=async
 ```
 
 ### Get Common Issues
+
 ```bash
 GET /api/language-knowledge/:language/common-issues?type=syntax
 ```
 
 ### Contribute Knowledge
+
 ```bash
 POST /api/language-knowledge/contribute
 {
@@ -167,6 +184,7 @@ POST /api/language-knowledge/contribute
 ```
 
 ### Search Patterns
+
 ```bash
 POST /api/language-knowledge/search
 {
@@ -180,6 +198,7 @@ POST /api/language-knowledge/search
 ## 🔒 Privacy & Anonymization
 
 ### What Gets Shared
+
 - ✅ Anonymized code patterns
 - ✅ Pattern types and descriptions
 - ✅ Success rates
@@ -187,6 +206,7 @@ POST /api/language-knowledge/search
 - ✅ Tags and categories
 
 ### What Never Gets Shared
+
 - ❌ Source code
 - ❌ Project names
 - ❌ Variable names (anonymized)
@@ -195,6 +215,7 @@ POST /api/language-knowledge/search
 - ❌ Business logic
 
 ### Anonymization Process
+
 1. Remove project-specific identifiers
 2. Replace variable names with generics
 3. Create hash for deduplication
@@ -206,6 +227,7 @@ POST /api/language-knowledge/search
 ## 📈 Benefits
 
 ### For Code Roach
+
 - ✅ **Advanced training** - Knowledge from 1000+ developers
 - ✅ **Language expertise** - Deep understanding per language
 - ✅ **Pattern recognition** - Recognizes common patterns
@@ -213,6 +235,7 @@ POST /api/language-knowledge/search
 - ✅ **Issue prevention** - Knows common pitfalls
 
 ### For Developers
+
 - ✅ **Better fixes** - Uses proven patterns
 - ✅ **Faster development** - Leverages community knowledge
 - ✅ **Higher quality** - Follows best practices
@@ -224,18 +247,21 @@ POST /api/language-knowledge/search
 ## 🔄 Integration
 
 ### With Fix Generation
+
 - Uses language-specific patterns
 - Applies best practices
 - Avoids common issues
 - Leverages community knowledge
 
 ### With Meta-Learning
+
 - Tracks language expertise
 - Updates success rates
 - Contributes successful patterns
 - Learns from community
 
 ### With Continuous Learning
+
 - Contributes fixes to knowledge base
 - Updates language statistics
 - Shares anonymized patterns
@@ -246,18 +272,21 @@ POST /api/language-knowledge/search
 ## 📊 Metrics
 
 ### Language Expertise
+
 - Expertise level per language (0-5.0)
 - Total fixes per language
 - Success rates
 - Contributor counts
 
 ### Pattern Quality
+
 - Usage counts
 - Success rates
 - Approval status
 - Community validation
 
 ### Knowledge Growth
+
 - Patterns added per day
 - Contributors per language
 - Knowledge base size
@@ -268,18 +297,21 @@ POST /api/language-knowledge/search
 ## 🎯 Future Enhancements
 
 ### Phase 1: Foundation ✅
+
 - ✅ Language detection
 - ✅ Pattern storage
 - ✅ Knowledge retrieval
 - ✅ Anonymization
 
 ### Phase 2: Aggregation (Next)
+
 - [ ] Pattern approval system
 - [ ] Quality scoring
 - [ ] Community voting
 - [ ] Expert validation
 
 ### Phase 3: Intelligence (Future)
+
 - [ ] Pattern recommendations
 - [ ] Context-aware suggestions
 - [ ] Learning from failures
@@ -290,6 +322,7 @@ POST /api/language-knowledge/search
 ## ✅ Summary
 
 **Language Knowledge System:**
+
 - ✅ Knowledge from 1000+ developers
 - ✅ 18 supported languages
 - ✅ Anonymized contributions
@@ -299,6 +332,7 @@ POST /api/language-knowledge/search
 - ✅ Privacy-preserving
 
 **Result:**
+
 - 🧠 Advanced language training
 - 📚 Community knowledge
 - 🎯 Better fixes

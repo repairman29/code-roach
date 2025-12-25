@@ -1,4 +1,5 @@
 # Code Roach Deployment Expert Integration
+
 ## Adding Railway/Deployment Expertise to Expert Training System
 
 **Date**: 2025-01-15  
@@ -21,6 +22,7 @@ Code Roach now automatically detects deployment platforms (Railway, Vercel, Netl
 **New Method**: `detectDeploymentPlatforms()`
 
 **Detects:**
+
 - **Railway**: `railway.json`, `nixpacks.toml`, `@railway/cli`, Railway scripts
 - **Vercel**: `vercel.json`, `.vercel`, `vercel` CLI
 - **Netlify**: `netlify.toml`, `.netlify`, `netlify-cli`
@@ -31,6 +33,7 @@ Code Roach now automatically detects deployment platforms (Railway, Vercel, Netl
 - **CI/CD**: GitHub Actions, GitLab CI workflows
 
 **Detection Methods:**
+
 1. Configuration files (railway.json, vercel.json, etc.)
 2. Package.json dependencies (@railway/cli, vercel, etc.)
 3. Package.json scripts (deploy commands)
@@ -45,18 +48,20 @@ Code Roach now automatically detects deployment platforms (Railway, Vercel, Netl
 **Updated Method**: `determineExpertTypes()`
 
 **New Logic:**
+
 ```javascript
 // Deployment expert (if deployment platforms detected)
 if (analysis.tech_stack?.deployment_platforms?.length > 0) {
-    // Generate platform-specific deployment experts
-    analysis.tech_stack.deployment_platforms.forEach(platform => {
-        const platformKey = platform.toLowerCase().replace(/[^a-z0-9]/g, '-');
-        expertTypes.push(`deployment-${platformKey}`);
-    });
+  // Generate platform-specific deployment experts
+  analysis.tech_stack.deployment_platforms.forEach((platform) => {
+    const platformKey = platform.toLowerCase().replace(/[^a-z0-9]/g, "-");
+    expertTypes.push(`deployment-${platformKey}`);
+  });
 }
 ```
 
 **Expert Types Generated:**
+
 - `deployment-railway` - Railway deployment expertise
 - `deployment-vercel` - Vercel deployment expertise
 - `deployment-netlify` - Netlify deployment expertise
@@ -72,16 +77,19 @@ if (analysis.tech_stack?.deployment_platforms?.length > 0) {
 ### Detection Flow
 
 1. **Codebase Analysis**
+
    ```
    Customer Codebase → detectDeploymentPlatforms() → ['Railway', 'Vercel']
    ```
 
 2. **Expert Type Determination**
+
    ```
    deployment_platforms: ['Railway'] → expertTypes: ['deployment-railway']
    ```
 
 3. **Expert Generation**
+
    ```
    'deployment-railway' → Generate Railway expert guide
    ```
@@ -98,18 +106,21 @@ if (analysis.tech_stack?.deployment_platforms?.length > 0) {
 ### Codebase Analyzer
 
 **Updated**: `analyzeTechStack()`
+
 - Now includes `deployment_platforms` in tech stack analysis
 - Detects deployment platforms from files, dependencies, scripts, CI/CD
 
 ### Expert Training Service
 
 **Updated**: `determineExpertTypes()`
+
 - Generates deployment experts when platforms detected
 - Creates platform-specific expert types (e.g., `deployment-railway`)
 
 ### Expert Guide Generation
 
 **Expert Templates**: When generating deployment experts, the system uses:
+
 - Railway expertise guide (if Railway detected)
 - Platform-specific patterns and best practices
 - Customer-specific deployment configurations
@@ -121,24 +132,29 @@ if (analysis.tech_stack?.deployment_platforms?.length > 0) {
 ### Detection Triggers
 
 **Files:**
+
 - `railway.json` - Railway configuration
 - `nixpacks.toml` - Nixpacks build configuration
 - Any file with "railway" in name
 
 **Dependencies:**
+
 - `@railway/cli` in package.json
 
 **Scripts:**
+
 - `"deploy": "railway up"` in package.json scripts
 - `"deploy:railway": "railway up"` in package.json scripts
 
 **CI/CD:**
+
 - GitHub Actions workflows with Railway commands
 - GitLab CI with Railway deployment
 
 ### Expert Generated
 
 When Railway is detected:
+
 - Expert type: `deployment-railway`
 - Guide includes: Railway CLI commands, deployment patterns, logging, monitoring
 - Based on: `docs/RAILWAY-EXPERTISE-GUIDE.md`
@@ -153,10 +169,13 @@ The system automatically detects deployment platforms during onboarding:
 
 ```javascript
 // During customer onboarding
-const analysis = await customerCodebaseAnalyzer.analyzeCodebase(projectId, codebasePath);
+const analysis = await customerCodebaseAnalyzer.analyzeCodebase(
+  projectId,
+  codebasePath,
+);
 
 // Analysis includes:
-analysis.tech_stack.deployment_platforms = ['Railway', 'Vercel'];
+analysis.tech_stack.deployment_platforms = ["Railway", "Vercel"];
 
 // Experts generated:
 // - deployment-railway
@@ -170,7 +189,7 @@ When generating fixes, deployment experts are automatically used:
 ```javascript
 // Fix generation with deployment context
 const fix = await llmFixGenerator.generateFix(issue, code, filePath, {
-    project_id: projectId // ← Deployment experts included automatically
+  project_id: projectId, // ← Deployment experts included automatically
 });
 
 // Fix includes deployment-specific patterns:
@@ -187,17 +206,20 @@ const fix = await llmFixGenerator.generateFix(issue, code, filePath, {
 ### Railway Expert
 
 **Source**: `docs/RAILWAY-EXPERTISE-GUIDE.md`
+
 - Comprehensive Railway deployment guide
 - CLI commands and usage
 - Logging and monitoring
 - Best practices
 
 **Quick Reference**: `docs/RAILWAY-QUICK-REFERENCE.md`
+
 - Common commands
 - Log filtering
 - Configuration examples
 
 **Helper Service**: `server/services/railwayHelper.js`
+
 - Programmatic Railway operations
 - Log retrieval
 - Deployment management
@@ -205,6 +227,7 @@ const fix = await llmFixGenerator.generateFix(issue, code, filePath, {
 ### Other Platforms
 
 For other platforms (Vercel, Netlify, etc.), the system will:
+
 1. Use general deployment patterns
 2. Include platform-specific configurations found in codebase
 3. Reference platform documentation
@@ -252,7 +275,7 @@ npm run code-roach:verify-experts
 **Expert Generation**: ✅ Implemented  
 **Integration**: ✅ Complete  
 **Railway Expert Guide**: ✅ Available  
-**Other Platform Guides**: ⏳ Can be added as needed  
+**Other Platform Guides**: ⏳ Can be added as needed
 
 ---
 
@@ -285,4 +308,3 @@ npm run code-roach:verify-experts
 ---
 
 **Integration Complete**: Deployment expertise is now part of Code Roach expert training system!
-

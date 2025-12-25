@@ -9,9 +9,10 @@ Now that Code Roach is using Supabase, we have **unlimited analytics, learning, 
 ## 📊 1. Advanced Analytics & Insights
 
 ### Real-Time Dashboards
+
 ```sql
 -- Most problematic files (last 30 days)
-SELECT error_file, COUNT(*) as issue_count, 
+SELECT error_file, COUNT(*) as issue_count,
        AVG(CASE WHEN fix_success THEN 1 ELSE 0 END) as fix_rate
 FROM code_roach_issues
 WHERE created_at > NOW() - INTERVAL '30 days'
@@ -22,6 +23,7 @@ LIMIT 20;
 ```
 
 ### Issue Trends Over Time
+
 ```sql
 -- Daily issue count by type
 SELECT DATE_TRUNC('day', created_at) as day,
@@ -35,6 +37,7 @@ ORDER BY day DESC, count DESC;
 ```
 
 ### Developer Performance Metrics
+
 ```sql
 -- Issues resolved by developer
 SELECT reviewed_by,
@@ -52,15 +55,16 @@ ORDER BY issues_reviewed DESC;
 ## 🧠 2. Pattern Intelligence
 
 ### Error Co-Occurrence Analysis
+
 ```sql
 -- Find errors that happen together
 WITH error_pairs AS (
-  SELECT 
+  SELECT
     e1.error_type as type1,
     e2.error_type as type2,
     e1.error_file
   FROM code_roach_issues e1
-  JOIN code_roach_issues e2 
+  JOIN code_roach_issues e2
     ON e1.error_file = e2.error_file
     AND e1.id != e2.id
     AND ABS(e1.error_line - e2.error_line) < 10
@@ -74,9 +78,10 @@ ORDER BY co_occurrence_count DESC;
 ```
 
 ### Pattern Evolution
+
 ```sql
 -- See how patterns change over time
-SELECT 
+SELECT
   DATE_TRUNC('week', first_seen) as week,
   fingerprint,
   occurrence_count,
@@ -91,9 +96,10 @@ ORDER BY week DESC, occurrence_count DESC;
 ## 🎓 3. Learning & Improvement
 
 ### Rule Effectiveness Analysis
+
 ```sql
 -- Which rules are most effective?
-SELECT 
+SELECT
   cr.rule_name,
   cr.rule_category,
   cr.success_rate,
@@ -103,15 +109,16 @@ SELECT
 FROM code_roach_cursor_rules cr
 LEFT JOIN code_roach_rule_effectiveness re ON cr.id = re.rule_id
 WHERE cr.is_active = TRUE
-GROUP BY cr.id, cr.rule_name, cr.rule_category, cr.success_rate, 
+GROUP BY cr.id, cr.rule_name, cr.rule_category, cr.success_rate,
          cr.issue_prevention_count, cr.times_applied
 ORDER BY cr.success_rate DESC NULLS LAST;
 ```
 
 ### Quality Improvement Tracking
+
 ```sql
 -- Track code quality improvements over time
-SELECT 
+SELECT
   DATE_TRUNC('week', created_at) as week,
   improvement_type,
   SUM(issues_prevented_count) as total_issues_prevented,
@@ -127,9 +134,10 @@ ORDER BY week DESC;
 ## 📈 4. Predictive Analytics
 
 ### Predict High-Risk Files
+
 ```sql
 -- Files likely to have issues based on history
-SELECT 
+SELECT
   error_file,
   COUNT(*) as historical_issues,
   MAX(created_at) as last_issue,
@@ -140,16 +148,17 @@ WHERE error_file IS NOT NULL
   AND created_at > NOW() - INTERVAL '90 days'
 GROUP BY error_file
 HAVING COUNT(*) > 5
-ORDER BY 
+ORDER BY
   historical_issues DESC,
   time_since_last_issue ASC; -- Files with many issues and recent activity
 ```
 
 ### Predict Issue Types
+
 ```sql
 -- Which issue types are trending up?
 WITH weekly_counts AS (
-  SELECT 
+  SELECT
     DATE_TRUNC('week', created_at) as week,
     error_type,
     COUNT(*) as count
@@ -158,7 +167,7 @@ WITH weekly_counts AS (
   GROUP BY week, error_type
 ),
 trends AS (
-  SELECT 
+  SELECT
     error_type,
     week,
     count,
@@ -167,7 +176,7 @@ trends AS (
   FROM weekly_counts
 )
 SELECT error_type, week, count, change,
-       CASE WHEN change > 0 THEN '📈 Increasing' 
+       CASE WHEN change > 0 THEN '📈 Increasing'
             WHEN change < 0 THEN '📉 Decreasing'
             ELSE '➡️ Stable' END as trend
 FROM trends
@@ -180,9 +189,10 @@ ORDER BY ABS(change) DESC;
 ## 🔍 5. Deep Code Analysis
 
 ### File Health Evolution
+
 ```sql
 -- Track file health over time
-SELECT 
+SELECT
   file_path,
   recorded_at,
   health_score,
@@ -198,9 +208,10 @@ LIMIT 30;
 ```
 
 ### Fix Success by Method
+
 ```sql
 -- Which fix methods work best?
-SELECT 
+SELECT
   fix_method,
   COUNT(*) as attempts,
   SUM(CASE WHEN fix_success THEN 1 ELSE 0 END) as successes,
@@ -217,9 +228,10 @@ ORDER BY success_rate DESC;
 ## 🚀 6. Automated Actions
 
 ### Auto-Generate Reports
+
 ```sql
 -- Weekly quality report
-SELECT 
+SELECT
   'Weekly Code Quality Report' as report_type,
   COUNT(DISTINCT error_file) as files_with_issues,
   COUNT(*) as total_issues,
@@ -231,9 +243,10 @@ WHERE created_at > NOW() - INTERVAL '7 days';
 ```
 
 ### Identify Learning Opportunities
+
 ```sql
 -- Patterns that need better rules
-SELECT 
+SELECT
   cp.fingerprint,
   cp.occurrence_count,
   cp.failure_count,
@@ -251,9 +264,10 @@ LIMIT 20;
 ## 📱 7. Real-Time Monitoring
 
 ### Live Issue Feed
+
 ```sql
 -- Real-time issues (last hour)
-SELECT 
+SELECT
   id,
   error_message,
   error_type,
@@ -268,9 +282,10 @@ ORDER BY created_at DESC;
 ```
 
 ### Active Crawler Status
+
 ```sql
 -- Current crawl statistics
-SELECT 
+SELECT
   COUNT(*) FILTER (WHERE created_at > NOW() - INTERVAL '1 hour') as issues_last_hour,
   COUNT(*) FILTER (WHERE fix_success = TRUE) as auto_fixed_total,
   COUNT(*) FILTER (WHERE review_status = 'pending') as pending_review,
@@ -283,10 +298,11 @@ FROM code_roach_issues;
 ## 🎯 8. Business Intelligence
 
 ### ROI Calculation
+
 ```sql
 -- Calculate ROI of Code Roach
 WITH metrics AS (
-  SELECT 
+  SELECT
     COUNT(*) as total_issues,
     COUNT(CASE WHEN fix_success THEN 1 END) as auto_fixed,
     COUNT(CASE WHEN review_status = 'approved' THEN 1 END) as manually_fixed,
@@ -294,7 +310,7 @@ WITH metrics AS (
   FROM code_roach_issues
   WHERE created_at > NOW() - INTERVAL '30 days'
 )
-SELECT 
+SELECT
   total_issues,
   auto_fixed,
   manually_fixed,
@@ -307,9 +323,10 @@ FROM metrics;
 ```
 
 ### Cost of Issues
+
 ```sql
 -- Estimate cost of issues by severity
-SELECT 
+SELECT
   error_severity,
   COUNT(*) as issue_count,
   AVG(resolution_time_seconds / 60.0) as avg_resolution_minutes,
@@ -327,9 +344,10 @@ ORDER BY estimated_cost DESC;
 ## 🔗 9. Integration Capabilities
 
 ### Export to Other Tools
+
 ```sql
 -- Export issues for Jira/Linear/etc.
-SELECT 
+SELECT
   id as external_id,
   error_message as title,
   error_type as type,
@@ -340,8 +358,8 @@ SELECT
   resolved_at as resolved
 FROM code_roach_issues
 WHERE review_status = 'pending'
-ORDER BY 
-  CASE error_severity 
+ORDER BY
+  CASE error_severity
     WHEN 'critical' THEN 1
     WHEN 'high' THEN 2
     WHEN 'medium' THEN 3
@@ -351,6 +369,7 @@ ORDER BY
 ```
 
 ### Webhook Triggers
+
 ```sql
 -- Find issues that should trigger webhooks
 SELECT *
@@ -366,28 +385,29 @@ ORDER BY created_at DESC;
 ## 🎨 10. Custom Dashboards
 
 ### Executive Dashboard Query
+
 ```sql
 -- High-level metrics for executives
-SELECT 
+SELECT
   'Total Issues' as metric,
   COUNT(*)::text as value
 FROM code_roach_issues
 WHERE created_at > NOW() - INTERVAL '30 days'
 UNION ALL
-SELECT 
+SELECT
   'Auto-Fixed',
   COUNT(*)::text
 FROM code_roach_issues
 WHERE created_at > NOW() - INTERVAL '30 days'
   AND fix_success = TRUE
 UNION ALL
-SELECT 
+SELECT
   'Pending Review',
   COUNT(*)::text
 FROM code_roach_issues
 WHERE review_status = 'pending'
 UNION ALL
-SELECT 
+SELECT
   'Avg Resolution Time (hours)',
   ROUND(AVG(resolution_time_seconds) / 3600.0, 2)::text
 FROM code_roach_issues
@@ -400,9 +420,10 @@ WHERE resolved_at IS NOT NULL
 ## 🛠️ Implementation Examples
 
 ### Create a View for Common Queries
+
 ```sql
 CREATE OR REPLACE VIEW code_roach_dashboard_stats AS
-SELECT 
+SELECT
   DATE_TRUNC('day', created_at) as date,
   error_type,
   error_severity,
@@ -414,15 +435,16 @@ FROM code_roach_issues
 GROUP BY date, error_type, error_severity;
 
 -- Then query simply:
-SELECT * FROM code_roach_dashboard_stats 
+SELECT * FROM code_roach_dashboard_stats
 WHERE date > NOW() - INTERVAL '7 days'
 ORDER BY date DESC, issue_count DESC;
 ```
 
 ### Create Materialized View for Performance
+
 ```sql
 CREATE MATERIALIZED VIEW code_roach_file_health_summary AS
-SELECT 
+SELECT
   error_file,
   COUNT(*) as total_issues,
   COUNT(CASE WHEN fix_success THEN 1 END) as auto_fixed,
@@ -460,4 +482,3 @@ REFRESH MATERIALIZED VIEW code_roach_file_health_summary;
 ---
 
 **The Power of Supabase**: Unlimited storage, powerful queries, real-time updates, and the ability to learn and improve continuously! 🚀
-

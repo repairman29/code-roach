@@ -36,6 +36,7 @@ code-roach-saas projects
 ```
 
 **Or via API:**
+
 ```bash
 # Create organization
 curl -X POST http://localhost:3000/api/code-roach/organizations \
@@ -118,6 +119,7 @@ UPSTASH_REDIS_REST_TOKEN=your-token
 ```
 
 **Benefits:**
+
 - Persistent job queue (crawls survive restarts)
 - Better caching performance
 - Background job processing
@@ -135,12 +137,14 @@ GITHUB_WEBHOOK_SECRET=your-webhook-secret
 ```
 
 **Then configure webhook:**
+
 1. Go to your GitHub repo → Settings → Webhooks
 2. Add webhook: `https://your-domain.com/api/github/webhook`
 3. Select events: `push`, `pull_request`
 4. Set secret: `GITHUB_WEBHOOK_SECRET`
 
 **Benefits:**
+
 - Automatic crawls on code changes
 - PR analysis
 - Repository file access
@@ -150,12 +154,14 @@ GITHUB_WEBHOOK_SECRET=your-webhook-secret
 ### C. Set Up Monitoring (Optional)
 
 **Sentry (Error Tracking):**
+
 ```bash
 # Add to .env
 SENTRY_DSN=https://your-sentry-dsn
 ```
 
 **Logtail (Logging):**
+
 ```bash
 # Add to .env
 LOGTAIL_TOKEN=your-logtail-token
@@ -166,6 +172,7 @@ LOGTAIL_TOKEN=your-logtail-token
 ## 📊 Daily Workflow
 
 ### Morning Routine
+
 ```bash
 # Check system health
 npm run code-roach:health
@@ -178,6 +185,7 @@ code-roach-saas queue --stats
 ```
 
 ### During Development
+
 ```bash
 # Run crawl on changed files
 code-roach-saas crawl --dir ./src
@@ -190,6 +198,7 @@ code-roach-saas issues --file ./src/myfile.js
 ```
 
 ### Weekly Review
+
 ```bash
 # Generate report
 npm run code-roach:report
@@ -206,6 +215,7 @@ code-roach-saas export --format json --output weekly-report.json
 ## 🎯 Feature Roadmap
 
 ### Phase 1: Core Features (✅ Complete)
+
 - [x] Database schema
 - [x] CLI tools
 - [x] API endpoints
@@ -213,6 +223,7 @@ code-roach-saas export --format json --output weekly-report.json
 - [x] Project management
 
 ### Phase 2: Frontend Dashboard (Next)
+
 - [ ] Web dashboard UI
 - [ ] Issue management interface
 - [ ] Project overview
@@ -220,6 +231,7 @@ code-roach-saas export --format json --output weekly-report.json
 - [ ] Fix preview & approval
 
 ### Phase 3: Advanced Features
+
 - [ ] Team collaboration
 - [ ] Billing integration
 - [ ] Email notifications
@@ -231,16 +243,19 @@ code-roach-saas export --format json --output weekly-report.json
 ## 🔧 Troubleshooting
 
 ### Issue: "Tables not found"
+
 ```bash
 # Re-run migration
 code-roach-saas db --migrate
 ```
 
 ### Issue: "Redis not configured"
+
 - Optional - system works with in-memory fallback
 - Set `REDIS_URL` for production use
 
 ### Issue: "GitHub integration not working"
+
 - Check `GITHUB_TOKEN` is set
 - Verify webhook is configured
 - Check webhook secret matches
@@ -261,6 +276,7 @@ code-roach-saas db --migrate
 Code Roach is fully set up and ready to use. Start with a test crawl and explore the CLI commands.
 
 **Quick Start:**
+
 ```bash
 # 1. Test everything
 code-roach-saas test

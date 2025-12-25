@@ -3,7 +3,9 @@
 ## Current State
 
 ### Storage Location
+
 **File-based JSON storage** in `data/` directory:
+
 - `data/error-history.json` - Error records (limited to 10,000)
 - `data/error-patterns.json` - Error pattern fingerprints
 - `data/fix-learning.json` - Fix learning statistics
@@ -11,6 +13,7 @@
 ### What We're Currently Tracking
 
 #### Error Metadata
+
 ```javascript
 {
   id: "err_timestamp_random",
@@ -40,6 +43,7 @@
 ```
 
 #### Pattern Metadata
+
 ```javascript
 {
   fingerprint: "pattern_hash",
@@ -53,6 +57,7 @@
 ```
 
 #### Learning Metadata
+
 ```javascript
 {
   totalAttempts: 1000,
@@ -69,42 +74,49 @@
 ## What We're Missing (META Data Opportunities)
 
 ### 1. **Time-Based Analytics**
+
 - ❌ Issue frequency over time (hourly/daily/weekly trends)
 - ❌ Peak error times
 - ❌ Error resolution time
 - ❌ Time to fix (from detection to resolution)
 
 ### 2. **File-Level Intelligence**
+
 - ❌ File health score history
 - ❌ Files with most recurring issues
 - ❌ Files that improve/degrade over time
 - ❌ File complexity correlation with errors
 
 ### 3. **Developer Behavior**
+
 - ❌ Which files developers fix manually vs auto-fix
 - ❌ Which issues get approved/rejected/deferred
 - ❌ Developer fix preferences
 - ❌ Review time per issue
 
 ### 4. **Fix Quality Metrics**
+
 - ❌ Fix success rate by file type
 - ❌ Fix success rate by code complexity
 - ❌ Fix regression rate (issues that come back)
 - ❌ Fix impact on code health score
 
 ### 5. **Pattern Intelligence**
+
 - ❌ Error co-occurrence (errors that happen together)
 - ❌ Error sequences (errors that follow each other)
 - ❌ Error clusters (related errors in same area)
 - ❌ Error propagation (errors that cause other errors)
 
 ### 6. **Business Impact**
+
 - ❌ Errors by feature/component
 - ❌ Errors affecting user-facing features
 - ❌ Errors affecting game performance
 - ❌ Cost of errors (time to fix, impact)
 
 ### 7. **Codebase Evolution**
+
 - ❌ Error rate as codebase grows
 - ❌ New error types introduced
 - ❌ Error types that disappear
@@ -117,6 +129,7 @@
 ### Option 1: Current (File-based JSON) ✅ Currently Using
 
 **Pros:**
+
 - ✅ Simple, no dependencies
 - ✅ Fast reads/writes for small datasets
 - ✅ No database setup required
@@ -124,6 +137,7 @@
 - ✅ Works offline
 
 **Cons:**
+
 - ❌ Limited to 10,000 records (hard limit)
 - ❌ No querying capabilities (can't filter, search, aggregate)
 - ❌ No real-time updates
@@ -134,6 +148,7 @@
 - ❌ No historical analysis (data gets truncated)
 
 **Best For:**
+
 - Small projects (< 1,000 issues)
 - Development/testing
 - Simple use cases
@@ -143,6 +158,7 @@
 ### Option 2: Supabase (PostgreSQL) 🎯 Recommended
 
 **Pros:**
+
 - ✅ Unlimited storage
 - ✅ Powerful querying (SQL, filters, aggregations)
 - ✅ Real-time subscriptions
@@ -156,12 +172,14 @@
 - ✅ Can use pgvector for semantic search
 
 **Cons:**
+
 - ⚠️ Requires database setup
 - ⚠️ Slightly more complex
 - ⚠️ Potential cost at scale
 - ⚠️ Network latency (minimal)
 
 **Best For:**
+
 - Production use
 - Large codebases
 - Need for analytics
@@ -173,15 +191,18 @@
 ### Option 3: Hybrid Approach 🔄 Best of Both
 
 **Strategy:**
+
 - **Supabase** for persistent storage, analytics, long-term data
 - **File-based** for caching, quick access, offline mode
 
 **Implementation:**
+
 - Write to both (Supabase primary, file cache)
 - Read from cache first, fallback to Supabase
 - Periodic sync between systems
 
 **Best For:**
+
 - Production with performance needs
 - Need for both speed and analytics
 - Gradual migration path
@@ -208,7 +229,7 @@ CREATE TABLE code_roach_issues (
   id TEXT PRIMARY KEY,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW(),
-  
+
   -- Error info
   error_message TEXT NOT NULL,
   error_type TEXT NOT NULL, -- security, performance, style, etc.
@@ -218,7 +239,7 @@ CREATE TABLE code_roach_issues (
   error_line INTEGER,
   error_stack TEXT,
   error_fingerprint TEXT,
-  
+
   -- Fix info
   fix_code TEXT,
   fix_type TEXT, -- pattern, llm, context-aware
@@ -226,18 +247,18 @@ CREATE TABLE code_roach_issues (
   fix_success BOOLEAN,
   fix_applied BOOLEAN DEFAULT FALSE,
   fix_confidence DECIMAL(3,2),
-  
+
   -- Context
   context_user_agent TEXT,
   context_url TEXT,
   context_game_state TEXT,
-  
+
   -- Review
   review_status TEXT, -- pending, approved, rejected, deferred
   review_notes TEXT,
   reviewed_at TIMESTAMPTZ,
   reviewed_by TEXT,
-  
+
   -- Metadata
   metadata JSONB -- flexible storage for future fields
 );
@@ -259,14 +280,14 @@ CREATE TABLE code_roach_patterns (
 CREATE TABLE code_roach_fix_learning (
   id SERIAL PRIMARY KEY,
   created_at TIMESTAMPTZ DEFAULT NOW(),
-  
+
   issue_id TEXT REFERENCES code_roach_issues(id),
   fix_method TEXT NOT NULL,
   fix_confidence DECIMAL(3,2),
   success BOOLEAN NOT NULL,
   error_message TEXT,
   file_path TEXT,
-  
+
   -- Aggregated stats
   stats_by_type JSONB,
   stats_by_method JSONB,
@@ -278,19 +299,19 @@ CREATE TABLE code_roach_file_health (
   id SERIAL PRIMARY KEY,
   file_path TEXT NOT NULL,
   recorded_at TIMESTAMPTZ DEFAULT NOW(),
-  
+
   health_score INTEGER,
   error_count INTEGER,
   issue_count INTEGER,
   fix_count INTEGER,
-  
+
   -- Scores by category
   error_rate_score INTEGER,
   complexity_score INTEGER,
   security_score INTEGER,
   performance_score INTEGER,
   maintainability_score INTEGER,
-  
+
   metadata JSONB
 );
 
@@ -320,7 +341,7 @@ ORDER BY issue_count DESC
 LIMIT 10;
 
 -- Fix success rate by method
-SELECT fix_type, 
+SELECT fix_type,
        COUNT(*) as attempts,
        SUM(CASE WHEN fix_success THEN 1 ELSE 0 END) as successes,
        ROUND(100.0 * SUM(CASE WHEN fix_success THEN 1 ELSE 0 END) / COUNT(*), 2) as success_rate
@@ -354,23 +375,28 @@ ORDER BY improvement DESC;
 ## Migration Plan
 
 ### Phase 1: Dual Write (1-2 days)
+
 - Keep file-based storage
 - Add Supabase writes in parallel
 - No breaking changes
 
 ### Phase 2: Dual Read (1 day)
+
 - Read from Supabase, fallback to files
 - Verify data consistency
 
 ### Phase 3: Migrate Historical Data (1 day)
+
 - Import existing JSON files to Supabase
 - Verify all records migrated
 
 ### Phase 4: Supabase Only (1 day)
+
 - Remove file-based storage
 - Update all services to use Supabase
 
 ### Phase 5: Analytics & Dashboards (2-3 days)
+
 - Build analytics queries
 - Create dashboards
 - Add real-time updates
@@ -392,15 +418,18 @@ ORDER BY improvement DESC;
 ## Cost Analysis
 
 ### File-based (Current)
+
 - **Cost**: $0
 - **Limitations**: 10k records, no analytics
 
 ### Supabase Free Tier
+
 - **Cost**: $0
 - **Limits**: 500MB database, 2GB bandwidth
 - **Estimated**: ~100k issues = ~50MB
 
 ### Supabase Pro (if needed)
+
 - **Cost**: $25/month
 - **Limits**: 8GB database, 50GB bandwidth
 - **Estimated**: ~1M issues = ~500MB
@@ -412,6 +441,7 @@ ORDER BY improvement DESC;
 ## Recommendation
 
 **Migrate to Supabase** because:
+
 1. ✅ Already configured
 2. ✅ Free tier sufficient
 3. ✅ Enables powerful analytics
@@ -420,4 +450,3 @@ ORDER BY improvement DESC;
 6. ✅ Future-proof
 
 **Start with Phase 1 (dual-write)** to minimize risk and allow gradual migration.
-

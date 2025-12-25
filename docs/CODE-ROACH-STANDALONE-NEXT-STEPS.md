@@ -8,6 +8,7 @@
 ## ✅ What's Been Completed
 
 ### New Services Built (12 services)
+
 1. ✅ Fix Impact Prediction Service
 2. ✅ Fix Confidence Calibration Service
 3. ✅ Fix Rollback Intelligence Service
@@ -22,6 +23,7 @@
 12. ✅ Fix Documentation Generation Service
 
 ### Integration Complete
+
 - ✅ All services have API endpoints
 - ✅ Frontend API client updated
 - ✅ Dashboard enhanced with new sections
@@ -30,6 +32,7 @@
 - ✅ Tests created for core services
 
 ### Sync Script Updated
+
 - ✅ New services added to sync list
 - ✅ Frontend files added to sync list
 - ✅ API routes included
@@ -43,6 +46,7 @@
 **Current State:** New services exist but aren't integrated into the main crawler workflow.
 
 **What to Do:**
+
 - Integrate Fix Orchestration Service into crawler
 - Use Impact Prediction before applying fixes
 - Use Cost-Benefit Analysis for prioritization
@@ -50,6 +54,7 @@
 - Start Monitoring after fixes are applied
 
 **Files to Update:**
+
 - `server/services/codebaseCrawler.js` - Main integration point
 
 ---
@@ -57,6 +62,7 @@
 ### 2. **Standalone Repo Setup** 🔴 CRITICAL
 
 **Current State:** Sync script ready, but standalone repo needs:
+
 - Initial sync to create structure
 - Package.json with all dependencies
 - README.md for standalone
@@ -65,6 +71,7 @@
 - Database migration setup
 
 **What to Do:**
+
 - Run sync script: `npm run code-roach:sync-standalone`
 - Create standalone entry point
 - Set up standalone package.json with all deps
@@ -76,6 +83,7 @@
 ### 3. **Service Integration & Wiring** 🟡 HIGH PRIORITY
 
 **Missing Integrations:**
+
 - Orchestration service not called from crawler
 - Impact prediction not used before fixes
 - Cost-benefit not used for prioritization
@@ -83,6 +91,7 @@
 - Documentation generation not triggered
 
 **What to Do:**
+
 - Wire orchestration into crawler's fix flow
 - Add impact prediction step before applying
 - Add cost-benefit analysis for issue prioritization
@@ -94,6 +103,7 @@
 ### 4. **Database Schema Updates** 🟡 HIGH PRIORITY
 
 **New Tables/Columns Needed:**
+
 - Fix monitoring data storage
 - Pipeline tracking
 - Marketplace pattern ratings
@@ -101,6 +111,7 @@
 - Team preferences
 
 **What to Do:**
+
 - Create migration for new tables
 - Add columns to existing tables if needed
 - Update RLS policies
@@ -111,12 +122,14 @@
 ### 5. **Frontend Enhancements** 🟢 MEDIUM PRIORITY
 
 **Additional Pages Needed:**
+
 - Quality Metrics page (detailed view)
 - Monitoring Dashboard page (detailed view)
 - Pipeline Details page
 - Team Preferences page
 
 **Enhancements:**
+
 - Real-time updates via WebSocket
 - Better visualizations (charts, graphs)
 - Export functionality
@@ -127,12 +140,14 @@
 ### 6. **Testing & Validation** 🟢 MEDIUM PRIORITY
 
 **What's Needed:**
+
 - Integration tests for new services
 - End-to-end tests with orchestration
 - Performance tests
 - Load tests
 
 **What to Do:**
+
 - Write integration tests
 - Test full pipeline flow
 - Test error handling
@@ -143,12 +158,14 @@
 ### 7. **Documentation** 🟢 MEDIUM PRIORITY
 
 **What's Needed:**
+
 - API documentation for new endpoints
 - Service integration guide
 - Standalone setup guide
 - Deployment guide
 
 **What to Do:**
+
 - Generate API docs
 - Write integration examples
 - Create setup guides
@@ -159,27 +176,32 @@
 ## 🚀 Immediate Action Plan
 
 ### Step 1: Integrate Orchestration into Crawler (30 min)
+
 - Add orchestration service to crawler
 - Replace individual fix steps with orchestration pipeline
 - Test integration
 
 ### Step 2: Update Sync Script & Run Initial Sync (15 min)
+
 - Verify all new files in sync script
 - Run: `npm run code-roach:sync-standalone`
 - Verify standalone structure created
 
 ### Step 3: Create Standalone Entry Point (30 min)
+
 - Create `src/index.js` or `src/server.js`
 - Set up Express server
 - Register all routes
 - Configure middleware
 
 ### Step 4: Create Standalone Package.json (15 min)
+
 - Extract all Code Roach dependencies
 - Set up scripts
 - Configure for standalone use
 
 ### Step 5: Database Migration for New Features (30 min)
+
 - Create migration for monitoring tables
 - Add pipeline tracking
 - Add marketplace features
@@ -194,6 +216,7 @@
 **File:** `server/services/codebaseCrawler.js`
 
 **Changes:**
+
 1. Import orchestration service
 2. Replace fix generation/application with orchestration call
 3. Handle orchestration results
@@ -208,6 +231,7 @@
 **File:** `code-roach-standalone/src/index.js` (new)
 
 **What it needs:**
+
 - Express server setup
 - Route registration
 - Middleware configuration
@@ -222,6 +246,7 @@
 **File:** `code-roach-standalone/package.json`
 
 **Dependencies needed:**
+
 - All Supabase packages
 - Express and middleware
 - BullMQ and Redis
@@ -235,6 +260,7 @@
 **File:** `supabase/migrations/YYYYMMDDHHMMSS_new_services_schema.sql`
 
 **Tables/Columns needed:**
+
 - Fix monitoring data
 - Pipeline tracking
 - Marketplace ratings

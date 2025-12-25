@@ -1,4 +1,5 @@
 # Code Roach: Continuous Learning System
+
 ## Complete Learn/Fix/Test/Deploy Feedback Loop
 
 ---
@@ -34,6 +35,7 @@
 ## ✅ What's New
 
 ### 1. **Complete Learning Cycle**
+
 - ✅ Fix → Test → Deploy → Learn
 - ✅ Validates fixes before applying
 - ✅ Tests before deploying
@@ -41,18 +43,21 @@
 - ✅ Learns from every cycle
 
 ### 2. **Test-Driven Fixes**
+
 - ✅ Syntax validation
 - ✅ Unit tests
 - ✅ Integration tests
 - ✅ Rollback on failure
 
 ### 3. **Production Monitoring**
+
 - ✅ Tracks deployment outcomes
 - ✅ Monitors for new errors
 - ✅ Learns from production success/failure
 - ✅ Adjusts strategies based on results
 
 ### 4. **Continuous Improvement**
+
 - ✅ Updates expertise from production outcomes
 - ✅ Adjusts strategy weights
 - ✅ Learns what works in production
@@ -63,6 +68,7 @@
 ## 🚀 How It Works
 
 ### Stage 1: Fix Application
+
 ```
 - Apply fix with validation
 - Create backup
@@ -72,6 +78,7 @@
 ```
 
 ### Stage 2: Testing
+
 ```
 - Find test files
 - Run unit tests
@@ -81,6 +88,7 @@
 ```
 
 ### Stage 3: Deployment
+
 ```
 - Prepare deployment record
 - Track deployment metadata
@@ -88,6 +96,7 @@
 ```
 
 ### Stage 4: Production Monitoring
+
 ```
 - Monitor for new errors
 - Track production outcomes
@@ -102,6 +111,7 @@
 ### Enable Continuous Learning
 
 **In `.env`:**
+
 ```bash
 # Enable continuous learning cycle
 CODE_ROACH_CONTINUOUS_LEARNING=true
@@ -114,19 +124,21 @@ CODE_ROACH_AUTO_FIX=true
 ### Learning Cycle Behavior
 
 **Automatic:**
+
 - Runs automatically when fixes are applied
 - Tests before saving
 - Monitors production
 - Learns from outcomes
 
 **Manual:**
+
 ```javascript
-const continuousLearningService = require('./server/services/continuousLearningService');
+const continuousLearningService = require("./server/services/continuousLearningService");
 
 const cycle = await continuousLearningService.executeLearningCycle(
-    fix,
-    filePath,
-    originalCode
+  fix,
+  filePath,
+  originalCode,
 );
 ```
 
@@ -135,11 +147,13 @@ const cycle = await continuousLearningService.executeLearningCycle(
 ## 📊 Learning Statistics
 
 ### Get Stats
+
 ```bash
 GET /api/continuous-learning/stats
 ```
 
 **Response:**
+
 ```json
 {
   "totalCycles": 150,
@@ -160,18 +174,21 @@ GET /api/continuous-learning/stats
 ## 🔍 What Gets Learned
 
 ### From Successful Cycles
+
 - ✅ Fix method effectiveness
 - ✅ Domain expertise improvement
 - ✅ Strategy weight adjustments
 - ✅ Confidence calibration
 
 ### From Production Success
+
 - ✅ Strong positive signal
 - ✅ Significant expertise boost
 - ✅ Method validation
 - ✅ Pattern reinforcement
 
 ### From Production Failure
+
 - ✅ Method weight reduction
 - ✅ Strategy adjustment
 - ✅ Confidence reduction
@@ -182,18 +199,21 @@ GET /api/continuous-learning/stats
 ## 📈 Benefits
 
 ### Quality
+
 - ✅ **Higher success rates** - Tests before deploying
 - ✅ **Fewer regressions** - Validates before applying
 - ✅ **Production confidence** - Monitors outcomes
 - ✅ **Continuous improvement** - Learns from every cycle
 
 ### Speed
+
 - ✅ **Faster fixes** - Uses best strategies
 - ✅ **Less rework** - Tests catch issues early
 - ✅ **Smarter decisions** - Learns what works
 - ✅ **Better predictions** - Expertise-based confidence
 
 ### Reliability
+
 - ✅ **Automatic rollback** - On test failure
 - ✅ **Production monitoring** - Catches issues early
 - ✅ **Learning from mistakes** - Avoids repeating errors
@@ -204,7 +224,9 @@ GET /api/continuous-learning/stats
 ## 🗄️ Database Schema
 
 ### `code_roach_learning_cycles`
+
 Tracks complete learning cycles:
+
 - Cycle ID
 - File path
 - Fix method
@@ -213,7 +235,9 @@ Tracks complete learning cycles:
 - Metadata
 
 ### `code_roach_deployments`
+
 Tracks deployments:
+
 - Deployment ID
 - File path
 - Fix method
@@ -226,21 +250,25 @@ Tracks deployments:
 ## 🎯 Integration Points
 
 ### With Meta-Learning
+
 - Uses expertise levels for strategy selection
 - Updates expertise from cycle outcomes
 - Adjusts strategy weights
 
 ### With Fix Generators
+
 - Provides domain expertise
 - Suggests best strategies
 - Adjusts confidence
 
 ### With Testing
+
 - Runs tests before applying
 - Validates fixes
 - Rolls back on failure
 
 ### With Production
+
 - Monitors outcomes
 - Tracks errors
 - Learns from results
@@ -250,18 +278,21 @@ Tracks deployments:
 ## 📊 Metrics
 
 ### Cycle Success Rate
+
 - Overall success rate
 - By stage (fix/test/deploy/production)
 - By domain
 - By method
 
 ### Production Outcomes
+
 - Production success rate
 - Error detection rate
 - Rollback frequency
 - Recovery time
 
 ### Learning Velocity
+
 - Expertise growth rate
 - Strategy optimization speed
 - Pattern learning rate
@@ -272,31 +303,34 @@ Tracks deployments:
 ## 🚀 Usage
 
 ### Automatic (Recommended)
+
 ```bash
 # Enable in .env
 CODE_ROACH_CONTINUOUS_LEARNING=true
 ```
 
 Code Roach will automatically:
+
 1. Apply fixes with validation
 2. Run tests
 3. Monitor production
 4. Learn from outcomes
 
 ### Manual Cycle
+
 ```javascript
 const cycle = await continuousLearningService.executeLearningCycle(
-    {
-        code: fixedCode,
-        method: 'pattern',
-        confidence: 0.9,
-        type: 'syntax-fixes'
-    },
-    'server/services/myService.js',
-    originalCode
+  {
+    code: fixedCode,
+    method: "pattern",
+    confidence: 0.9,
+    type: "syntax-fixes",
+  },
+  "server/services/myService.js",
+  originalCode,
 );
 
-console.log('Cycle outcome:', cycle.outcome);
+console.log("Cycle outcome:", cycle.outcome);
 ```
 
 ---
@@ -330,6 +364,7 @@ Code Roach Gets Better
 ## ✅ Summary
 
 **Continuous Learning System:**
+
 - ✅ Complete learn/fix/test/deploy cycle
 - ✅ Test-driven fixes
 - ✅ Production monitoring
@@ -338,6 +373,7 @@ Code Roach Gets Better
 - ✅ Strategy optimization
 
 **Result:**
+
 - 🎯 Higher quality fixes
 - 🚀 Faster development
 - 📈 Continuous improvement

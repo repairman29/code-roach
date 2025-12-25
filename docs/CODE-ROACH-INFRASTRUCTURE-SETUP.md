@@ -142,6 +142,7 @@ SENTRY_DSN=https://xxxxx@sentry.io/xxxxx
 Railway will auto-deploy on push to main branch.
 
 **Manual deploy:**
+
 ```bash
 # Install Railway CLI
 npm install -g @railway/cli
@@ -195,6 +196,7 @@ Vercel auto-deploys on push.
 #### Step 2: Configure DNS
 
 Add A record pointing to Railway/Vercel IP:
+
 - **Type:** A
 - **Name:** @
 - **Content:** (Railway/Vercel IP)
@@ -227,7 +229,7 @@ npm install @sentry/node @sentry/integrations
 
 ```javascript
 // server/server.js
-const Sentry = require('@sentry/node');
+const Sentry = require("@sentry/node");
 
 Sentry.init({
   dsn: process.env.SENTRY_DSN,
@@ -260,7 +262,7 @@ npm install @logtail/node
 
 ```javascript
 // server/services/logger.js
-const { Logtail } = require('@logtail/node');
+const { Logtail } = require("@logtail/node");
 
 const logtail = new Logtail(process.env.LOGTAIL_TOKEN);
 
@@ -422,24 +424,27 @@ curl http://localhost:3000/api/health
 
 ```javascript
 // server/middleware/metrics.js
-const prometheus = require('prom-client');
+const prometheus = require("prom-client");
 
 const httpRequestDuration = new prometheus.Histogram({
-  name: 'http_request_duration_seconds',
-  help: 'Duration of HTTP requests in seconds',
-  labelNames: ['method', 'route', 'status']
+  name: "http_request_duration_seconds",
+  help: "Duration of HTTP requests in seconds",
+  labelNames: ["method", "route", "status"],
 });
 
 // Use in Express
 app.use((req, res, next) => {
   const start = Date.now();
-  res.on('finish', () => {
+  res.on("finish", () => {
     const duration = (Date.now() - start) / 1000;
-    httpRequestDuration.observe({
-      method: req.method,
-      route: req.route?.path || req.path,
-      status: res.statusCode
-    }, duration);
+    httpRequestDuration.observe(
+      {
+        method: req.method,
+        route: req.route?.path || req.path,
+        status: res.statusCode,
+      },
+      duration,
+    );
   });
   next();
 });
@@ -449,19 +454,19 @@ app.use((req, res, next) => {
 
 ```javascript
 // server/routes/health.js
-app.get('/api/health', async (req, res) => {
+app.get("/api/health", async (req, res) => {
   const health = {
-    status: 'ok',
+    status: "ok",
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
     checks: {
       database: await checkDatabase(),
       redis: await checkRedis(),
-      disk: checkDiskSpace()
-    }
+      disk: checkDiskSpace(),
+    },
   };
-  
-  const isHealthy = Object.values(health.checks).every(c => c === 'ok');
+
+  const isHealthy = Object.values(health.checks).every((c) => c === "ok");
   res.status(isHealthy ? 200 : 503).json(health);
 });
 ```

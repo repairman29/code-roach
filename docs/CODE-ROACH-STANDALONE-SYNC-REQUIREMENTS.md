@@ -13,6 +13,7 @@
 ### 1. Added Missing Services to Sync Script
 
 **Added to `scripts/sync-code-roach-standalone.js`**:
+
 - ✅ `databaseService.js` - Core database operations
 - ✅ `issueStorageService.js` - Issue storage service
 - ✅ `autonomousMode.js` - Autonomous scanning mode
@@ -22,6 +23,7 @@
 ### 2. Updated Files
 
 **Files modified today that are now synced**:
+
 - ✅ `server/services/autonomousMode.js` - Fixed issue storage
 - ✅ `public/code-roach-dashboard.html` - Fixed dashboard counts
 - ✅ `docs/CODE-ROACH-ISSUE-DETECTION-METHODS.md` - New documentation
@@ -35,6 +37,7 @@
 **When**: Runs automatically on git commit (via git hook)
 
 **What it does**:
+
 1. Scans `FILE_MAPPINGS` in sync script
 2. Copies files from Smugglers → Standalone
 3. Skips unchanged files (efficient)
@@ -43,11 +46,13 @@
 ### Manual Sync
 
 **Command**:
+
 ```bash
 npm run code-roach:sync-standalone
 ```
 
 **When to use**:
+
 - After making Code Roach changes
 - To verify sync status
 - To force re-sync of specific files
@@ -59,41 +64,50 @@ npm run code-roach:sync-standalone
 ### ✅ What Gets Synced (349 files)
 
 **Core Services** (79+ files):
+
 - All Code Roach services in `server/services/`
 - Including: `autonomousMode.js`, `issueStorageService.js`, `databaseService.js` ✅
 
 **API Routes** (4 files):
+
 - `codeRoachAPI.js`
 - `apiKnowledgeBase.js`
 - `apiExpertTraining.js`
 - `api.js`
 
 **UI/Dashboards** (8 files):
+
 - All Code Roach HTML pages
 - Dashboard, Issues, Projects, Login, IDE, Marketplace
 
 **Frontend JS** (2 files):
+
 - `codeRoachApiClient.js`
 - `codeRoachAuth.js`
 
 **Scripts** (10+ files):
+
 - Batch review, testing, monitoring scripts
 
 **Documentation** (100+ files):
+
 - All `CODE-ROACH-*.md` files
 
 **Migrations** (5 files):
+
 - Supabase schema migrations
 
 ### ❌ What Doesn't Get Synced
 
 **Game-Specific**:
+
 - Game services (NPC, economy, etc.)
 - Game routes
 - Game UI
 - Game-specific scripts
 
 **Standalone Overrides**:
+
 - `.standalone-overrides/` directory
 - Standalone-specific configs
 
@@ -146,20 +160,24 @@ npm run code-roach:sync-standalone
 These services **MUST** be synced for Code Roach to work:
 
 ### Core Detection:
+
 - ✅ `codebaseCrawler.js` - Issue detection
 - ✅ `codebaseWatcher.js` - File watching
 - ✅ `autonomousMode.js` - Autonomous scanning ✅ **NOW SYNCED**
 
 ### Storage:
+
 - ✅ `issueStorageService.js` - Issue storage ✅ **NOW SYNCED**
 - ✅ `databaseService.js` - Database operations ✅ **NOW SYNCED**
 
 ### Infrastructure:
+
 - ✅ `codebaseIndexer.js` - Codebase indexing
 - ✅ `codebaseSearch.js` - Semantic search
 - ✅ `llmService.js` - LLM operations
 
 ### Routes:
+
 - ✅ `codeRoachAPI.js` - API endpoints
 
 ---
@@ -199,6 +217,7 @@ After each sync, verify:
 ## 🎯 Summary
 
 **What We Did**:
+
 1. ✅ Fixed autonomous mode to store issues
 2. ✅ Fixed dashboard to show database counts
 3. ✅ Committed and pushed changes
@@ -207,6 +226,7 @@ After each sync, verify:
 6. ✅ Verified all files are synced
 
 **Current Status**:
+
 - ✅ Smugglers and Standalone are **IN SYNC**
 - ✅ All critical services synced
 - ✅ 349 files tracked
@@ -218,4 +238,3 @@ After each sync, verify:
 
 **Last Updated**: December 17, 2025, 11:07 AM  
 **Status**: ✅ **FULLY SYNCED**
-

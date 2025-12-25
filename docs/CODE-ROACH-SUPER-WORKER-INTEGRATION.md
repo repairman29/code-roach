@@ -15,6 +15,7 @@ npm run code-roach:absorb-workers
 ```
 
 This will:
+
 1. Find all super worker knowledge/patterns/experience files
 2. Extract their skills and expertise
 3. Add them to Code Roach's knowledge base
@@ -25,21 +26,25 @@ This will:
 ## 📚 What Gets Absorbed
 
 ### 1. Task Category Expertise
+
 - Which types of tasks each worker excels at
 - Success rates for different categories
 - Experience levels
 
 ### 2. File Type Expertise
+
 - Which file types each worker has successfully fixed
 - Success rates by file type
 - Common patterns
 
 ### 3. Common Issues & Solutions
+
 - Recurring issues workers have encountered
 - Effective solutions they've used
 - Context and file associations
 
 ### 4. Successful Patterns
+
 - Patterns that have worked well
 - Best practices learned
 - Proven approaches
@@ -67,6 +72,7 @@ This will:
 ### Usage in Code Roach
 
 Once absorbed, Code Roach will:
+
 - **Search knowledge base** when fixing issues
 - **Match issues** to super worker expertise
 - **Apply proven patterns** from successful workers
@@ -94,6 +100,7 @@ The system handles pairs in two ways:
 ### Auto-Detection
 
 The system automatically detects complementary pairs by:
+
 - Analyzing category coverage (complementary if they cover different areas)
 - Comparing file type expertise (complementary if different types)
 - Evaluating skill diversity (complementary if different strengths)
@@ -102,6 +109,7 @@ The system automatically detects complementary pairs by:
 ### Pair Benefits
 
 When workers are paired:
+
 - **Combined expertise** is absorbed as unified knowledge
 - **Complementary skills** are linked and cross-referenced
 - **Better pattern matching** using combined knowledge
@@ -111,6 +119,7 @@ When workers are paired:
 ### Pair Knowledge Structure
 
 Each pair creates:
+
 1. **General pair knowledge**: Overview of combined expertise
 2. **Category-specific knowledge**: For each category the pair covers
 3. **Complementarity metadata**: Scores and overlap information
@@ -125,16 +134,16 @@ Edit `scripts/absorb-super-worker-skills.js`:
 
 ```javascript
 const SUPER_WORKER_PAIRS = [
-    { 
-        name: 'Sonic & Tails', 
-        workers: ['1', '2'],  // Worker IDs (not full filenames)
-        description: 'Speed and technical expertise' 
-    },
-    { 
-        name: 'Your Pair Name', 
-        workers: ['worker-id-1', 'worker-id-2'],
-        description: 'What makes them a good pair'
-    },
+  {
+    name: "Sonic & Tails",
+    workers: ["1", "2"], // Worker IDs (not full filenames)
+    description: "Speed and technical expertise",
+  },
+  {
+    name: "Your Pair Name",
+    workers: ["worker-id-1", "worker-id-2"],
+    description: "What makes them a good pair",
+  },
 ];
 ```
 
@@ -143,12 +152,13 @@ const SUPER_WORKER_PAIRS = [
 ### Enable/Disable Auto-Detection
 
 ```javascript
-const AUTO_DETECT_PAIRS = true;  // Set to false to disable
+const AUTO_DETECT_PAIRS = true; // Set to false to disable
 ```
 
 ### Adjust Pair Detection Threshold
 
 In `detectComplementaryPairs()`:
+
 ```javascript
 if (score.complementary > 0.3) { // Lower = more pairs, Higher = fewer pairs
 ```
@@ -156,6 +166,7 @@ if (score.complementary > 0.3) { // Lower = more pairs, Higher = fewer pairs
 ### Filter What Gets Absorbed
 
 Modify thresholds in the script:
+
 - `stats.count > 10` - Minimum task count for category expertise
 - `stats.count > 5 && stats.success > 0` - File type expertise
 - `data.count >= 3` - Common issues threshold
@@ -165,6 +176,7 @@ Modify thresholds in the script:
 ## 📈 Statistics
 
 After running, you'll see:
+
 - Workers processed
 - Knowledge entries added
 - Patterns absorbed
@@ -217,11 +229,13 @@ Knowledge Added: 312
 ## 🔄 Re-running
 
 You can re-run the absorption anytime:
+
 - When new super workers are added
 - When workers learn new patterns
 - To refresh Code Roach's knowledge
 
 The system will:
+
 - Skip duplicates (based on metadata)
 - Add new knowledge
 - Update existing entries if needed
@@ -290,12 +304,14 @@ Super worker skills enhance batch review:
 ## 🎉 Summary
 
 **Super Worker Integration:**
+
 1. Run `npm run code-roach:absorb-workers`
 2. Skills are absorbed into knowledge base
 3. Code Roach uses them automatically
 4. Better fixes and pattern recognition
 
 **Key Benefits:**
+
 - Preserve super worker expertise
 - Enhance Code Roach capabilities
 - Better automatic fixes

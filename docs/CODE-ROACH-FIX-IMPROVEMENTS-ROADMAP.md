@@ -1,12 +1,15 @@
 # Code Roach Fix Capabilities Improvement Roadmap
 
 ## Problem Statement
+
 Code Roach is finding 15,000+ issues but only auto-fixing 0. We need to transform from a "scanner" into a true "auto-fixer" that can handle complex problems.
 
 ## Sprint 1: LLM-Powered Fix Generation
+
 **Goal**: Use LLM to generate intelligent fixes for any issue type
 
 ### Features:
+
 1. **LLM Fix Generator Service**
    - Generate fixes using OpenAI/Anthropic for any issue type
    - Context-aware fixes using codebase search
@@ -25,6 +28,7 @@ Code Roach is finding 15,000+ issues but only auto-fixing 0. We need to transfor
    - Pattern matching from error history
 
 ### Success Metrics:
+
 - Auto-fix rate: 0% → 30%+
 - Fix success rate: 95%+
 - Can handle: style, security, performance, best practices
@@ -32,9 +36,11 @@ Code Roach is finding 15,000+ issues but only auto-fixing 0. We need to transfor
 ---
 
 ## Sprint 2: Context-Aware Fix Generation
+
 **Goal**: Use codebase context to generate better fixes
 
 ### Features:
+
 1. **Codebase-Aware Fixes**
    - Search for similar code patterns
    - Learn from existing fixes in codebase
@@ -54,6 +60,7 @@ Code Roach is finding 15,000+ issues but only auto-fixing 0. We need to transfor
    - Test execution (if available)
 
 ### Success Metrics:
+
 - Context-aware fix accuracy: 90%+
 - Multi-file fix capability
 - Zero syntax errors from fixes
@@ -61,9 +68,11 @@ Code Roach is finding 15,000+ issues but only auto-fixing 0. We need to transfor
 ---
 
 ## Sprint 3: Learning & Improvement System
+
 **Goal**: Learn from fix success/failure to improve over time
 
 ### Features:
+
 1. **Fix Learning Engine**
    - Track fix success/failure rates
    - Learn which fix patterns work best
@@ -83,6 +92,7 @@ Code Roach is finding 15,000+ issues but only auto-fixing 0. We need to transfor
    - Build fix knowledge base
 
 ### Success Metrics:
+
 - Fix success rate improves over time
 - Pattern library grows
 - Auto-fix rate increases with learning
@@ -90,9 +100,11 @@ Code Roach is finding 15,000+ issues but only auto-fixing 0. We need to transfor
 ---
 
 ## Sprint 4: Advanced Fix Types
+
 **Goal**: Handle complex, multi-step fixes
 
 ### Features:
+
 1. **Refactoring Fixes**
    - Extract functions/methods
    - Rename variables/functions
@@ -120,6 +132,7 @@ Code Roach is finding 15,000+ issues but only auto-fixing 0. We need to transfor
    - Configuration management
 
 ### Success Metrics:
+
 - Can fix 50%+ of found issues
 - Handles security, performance, architecture issues
 - Multi-step fix capability
@@ -127,9 +140,11 @@ Code Roach is finding 15,000+ issues but only auto-fixing 0. We need to transfor
 ---
 
 ## Sprint 5: Safety & Confidence System
+
 **Goal**: Be more aggressive with fixes while maintaining safety
 
 ### Features:
+
 1. **Confidence-Based Auto-Fix**
    - High confidence (90%+): Auto-fix immediately
    - Medium confidence (70-90%): Suggest with preview
@@ -150,6 +165,7 @@ Code Roach is finding 15,000+ issues but only auto-fixing 0. We need to transfor
    - Safety checkpoints
 
 ### Success Metrics:
+
 - 50%+ auto-fix rate
 - <1% fix failure rate
 - Zero breaking changes
@@ -157,9 +173,11 @@ Code Roach is finding 15,000+ issues but only auto-fixing 0. We need to transfor
 ---
 
 ## Sprint 6: Integration & Workflow
+
 **Goal**: Integrate fixes into development workflow
 
 ### Features:
+
 1. **Git Integration**
    - Auto-commit fixes
    - Create fix branches
@@ -179,6 +197,7 @@ Code Roach is finding 15,000+ issues but only auto-fixing 0. We need to transfor
    - Fix preview & approval
 
 ### Success Metrics:
+
 - Seamless workflow integration
 - Developer adoption
 - Reduced manual fix time
@@ -188,16 +207,19 @@ Code Roach is finding 15,000+ issues but only auto-fixing 0. We need to transfor
 ## Implementation Priority
 
 ### Phase 1 (Immediate - Sprint 1-2):
+
 - LLM-powered fix generation
 - Context-aware fixes
 - Basic fix validation
 
 ### Phase 2 (Short-term - Sprint 3-4):
+
 - Learning system
 - Advanced fix types
 - Multi-file fixes
 
 ### Phase 3 (Long-term - Sprint 5-6):
+
 - Safety improvements
 - Workflow integration
 - Advanced features
@@ -207,16 +229,19 @@ Code Roach is finding 15,000+ issues but only auto-fixing 0. We need to transfor
 ## Success Criteria
 
 **By end of Sprint 2:**
+
 - Auto-fix rate: 30%+
 - Can handle style, security, performance issues
 - Context-aware fix generation
 
 **By end of Sprint 4:**
+
 - Auto-fix rate: 50%+
 - Can handle complex, multi-step fixes
 - Learning system operational
 
 **By end of Sprint 6:**
+
 - Auto-fix rate: 70%+
 - Fully integrated into workflow
 - Production-ready fix system
@@ -241,4 +266,3 @@ Code Roach is finding 15,000+ issues but only auto-fixing 0. We need to transfor
 3. Integrate with crawler
 4. Test and iterate
 5. Move to Sprint 2: Context-Aware Fixes
-

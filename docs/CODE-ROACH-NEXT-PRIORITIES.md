@@ -22,6 +22,7 @@
 **Status:** Repo exists, needs initial sync
 
 **Tasks:**
+
 - [ ] Run sync to populate standalone repo
 - [ ] Create standalone `package.json` with correct dependencies
 - [ ] Create standalone `README.md` with setup instructions
@@ -31,6 +32,7 @@
 - [ ] Create standalone deployment config
 
 **Files Needed:**
+
 - `src/index.js` or `src/server.js` - Main entry point
 - `package.json` - Standalone dependencies
 - `.env.example` - Environment variables template
@@ -44,6 +46,7 @@
 **Status:** Orchestration service built, needs integration
 
 **Tasks:**
+
 - [ ] Integrate orchestration into `codebaseCrawler.js`
 - [ ] Update fix application flow to use orchestration
 - [ ] Add orchestration to CLI commands
@@ -51,6 +54,7 @@
 - [ ] Test end-to-end orchestration flow
 
 **Where to Integrate:**
+
 - `codebaseCrawler.js` - Use orchestration for fix pipeline
 - CLI commands - Add `--orchestrate` flag
 - Frontend - Show orchestration status
@@ -62,6 +66,7 @@
 **Status:** New services need database tables
 
 **Tasks:**
+
 - [ ] Add tables for fix monitoring
 - [ ] Add tables for quality metrics
 - [ ] Add tables for marketplace patterns
@@ -70,6 +75,7 @@
 - [ ] Create migration script
 
 **Tables Needed:**
+
 - `fix_monitoring` - Track active fix monitoring
 - `quality_metrics` - Store quality metrics snapshots
 - `marketplace_patterns` - Marketplace-specific pattern data
@@ -83,6 +89,7 @@
 **Status:** Basic tests created, need comprehensive coverage
 
 **Tasks:**
+
 - [ ] Add tests for remaining 9 services
 - [ ] Add integration tests for orchestration
 - [ ] Add E2E tests for new features
@@ -90,6 +97,7 @@
 - [ ] Add error scenario tests
 
 **Test Files Needed:**
+
 - `tests/unit/fixRollbackIntelligenceService.test.js`
 - `tests/unit/fixCostBenefitAnalysisService.test.js`
 - `tests/unit/fixMonitoringService.test.js`
@@ -107,6 +115,7 @@
 **Status:** Missing main server file for standalone
 
 **Tasks:**
+
 - [ ] Create `src/server.js` or `src/index.js`
 - [ ] Set up Express server
 - [ ] Register all routes
@@ -123,6 +132,7 @@
 **Status:** Need standalone config system
 
 **Tasks:**
+
 - [ ] Create `src/config.js` for standalone
 - [ ] Remove game-specific config
 - [ ] Add multi-tenant support
@@ -138,6 +148,7 @@
 **Status:** Some pages mentioned but not created
 
 **Tasks:**
+
 - [ ] Create `code-roach-quality.html` - Quality metrics page
 - [ ] Create `code-roach-monitoring.html` - Monitoring dashboard
 - [ ] Create `code-roach-pipelines.html` - Pipeline details page
@@ -150,6 +161,7 @@
 **Status:** Auth exists but not fully integrated
 
 **Tasks:**
+
 - [ ] Integrate Supabase Auth in frontend
 - [ ] Add protected routes
 - [ ] Add user session management
@@ -163,6 +175,7 @@
 **Status:** Basic error handling, needs enhancement
 
 **Tasks:**
+
 - [ ] Add comprehensive error handling to new services
 - [ ] Add error recovery mechanisms
 - [ ] Add error reporting
@@ -175,6 +188,7 @@
 **Status:** Services built, need optimization
 
 **Tasks:**
+
 - [ ] Add caching to expensive operations
 - [ ] Optimize database queries
 - [ ] Add pagination to large result sets
@@ -186,6 +200,7 @@
 ## 🚀 Immediate Action Items
 
 ### This Week:
+
 1. **Create Standalone Entry Point** (`src/server.js`)
 2. **Create Standalone Config** (`src/config.js`)
 3. **Update Sync Script** (already done ✅)
@@ -193,6 +208,7 @@
 5. **Integrate Orchestration** into crawler
 
 ### Next Week:
+
 6. **Create Missing Frontend Pages**
 7. **Add Comprehensive Tests**
 8. **Set up CI/CD** for standalone repo
@@ -204,6 +220,7 @@
 ## 📋 Standalone Repository Checklist
 
 ### Initial Setup
+
 - [ ] Sync all Code Roach files to standalone
 - [ ] Create `src/server.js` entry point
 - [ ] Create `src/config.js` configuration
@@ -213,22 +230,26 @@
 - [ ] Create `.gitignore`
 
 ### Database
+
 - [ ] Create migration for new tables
 - [ ] Test migrations
 - [ ] Document schema
 
 ### Testing
+
 - [ ] Set up test framework
 - [ ] Create test suite
 - [ ] Add CI/CD tests
 
 ### Deployment
+
 - [ ] Set up Railway/Heroku config
 - [ ] Create deployment scripts
 - [ ] Set up environment variables
 - [ ] Test deployment
 
 ### Documentation
+
 - [ ] API documentation
 - [ ] Setup guide
 - [ ] Architecture docs

@@ -17,11 +17,13 @@ node scripts/test-codebase-integration-value.js
 ## 📋 Test Checklist
 
 ### 1. Codebase Search Integration ✅
+
 - [ ] Semantic search finds similar errors
 - [ ] File context retrieval works
 - [ ] Pattern matching finds relevant code
 
 **Test:**
+
 ```bash
 node scripts/test-codebase-aware-fixes.js
 # Look for "✅ Found X similar patterns"
@@ -30,11 +32,13 @@ node scripts/test-codebase-aware-fixes.js
 ---
 
 ### 2. Fix Generation ✅
+
 - [ ] Fixes are generated for test cases
 - [ ] Confidence scores are reasonable (>0.5)
 - [ ] Fixes use codebase patterns
 
 **Test:**
+
 ```bash
 node scripts/test-codebase-aware-fixes.js
 # Check "Tests Passed" and "Patterns Used"
@@ -43,11 +47,13 @@ node scripts/test-codebase-aware-fixes.js
 ---
 
 ### 3. API Endpoints ✅
+
 - [ ] `/api/code-roach/fix/codebase-aware` responds
 - [ ] `/api/code-roach/generate/codebase-patterns` responds
 - [ ] Endpoints return valid fixes
 
 **Test:**
+
 ```bash
 # Make sure server is running
 npm start
@@ -60,11 +66,13 @@ node scripts/test-codebase-aware-fixes.js
 ---
 
 ### 4. Real Codebase Files ✅
+
 - [ ] Works with actual project files
 - [ ] Handles large files
 - [ ] Generates contextually appropriate fixes
 
 **Test:**
+
 ```bash
 node scripts/test-codebase-integration-value.js
 # Check "Real File Testing" results
@@ -73,11 +81,13 @@ node scripts/test-codebase-integration-value.js
 ---
 
 ### 5. Performance ✅
+
 - [ ] Fix generation is fast (<2s average)
 - [ ] Can handle multiple requests
 - [ ] Doesn't slow down crawler
 
 **Test:**
+
 ```bash
 node scripts/test-codebase-integration-value.js
 # Check "Performance Results"
@@ -90,18 +100,21 @@ node scripts/test-codebase-integration-value.js
 ### Success Criteria
 
 **High Value (80%+):**
+
 - ✅ 70%+ tests passing
 - ✅ Average confidence > 0.7
 - ✅ Patterns being used
 - ✅ Performance < 2s
 
 **Good Value (60-80%):**
+
 - ⚠️ 50%+ tests passing
 - ⚠️ Average confidence > 0.5
 - ⚠️ Some patterns used
 - ⚠️ Performance < 5s
 
 **Needs Improvement (<60%):**
+
 - ❌ <50% tests passing
 - ❌ Low confidence
 - ❌ No patterns used
@@ -116,6 +129,7 @@ node scripts/test-codebase-integration-value.js
 **Problem:** Tests show "No patterns found"
 
 **Solution:**
+
 ```bash
 # Index your codebase
 npm run codebase:sync
@@ -131,6 +145,7 @@ npm run codebase:watch
 **Problem:** Fixes have confidence < 0.5
 
 **Solutions:**
+
 1. Index more code: `npm run codebase:sync`
 2. Add more error patterns to Supabase
 3. Improve error descriptions in test cases
@@ -142,6 +157,7 @@ npm run codebase:watch
 **Problem:** "ERR_CONNECTION_REFUSED"
 
 **Solution:**
+
 ```bash
 # Start the server
 npm start
@@ -157,6 +173,7 @@ curl http://localhost:3000/health
 **Problem:** Fix generation takes >5s
 
 **Solutions:**
+
 1. Add caching to codebase search
 2. Limit search results (use `limit` option)
 3. Use parallel processing for multiple fixes
@@ -191,11 +208,11 @@ jobs:
 
 ```javascript
 // In Node.js REPL or test file
-const codebaseAwareFixGenerator = require('./server/services/codebaseAwareFixGenerator');
+const codebaseAwareFixGenerator = require("./server/services/codebaseAwareFixGenerator");
 
 const error = {
-    message: 'ReferenceError: user is not defined',
-    type: 'ReferenceError'
+  message: "ReferenceError: user is not defined",
+  type: "ReferenceError",
 };
 
 const code = `
@@ -205,28 +222,28 @@ function getUserData(userId) {
 `;
 
 const fix = await codebaseAwareFixGenerator.generateFix(
-    error,
-    code,
-    'server/routes/test.js'
+  error,
+  code,
+  "server/routes/test.js",
 );
 
-console.log('Fix:', fix.code);
-console.log('Confidence:', fix.confidence);
-console.log('Patterns:', fix.patternsUsed);
+console.log("Fix:", fix.code);
+console.log("Confidence:", fix.confidence);
+console.log("Patterns:", fix.patternsUsed);
 ```
 
 ### Test 2: Check Codebase Search
 
 ```javascript
-const codebaseSearch = require('./server/services/codebaseSearch');
+const codebaseSearch = require("./server/services/codebaseSearch");
 
 // Search for similar errors
 const results = await codebaseSearch.semanticSearch(
-    'error handling undefined variable',
-    { limit: 5 }
+  "error handling undefined variable",
+  { limit: 5 },
 );
 
-console.log('Found:', results.results.length, 'patterns');
+console.log("Found:", results.results.length, "patterns");
 ```
 
 ### Test 3: Test API Endpoint
@@ -251,6 +268,7 @@ curl -X POST http://localhost:3000/api/code-roach/fix/codebase-aware \
 ### Dashboard Metrics
 
 Check the Code Roach dashboard for:
+
 - Fix success rate
 - Average confidence
 - Patterns used
@@ -284,4 +302,3 @@ Once tests pass:
 ---
 
 **Happy Testing! 🧪**
-

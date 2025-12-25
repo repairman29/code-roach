@@ -9,6 +9,7 @@
 The system appears as a **stylized roach icon** that "crawls" along the right edge of the screen. This visual metaphor represents the system's persistent, thorough bug-hunting behavior - just like a roach that finds every crack and crevice, Code Roach finds every bug.
 
 **Visual States:**
+
 - 🟢 **Green (Crawling)**: System is operational, no errors detected
 - 🟡 **Amber (Fixing)**: Actively working on fixing an error
 - 🔴 **Red (Alert)**: Critical error detected
@@ -20,6 +21,7 @@ The icon has a subtle crawling animation to indicate it's actively monitoring th
 ## What Does It Do?
 
 ### 1. **Automatic Error Detection**
+
 - **Catches all JavaScript errors** in real-time
 - **Monitors console errors** automatically
 - **Detects network failures** and connection issues
@@ -27,6 +29,7 @@ The icon has a subtle crawling animation to indicate it's actively monitoring th
 - **Tracks promise rejections** and async errors
 
 ### 2. **Intelligent Auto-Fixing**
+
 - **AI-powered analysis** of each error
 - **Pattern recognition** to identify common issues
 - **Automatic fix suggestions** with code generation
@@ -34,6 +37,7 @@ The icon has a subtle crawling animation to indicate it's actively monitoring th
 - **Learning system** that improves over time
 
 ### 3. **Proactive Monitoring**
+
 - **Prevents errors before they happen**
 - **Monitors game state** for corruption
 - **Checks storage capacity** (localStorage)
@@ -41,6 +45,7 @@ The icon has a subtle crawling animation to indicate it's actively monitoring th
 - **Performance monitoring** (FPS, memory, latency)
 
 ### 4. **Page Crawling & Site-Wide Scanning**
+
 - **Automatically crawls all pages** on the site
 - **Simulates browser navigation** to find errors
 - **Tests every page** for broken links, images, and scripts
@@ -48,6 +53,7 @@ The icon has a subtle crawling animation to indicate it's actively monitoring th
 - **Identifies slow-loading pages**
 
 ### 5. **Bug Backlog & Job Queue**
+
 - **Queues unfixable bugs** for later processing
 - **Prioritizes bugs** by severity (Critical → High → Medium → Low)
 - **Background job processor** retries fixes automatically
@@ -57,24 +63,28 @@ The icon has a subtle crawling animation to indicate it's actively monitoring th
 ### 6. **Advanced Features**
 
 #### Security Scanning
+
 - Detects XSS vulnerabilities
 - Identifies insecure data storage
 - Warns about insecure connections
 - Scans for security best practices
 
 #### Accessibility Checking
+
 - Finds missing image alt text
 - Identifies form labels
 - Checks color contrast
 - Ensures WCAG compliance
 
 #### Performance Profiling
+
 - Tracks page load times
 - Monitors memory usage
 - Identifies performance bottlenecks
 - Generates performance reports
 
 #### Visual Debugging
+
 - Highlights problematic elements
 - Shows call stack visualization
 - Displays error context
@@ -97,6 +107,7 @@ When minimized, Code Roach appears as a **compact icon on the right edge** of th
 ```
 
 **Features:**
+
 - **44x44 pixel icon** with crawling animation
 - **Error count badge** showing number of active errors
 - **Color-coded status** (green/amber/red)
@@ -128,6 +139,7 @@ When clicked, the widget expands to show:
 ```
 
 **Features:**
+
 - **Full error details** with source location
 - **Fix suggestions** for each error
 - **One-click auto-fix** buttons
@@ -225,11 +237,13 @@ When crawling pages, a progress UI appears:
 ## How It Works
 
 ### 1. **Error Capture**
+
 ```
 User Action → Error Occurs → Code Roach Intercepts → Analysis
 ```
 
 ### 2. **Auto-Fix Process**
+
 ```
 Error Detected
     ↓
@@ -244,6 +258,7 @@ Success? → Yes: Mark Fixed
 ```
 
 ### 3. **Backlog Processing**
+
 ```
 Backlog Queue
     ↓
@@ -256,6 +271,7 @@ Success? → Remove from Queue
 ```
 
 ### 4. **Page Crawling**
+
 ```
 Start Page
     ↓
@@ -275,12 +291,14 @@ Generate Report
 ## Benefits
 
 ### For Players
+
 - **Fewer bugs** encountered during gameplay
 - **Automatic recovery** from errors
 - **Smoother experience** with proactive fixes
 - **Data protection** with automatic backups
 
 ### For Development Team
+
 - **Reduced bug reports** from players
 - **Faster issue resolution** with auto-fixes
 - **Comprehensive error tracking** and analytics
@@ -288,6 +306,7 @@ Generate Report
 - **Site-wide health monitoring**
 
 ### For Business
+
 - **Improved player retention** (fewer frustrating bugs)
 - **Lower support costs** (fewer bug-related tickets)
 - **Higher quality product** (continuous improvement)
@@ -389,11 +408,10 @@ Planned features:
 ✅ **Learns and improves** - Gets better over time  
 ✅ **Monitors everything** - Site-wide health tracking  
 ✅ **Provides insights** - Analytics and reporting  
-✅ **Never stops** - 24/7 background processing  
+✅ **Never stops** - 24/7 background processing
 
 It's like having a dedicated QA engineer working around the clock to ensure the best possible player experience.
 
 ---
 
-*For technical documentation, see the inline code comments and API documentation in the source files.*
-
+_For technical documentation, see the inline code comments and API documentation in the source files._

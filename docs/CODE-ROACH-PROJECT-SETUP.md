@@ -21,6 +21,7 @@ node scripts/enable-code-roach-all.js
 ```
 
 This script will:
+
 - Create an organization "Smugglers" (if it doesn't exist)
 - Create a project "Smugglers Main" (if it doesn't exist)
 - Set `DEFAULT_PROJECT_ID` in your `.env` file
@@ -49,6 +50,7 @@ This script will:
    - Copy the ID (it looks like: `8b3442e1-3198-4d08-9d05-69ce49b8a051`)
 
 5. **Set in .env**:
+
    ```bash
    echo "DEFAULT_PROJECT_ID=your-project-id-here" >> .env
    ```
@@ -72,36 +74,40 @@ This script will:
 When calling the `/api/code-roach/crawl` endpoint, you can pass `projectId` in the request body:
 
 ```javascript
-const response = await fetch('/api/code-roach/crawl', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-        projectId: 'your-project-id-here',
-        options: {
-            autoFix: true
-        }
-    })
+const response = await fetch("/api/code-roach/crawl", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    projectId: "your-project-id-here",
+    options: {
+      autoFix: true,
+    },
+  }),
 });
 ```
 
 ## How Project ID is Used
 
 ### 1. **File Watcher**
+
 - Uses `DEFAULT_PROJECT_ID` from `.env`
 - Stores issues with this project ID when files change
 - Location: `server/server.js` (lines ~1277-1300)
 
 ### 2. **Autonomous Mode**
+
 - Uses `DEFAULT_PROJECT_ID` from `.env`
 - Automatically scans and stores issues for this project
 - Location: `server/server.js` (lines ~1310-1340)
 
 ### 3. **Scheduled Scans**
+
 - Uses `DEFAULT_PROJECT_ID` from `.env`
 - Runs daily scans and stores issues for this project
 - Location: `server/server.js` (lines ~1350-1370)
 
 ### 4. **Manual Crawls**
+
 - Can pass `projectId` in API request body
 - Or uses `DEFAULT_PROJECT_ID` if not provided
 - Location: `server/routes/codeRoachAPI.js` (line ~64)
@@ -109,11 +115,13 @@ const response = await fetch('/api/code-roach/crawl', {
 ## Verifying Project ID Setup
 
 ### Check .env File:
+
 ```bash
 grep DEFAULT_PROJECT_ID .env
 ```
 
 ### Check Database:
+
 ```bash
 node -e "
 const {createClient} = require('@supabase/supabase-js');
@@ -126,6 +134,7 @@ supabase.from('projects').select('id, name').then(({data}) => {
 ```
 
 ### Check Issues Page:
+
 - Go to `http://localhost:3000/code-roach-issues?project=your-project-id`
 - Issues should be filtered by project ID
 
@@ -135,7 +144,8 @@ supabase.from('projects').select('id, name').then(({data}) => {
 
 **Problem**: Issues are detected but not saved to database.
 
-**Solution**: 
+**Solution**:
+
 1. Check if `DEFAULT_PROJECT_ID` is set in `.env`
 2. Verify the project ID exists in the database
 3. Restart the server after setting `DEFAULT_PROJECT_ID`
@@ -145,6 +155,7 @@ supabase.from('projects').select('id, name').then(({data}) => {
 **Problem**: Dashboard shows crawl stats (issues found during scan) but database has fewer issues.
 
 **Solution**:
+
 - This happens when scans run without a `projectId`
 - Ensure `DEFAULT_PROJECT_ID` is set before running scans
 - Re-run scans with project ID to store all issues
@@ -154,6 +165,7 @@ supabase.from('projects').select('id, name').then(({data}) => {
 **Problem**: Project ID in `.env` doesn't exist in database.
 
 **Solution**:
+
 1. Check projects in UI: `http://localhost:3000/code-roach-projects`
 2. Create a new project if needed
 3. Update `.env` with correct project ID

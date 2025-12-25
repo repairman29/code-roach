@@ -3,6 +3,7 @@
 ## 🚀 Try These New Capabilities
 
 ### 1. Generate Code from Patterns
+
 ```bash
 curl -X POST http://localhost:3000/api/code-roach/generate-code \
   -H "Content-Type: application/json" \
@@ -17,6 +18,7 @@ curl -X POST http://localhost:3000/api/code-roach/generate-code \
 ---
 
 ### 2. Predict Refactoring Needs
+
 ```bash
 # Check if a file needs refactoring
 curl http://localhost:3000/api/code-roach/refactoring/predict/server/routes/api.js
@@ -30,6 +32,7 @@ curl http://localhost:3000/api/code-roach/refactoring/recommendations
 ---
 
 ### 3. Generate Tests from Error Patterns
+
 ```bash
 # Generate tests for all patterns that break frequently
 curl -X POST http://localhost:3000/api/code-roach/tests/generate
@@ -45,6 +48,7 @@ curl -X POST http://localhost:3000/api/code-roach/tests/generate \
 ---
 
 ### 4. Find Duplicate Code
+
 ```bash
 curl -X POST http://localhost:3000/api/code-roach/similarity/find \
   -H "Content-Type: application/json" \
@@ -59,6 +63,7 @@ curl -X POST http://localhost:3000/api/code-roach/similarity/find \
 ---
 
 ### 5. Detect Code Smells
+
 ```bash
 # Detect smells in specific code
 curl -X POST http://localhost:3000/api/code-roach/smells/detect \
@@ -77,6 +82,7 @@ curl http://localhost:3000/api/code-roach/smells/codebase
 ---
 
 ### 6. Learn from Other Projects
+
 ```bash
 curl -X POST http://localhost:3000/api/code-roach/learning/cross-project \
   -H "Content-Type: application/json" \
@@ -92,6 +98,7 @@ curl -X POST http://localhost:3000/api/code-roach/learning/cross-project \
 ## 🎯 Use Cases
 
 ### Use Case 1: Starting a New Feature
+
 ```bash
 # 1. Generate code that matches your style
 curl -X POST http://localhost:3000/api/code-roach/generate-code \
@@ -105,6 +112,7 @@ curl -X POST http://localhost:3000/api/code-roach/tests/generate
 ```
 
 ### Use Case 2: Code Review
+
 ```bash
 # 1. Check for code smells
 curl -X POST http://localhost:3000/api/code-roach/smells/detect \
@@ -118,6 +126,7 @@ curl -X POST http://localhost:3000/api/code-roach/similarity/find
 ```
 
 ### Use Case 3: Technical Debt Management
+
 ```bash
 # 1. Get refactoring recommendations
 curl http://localhost:3000/api/code-roach/refactoring/recommendations
@@ -142,4 +151,3 @@ curl -X POST http://localhost:3000/api/code-roach/tests/generate
 ---
 
 **Full IP Guide**: `docs/CODE-ROACH-IP-INNOVATIONS.md`
-

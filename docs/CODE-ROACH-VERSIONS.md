@@ -12,32 +12,39 @@ Code Roach comes in two versions:
 ## Simple Version
 
 ### What It Is
+
 A minimal, standalone implementation that focuses on core error detection and basic auto-fixing. Perfect for projects that need quick error monitoring without the complexity.
 
 ### Files
+
 - `public/js/code-roach-simple.js` - Core logic (~200 lines)
 - `public/css/code-roach-simple.css` - Styling with animations
 
 ### Features
+
 ✅ **Error Detection**
+
 - JavaScript errors
 - Promise rejections
 - Broken resources (images, scripts)
 - Console errors
 
 ✅ **Basic Auto-Fix**
+
 - Network error retry suggestions
 - Broken resource handling
 - Null check suggestions
 - Variable declaration hints
 
 ✅ **Visual Feedback**
+
 - Breathing idle animation
 - Scuttling animation when fixing
 - Color-coded states (green/amber/red)
 - Expandable log panel
 
 ✅ **Simple Integration**
+
 - Single file inclusion
 - Auto-initializes
 - No dependencies
@@ -48,14 +55,14 @@ A minimal, standalone implementation that focuses on core error detection and ba
 ```html
 <!DOCTYPE html>
 <html>
-<head>
-    <link rel="stylesheet" href="/css/code-roach-simple.css">
-</head>
-<body>
+  <head>
+    <link rel="stylesheet" href="/css/code-roach-simple.css" />
+  </head>
+  <body>
     <!-- Your content -->
-    
+
     <script src="/js/code-roach-simple.js"></script>
-</body>
+  </body>
 </html>
 ```
 
@@ -64,18 +71,20 @@ A minimal, standalone implementation that focuses on core error detection and ba
 **Automatic** - Just include the files and it works!
 
 **Manual Control:**
+
 ```javascript
 // Access the system
-window.CodeRoachSystem
+window.CodeRoachSystem;
 
 // View logs
-window.CodeRoachSystem.logs
+window.CodeRoachSystem.logs;
 
 // Check error count
-window.CodeRoachSystem.errorCount
+window.CodeRoachSystem.errorCount;
 ```
 
 ### When to Use
+
 - Quick error monitoring
 - Small projects
 - Minimal overhead needed
@@ -86,9 +95,11 @@ window.CodeRoachSystem.errorCount
 ## Full Version
 
 ### What It Is
+
 A comprehensive bug detection and fixing system with advanced features, AI-powered analysis, site-wide crawling, and persistent backlog management.
 
 ### Files
+
 - `public/js/error-fix-widget.js` - Core widget
 - `public/js/code-roach-enhancements.js` - Advanced features
 - `public/js/code-roach-advanced.js` - AI & advanced tools
@@ -101,41 +112,48 @@ A comprehensive bug detection and fixing system with advanced features, AI-power
 ✅ **Everything in Simple Version, Plus:**
 
 ✅ **Advanced Error Analysis**
+
 - AI-powered pattern recognition
 - Error correlation engine
 - Context-aware fixes
 - Learning from past fixes
 
 ✅ **Page Crawling**
+
 - Automatic site-wide scanning
 - Simulated browser navigation
 - Broken link detection
 - Performance monitoring
 
 ✅ **Bug Backlog System**
+
 - Priority-based queue
 - Automatic retry processing
 - Background job processor
 - Export capabilities
 
 ✅ **Security & Accessibility**
+
 - XSS vulnerability scanning
 - Insecure storage detection
 - Accessibility checking
 - Color contrast analysis
 
 ✅ **Performance Profiling**
+
 - FPS monitoring
 - Memory usage tracking
 - Network latency analysis
 - Performance reports
 
 ✅ **Visual Debugging**
+
 - Element highlighting
 - Call stack visualization
 - Interactive debugging tools
 
 ✅ **Advanced UI**
+
 - Dashboard with analytics
 - Error grouping and deduplication
 - Fix history tracking
@@ -144,11 +162,13 @@ A comprehensive bug detection and fixing system with advanced features, AI-power
 ### Installation
 
 The full version is automatically loaded via:
+
 - `public/js/shared.js` - Global loader
 - `public/js/globalNavigation.js` - Navigation integration
 - `public/js/pageTransitions.js` - Page transition integration
 
 Or manually:
+
 ```html
 <script src="/js/error-fix-widget.js"></script>
 <script src="/js/code-roach-enhancements.js"></script>
@@ -160,27 +180,29 @@ Or manually:
 ### Usage
 
 **Access Features:**
+
 ```javascript
 // Main widget
-window.errorFixWidget
+window.errorFixWidget;
 
 // Page crawler
-window.errorFixWidget.pageCrawler.startCrawl()
+window.errorFixWidget.pageCrawler.startCrawl();
 
 // Backlog system
-window.errorFixWidget.backlog.showBacklogUI()
+window.errorFixWidget.backlog.showBacklogUI();
 
 // Dashboard
-window.errorFixWidget.showDashboard()
+window.errorFixWidget.showDashboard();
 
 // Security scanner
-window.errorFixWidget.securityScanner.scan()
+window.errorFixWidget.securityScanner.scan();
 
 // Performance profiler
-window.errorFixWidget.profiler.startProfile('myFunction')
+window.errorFixWidget.profiler.startProfile("myFunction");
 ```
 
 ### When to Use
+
 - Production applications
 - Complex projects
 - Need comprehensive monitoring
@@ -191,22 +213,22 @@ window.errorFixWidget.profiler.startProfile('myFunction')
 
 ## Comparison Table
 
-| Feature | Simple Version | Full Version |
-|---------|---------------|--------------|
-| **File Size** | ~10KB | ~150KB |
-| **Error Detection** | ✅ Basic | ✅ Advanced |
-| **Auto-Fix** | ✅ Basic heuristics | ✅ AI-powered |
-| **Page Crawling** | ❌ | ✅ |
-| **Backlog System** | ❌ | ✅ |
-| **Security Scanning** | ❌ | ✅ |
-| **Accessibility Check** | ❌ | ✅ |
-| **Performance Profiling** | ❌ | ✅ |
-| **Visual Debugging** | ❌ | ✅ |
-| **Dashboard** | ❌ | ✅ |
-| **Learning System** | ❌ | ✅ |
-| **Dependencies** | None | None |
-| **Setup Complexity** | Minimal | Moderate |
-| **Best For** | Quick monitoring | Production apps |
+| Feature                   | Simple Version      | Full Version    |
+| ------------------------- | ------------------- | --------------- |
+| **File Size**             | ~10KB               | ~150KB          |
+| **Error Detection**       | ✅ Basic            | ✅ Advanced     |
+| **Auto-Fix**              | ✅ Basic heuristics | ✅ AI-powered   |
+| **Page Crawling**         | ❌                  | ✅              |
+| **Backlog System**        | ❌                  | ✅              |
+| **Security Scanning**     | ❌                  | ✅              |
+| **Accessibility Check**   | ❌                  | ✅              |
+| **Performance Profiling** | ❌                  | ✅              |
+| **Visual Debugging**      | ❌                  | ✅              |
+| **Dashboard**             | ❌                  | ✅              |
+| **Learning System**       | ❌                  | ✅              |
+| **Dependencies**          | None                | None            |
+| **Setup Complexity**      | Minimal             | Moderate        |
+| **Best For**              | Quick monitoring    | Production apps |
 
 ---
 
@@ -231,6 +253,7 @@ Both versions can coexist - they use different class names and IDs.
 ## Recommendations
 
 ### Use Simple Version If:
+
 - You need quick error monitoring
 - Project is small/medium
 - Want minimal overhead
@@ -238,6 +261,7 @@ Both versions can coexist - they use different class names and IDs.
 - Quick setup is priority
 
 ### Use Full Version If:
+
 - Production application
 - Need comprehensive monitoring
 - Want advanced features
@@ -253,13 +277,13 @@ Both versions can coexist - they use different class names and IDs.
 ```javascript
 // Extend the attemptAutoFix method
 const originalFix = window.CodeRoachSystem.attemptAutoFix;
-window.CodeRoachSystem.attemptAutoFix = function(error) {
-    // Your custom logic
-    if (error.msg.includes('MyCustomError')) {
-        return { fixed: true, method: 'Custom Fix Applied' };
-    }
-    // Fall back to default
-    return originalFix.call(this, error);
+window.CodeRoachSystem.attemptAutoFix = function (error) {
+  // Your custom logic
+  if (error.msg.includes("MyCustomError")) {
+    return { fixed: true, method: "Custom Fix Applied" };
+  }
+  // Fall back to default
+  return originalFix.call(this, error);
 };
 ```
 
@@ -267,17 +291,17 @@ window.CodeRoachSystem.attemptAutoFix = function(error) {
 
 ```javascript
 // Add custom error handler
-window.errorFixWidget.handleError = function(error) {
-    // Your custom processing
-    // Then call original
-    ErrorFixWidget.prototype.handleError.call(this, error);
+window.errorFixWidget.handleError = function (error) {
+  // Your custom processing
+  // Then call original
+  ErrorFixWidget.prototype.handleError.call(this, error);
 };
 
 // Use backlog system
 window.errorFixWidget.backlog.addToBacklog(error, fixAttempt);
 
 // Start crawler
-window.errorFixWidget.pageCrawler.startCrawl('/starting-page');
+window.errorFixWidget.pageCrawler.startCrawl("/starting-page");
 ```
 
 ---
@@ -285,12 +309,14 @@ window.errorFixWidget.pageCrawler.startCrawl('/starting-page');
 ## Performance Impact
 
 ### Simple Version
+
 - **Initial Load**: ~10KB
 - **Runtime Memory**: ~1MB
 - **CPU Impact**: Minimal
 - **Network**: None
 
 ### Full Version
+
 - **Initial Load**: ~150KB (lazy loaded)
 - **Runtime Memory**: ~5-10MB
 - **CPU Impact**: Low (background processing)
@@ -301,6 +327,7 @@ window.errorFixWidget.pageCrawler.startCrawl('/starting-page');
 ## Support & Maintenance
 
 Both versions are:
+
 - ✅ Self-contained
 - ✅ No external dependencies
 - ✅ Cross-browser compatible
@@ -309,5 +336,4 @@ Both versions are:
 
 ---
 
-*Choose the version that best fits your needs. You can always upgrade from Simple to Full later!*
-
+_Choose the version that best fits your needs. You can always upgrade from Simple to Full later!_

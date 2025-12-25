@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/documentationGenerator.js
- * Last Sync: 2025-12-19T23:29:57.609Z
+ * Last Sync: 2025-12-25T04:10:02.871Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -13,43 +13,52 @@
  * Sprint 7: Generates documentation from code patterns
  */
 
-const agentKnowledgeService = require('./agentKnowledgeService');
-const codebaseSearch = require('./codebaseSearch');
-const llmService = require('./llmService');
+const agentKnowledgeService = require("./agentKnowledgeService");
+const { createLogger } = require("../utils/logger");
+const log = createLogger("DocumentationGenerator");
+const codebaseSearch = require("./codebaseSearch");
+const llmService = require("./llmService");
 
 class DocumentationGenerator {
-    constructor() {
-        // Service initialization
-    }
+  constructor() {
+    // Service initialization
+  }
 
-    /**
-     * Generate JSDoc comments for a function
-     */
-    async generateJSDoc(functionCode, context = null) {
-        try {
-            // Get documentation patterns from knowledge base
-            const docPatterns = await agentKnowledgeService.searchKnowledge(
-                'JSDoc documentation comment pattern',
-                { knowledgeType: 'pattern', limit: 3, threshold: 0.6 }
-            );
+  /**
+   * Generate JSDoc comments for a function
+   */
+  async generateJSDoc(functionCode, context = null) {
+    try {
+      // Get documentation patterns from knowledge base
+      const docPatterns = await agentKnowledgeService.searchKnowledge(
+        "JSDoc documentation comment pattern",
+        { knowledgeType: "pattern", limit: 3, threshold: 0.6 },
+      );
 
-            // Find similar functions for style reference
-            const similarCode = await codebaseSearch.semanticSearch(
-                functionCode.substring(0, 200),
-                { limit: 3 }
-            );
+      // Find similar functions for style reference
+      const similarCode = await codebaseSearch.semanticSearch(
+        functionCode.substring(0, 200),
+        { limit: 3 },
+      );
 
-            const prompt = `Generate JSDoc documentation for this function:
+      const prompt = `Generate JSDoc documentation for this function:
 
 \`\`\`javascript
 ${functionCode}
 \`\`\`
 
-${context ? `Context: ${context}` : ''}
+${context ? `Context: ${context}` : ""}
 
-${docPatterns.length > 0 ? `Documentation patterns from codebase:\n${docPatterns.map(p => p.content).join('\n\n---\n\n')}` : ''}
+${docPatterns.length > 0 ? `Documentation patterns from codebase:\n${docPatterns.map((p) => p.content).join("\n\n---\n\n")}` : ""}
 
-${similarCode.results && similarCode.results.length > 0 ? `Similar functions for style reference:\n${similarCode.results.slice(0, 2).map(r => r.content).join('\n\n---\n\n')}` : ''}
+${
+  similarCode.results && similarCode.results.length > 0
+    ? `Similar functions for style reference:\n${similarCode.results
+        .slice(0, 2)
+        .map((r) => r.content)
+        .join("\n\n---\n\n")}`
+    : ""
+}
 
 Generate JSDoc comments that:
 1. Describe what the function does
@@ -60,41 +69,45 @@ Generate JSDoc comments that:
 
 Return only the JSDoc comment block.`;
 
-            const response = await llmService.generateOpenAI({
-                model: 'gpt-4o-mini',
-                messages: [
-                    { role: 'system', content: 'You are an expert at writing JSDoc documentation that matches codebase style.' },
-                    { role: 'user', content: prompt }
-                ],
-                temperature: 0.2,
-                max_tokens: 1000
-            });
+      const response = await llmService.generateOpenAI({
+        model: "gpt-4o-mini",
+        messages: [
+          {
+            role: "system",
+            content:
+              "You are an expert at writing JSDoc documentation that matches codebase style.",
+          },
+          { role: "user", content: prompt },
+        ],
+        temperature: 0.2,
+        max_tokens: 1000,
+      });
 
-            return response.content || response.text || '';
-        } catch (error) {
-            console.error('[DocumentationGenerator] Error generating JSDoc:', error);
-            return null;
-        }
+      return response.content || response.text || "";
+    } catch (error) {
+      console.error("[DocumentationGenerator] Error generating JSDoc:", error);
+      return null;
     }
+  }
 
-    /**
-     * Generate API documentation from route patterns
-     */
-    async generateAPIDocumentation(routeCode) {
-        try {
-            // Get API documentation patterns
-            const apiPatterns = await agentKnowledgeService.searchKnowledge(
-                'API endpoint documentation route handler',
-                { knowledgeType: 'pattern', limit: 3, threshold: 0.6 }
-            );
+  /**
+   * Generate API documentation from route patterns
+   */
+  async generateAPIDocumentation(routeCode) {
+    try {
+      // Get API documentation patterns
+      const apiPatterns = await agentKnowledgeService.searchKnowledge(
+        "API endpoint documentation route handler",
+        { knowledgeType: "pattern", limit: 3, threshold: 0.6 },
+      );
 
-            const prompt = `Generate API documentation for this route handler:
+      const prompt = `Generate API documentation for this route handler:
 
 \`\`\`javascript
 ${routeCode}
 \`\`\`
 
-${apiPatterns.length > 0 ? `API documentation patterns:\n${apiPatterns.map(p => p.content).join('\n\n---\n\n')}` : ''}
+${apiPatterns.length > 0 ? `API documentation patterns:\n${apiPatterns.map((p) => p.content).join("\n\n---\n\n")}` : ""}
 
 Generate documentation that includes:
 1. Endpoint path and method
@@ -105,34 +118,40 @@ Generate documentation that includes:
 
 Return formatted API documentation.`;
 
-            const response = await llmService.generateOpenAI({
-                model: 'gpt-4o-mini',
-                messages: [
-                    { role: 'system', content: 'You are an expert at writing API documentation.' },
-                    { role: 'user', content: prompt }
-                ],
-                temperature: 0.2,
-                max_tokens: 1500
-            });
+      const response = await llmService.generateOpenAI({
+        model: "gpt-4o-mini",
+        messages: [
+          {
+            role: "system",
+            content: "You are an expert at writing API documentation.",
+          },
+          { role: "user", content: prompt },
+        ],
+        temperature: 0.2,
+        max_tokens: 1500,
+      });
 
-            return response.content || response.text || '';
-        } catch (error) {
-            console.error('[DocumentationGenerator] Error generating API docs:', error);
-            return null;
-        }
+      return response.content || response.text || "";
+    } catch (error) {
+      console.error(
+        "[DocumentationGenerator] Error generating API docs:",
+        error,
+      );
+      return null;
     }
+  }
 
-    /**
-     * Generate README section from service patterns
-     */
-    async generateServiceDocumentation(serviceCode, serviceName) {
-        try {
-            const servicePatterns = await agentKnowledgeService.searchKnowledge(
-                'service documentation README',
-                { knowledgeType: 'pattern', limit: 2, threshold: 0.6 }
-            );
+  /**
+   * Generate README section from service patterns
+   */
+  async generateServiceDocumentation(serviceCode, serviceName) {
+    try {
+      const servicePatterns = await agentKnowledgeService.searchKnowledge(
+        "service documentation README",
+        { knowledgeType: "pattern", limit: 2, threshold: 0.6 },
+      );
 
-            const prompt = `Generate README documentation for this service:
+      const prompt = `Generate README documentation for this service:
 
 Service Name: ${serviceName}
 
@@ -140,7 +159,7 @@ Service Name: ${serviceName}
 ${serviceCode.substring(0, 1000)}
 \`\`\`
 
-${servicePatterns.length > 0 ? `Documentation patterns:\n${servicePatterns.map(p => p.content).join('\n\n---\n\n')}` : ''}
+${servicePatterns.length > 0 ? `Documentation patterns:\n${servicePatterns.map((p) => p.content).join("\n\n---\n\n")}` : ""}
 
 Generate documentation that includes:
 1. Service description
@@ -150,22 +169,28 @@ Generate documentation that includes:
 
 Return formatted markdown documentation.`;
 
-            const response = await llmService.generateOpenAI({
-                model: 'gpt-4o-mini',
-                messages: [
-                    { role: 'system', content: 'You are an expert at writing service documentation.' },
-                    { role: 'user', content: prompt }
-                ],
-                temperature: 0.2,
-                max_tokens: 1500
-            });
+      const response = await llmService.generateOpenAI({
+        model: "gpt-4o-mini",
+        messages: [
+          {
+            role: "system",
+            content: "You are an expert at writing service documentation.",
+          },
+          { role: "user", content: prompt },
+        ],
+        temperature: 0.2,
+        max_tokens: 1500,
+      });
 
-            return response.content || response.text || '';
-        } catch (error) {
-            console.error('[DocumentationGenerator] Error generating service docs:', error);
-            return null;
-        }
+      return response.content || response.text || "";
+    } catch (error) {
+      console.error(
+        "[DocumentationGenerator] Error generating service docs:",
+        error,
+      );
+      return null;
     }
+  }
 }
 
 module.exports = new DocumentationGenerator();

@@ -15,6 +15,7 @@ npm run code-roach:detect-teams
 ```
 
 This will:
+
 1. Analyze all super workers
 2. Detect effective teams (3-5 workers)
 3. Identify team specializations
@@ -56,6 +57,7 @@ Teams are identified based on:
 ### Specialization Detection
 
 Teams are matched to specializations based on:
+
 - Category expertise overlap
 - File type coverage
 - Worker strengths alignment
@@ -101,11 +103,11 @@ Edit `scripts/detect-super-worker-teams.js`:
 
 ```javascript
 const TEAM_SPECIALIZATIONS = {
-    'your-spec': {
-        categories: ['category1', 'category2'],
-        fileTypes: ['.js', '.ts'],
-        paths: ['optional/path/']
-    }
+  "your-spec": {
+    categories: ["category1", "category2"],
+    fileTypes: [".js", ".ts"],
+    paths: ["optional/path/"],
+  },
 };
 ```
 
@@ -119,7 +121,7 @@ if (teamScore.totalScore > 0.6) { // Lower = more teams, Higher = fewer teams
 
 ```javascript
 for (let teamSize = 3; teamSize <= Math.min(5, workers.length); teamSize++) {
-    // Change 5 to desired max team size
+  // Change 5 to desired max team size
 }
 ```
 
@@ -195,6 +197,7 @@ npm run code-roach:detect-teams
 ### Team-Based Fixing
 
 When Code Roach encounters an issue:
+
 1. Identify issue category/type
 2. Find matching team specialization
 3. Use team's combined knowledge
@@ -242,6 +245,7 @@ When Code Roach encounters an issue:
 ### Team Workflows
 
 Teams can have defined workflows:
+
 - **Sequential**: Workers handle tasks in order
 - **Parallel**: Workers work simultaneously
 - **Collaborative**: Workers share knowledge
@@ -249,6 +253,7 @@ Teams can have defined workflows:
 ### Team Handoffs
 
 Teams can hand off tasks:
+
 - **Specialization Handoff**: Pass to specialized team
 - **Complexity Handoff**: Pass complex tasks to expert teams
 - **Coverage Handoff**: Pass to teams with better coverage
@@ -266,12 +271,14 @@ Teams can hand off tasks:
 ## 🎉 Summary
 
 **Team Detection:**
+
 1. Run `npm run code-roach:detect-teams`
 2. Teams are detected and analyzed
 3. Team knowledge is absorbed
 4. Code Roach uses teams automatically
 
 **Key Benefits:**
+
 - Comprehensive coverage
 - Specialized expertise
 - Better matching

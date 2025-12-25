@@ -1,4 +1,5 @@
 # Code Roach Expert Training System - Master Documentation
+
 ## Complete System Overview, Usage, and Integration
 
 **Date**: 2025-01-15  
@@ -18,6 +19,7 @@ The Expert Training System automatically trains Code Roach's AI agents to be exp
 ## 📚 Documentation Index
 
 ### Core Documentation
+
 1. **[System Architecture](CODE-ROACH-EXPERT-TRAINING-SYSTEM.md)** - How the system works
 2. **[Integration Guide](CODE-ROACH-EXPERT-TRAINING-INTEGRATION.md)** - How to integrate into workflows
 3. **[Monitoring & Learning](EXPERT-SYSTEM-MONITORING-AND-LEARNING.md)** - Verification and self-learning
@@ -25,6 +27,7 @@ The Expert Training System automatically trains Code Roach's AI agents to be exp
 5. **[This Document](CODE-ROACH-EXPERT-SYSTEM-MASTER.md)** - Master overview
 
 ### Quick References
+
 - **Preview**: `npm run code-roach:preview-experts` - See what experts would be generated
 - **Preview with LLM**: `npm run code-roach:preview-experts-llm` - Generate real expert previews
 - **Onboard**: `npm run code-roach:onboard` - Generate and store experts
@@ -71,11 +74,13 @@ The Expert Training System automatically trains Code Roach's AI agents to be exp
 ### Data Flow
 
 1. **Onboarding**
+
    ```
    Customer Codebase → Analysis → Expert Generation → Storage → Training
    ```
 
 2. **Fix Generation**
+
    ```
    Issue → Expert Detection → Expert Context → LLM Prompt → Fix
    ```
@@ -107,7 +112,7 @@ npm run code-roach:verify-experts
 ```javascript
 // Experts are automatically used when project_id is provided
 const fix = await llmFixGenerator.generateFix(issue, code, filePath, {
-    project_id: 'customer-project-uuid' // ← Experts used automatically
+  project_id: "customer-project-uuid", // ← Experts used automatically
 });
 ```
 
@@ -128,6 +133,7 @@ npm run code-roach:monitor-experts <project-id>
 ### Smugglers Codebase (Example)
 
 **Experts Generated**: 11 types
+
 - Code Style, Architecture
 - Database (PostgreSQL, Redis, Supabase, Firebase)
 - Framework-Express
@@ -205,20 +211,24 @@ npm run code-roach:monitor-experts <project-id>
 ### Code Roach Services
 
 **1. `llmFixGenerator.js`**
+
 - ✅ Uses customer experts automatically
 - ✅ Includes expert context in prompts
 - ✅ Tracks expert usage
 
 **2. `fixApplicationService.js`**
+
 - ✅ Records fix outcomes
 - ✅ Triggers learning analysis
 - ✅ Updates expert quality scores
 
 **3. `codebaseCrawler.js`**
+
 - ⏳ Can be updated to use experts
 - ⏳ Can apply customer patterns
 
 **4. `codebaseAwareFixGenerator.js`**
+
 - ⏳ Can leverage expert guides
 - ⏳ Can respect customer architecture
 
@@ -271,8 +281,8 @@ npm run code-roach:monitor-experts <project-id>
 ```javascript
 // Customer connects repository
 const result = await customerOnboardingService.startOnboarding(
-    projectId,
-    repositoryUrl
+  projectId,
+  repositoryUrl,
 );
 
 // System automatically:
@@ -287,7 +297,7 @@ const result = await customerOnboardingService.startOnboarding(
 ```javascript
 // Generate fix - experts used automatically
 const fix = await llmFixGenerator.generateFix(issue, code, filePath, {
-    project_id: projectId // ← Experts included automatically
+  project_id: projectId, // ← Experts included automatically
 });
 
 // Fix includes customer-specific patterns
@@ -337,6 +347,7 @@ await fixApplicationService.applyFix(fix, issue, filePath);
 ### Smugglers Expert Packages (Reference)
 
 The Code Roach expert system is modeled after our 5-expert packages:
+
 - `docs/DATABASE-EXPERTISE-GUIDE.md`
 - `docs/TESTING-EXPERTISE-GUIDE.md`
 - `docs/SECURITY-EXPERTISE-GUIDE.md`
@@ -377,14 +388,17 @@ The Code Roach expert system is modeled after our 5-expert packages:
 ### Common Issues
 
 **Issue**: Experts not being used
+
 - **Check**: Is `project_id` in fix context?
 - **Fix**: Pass `project_id` in `llmFixGenerator.generateFix()` context
 
 **Issue**: No learning data
+
 - **Check**: Are fixes being applied?
 - **Fix**: Ensure `fixApplicationService.applyFix()` is called
 
 **Issue**: Low success rate
+
 - **Check**: Review failure patterns
 - **Fix**: System auto-updates if < 60%, or manually trigger update
 
@@ -404,7 +418,7 @@ The Code Roach expert system is modeled after our 5-expert packages:
 **Quality**: ✅ 0.82 average (all ≥0.8)  
 **Learning**: ✅ Enabled and working  
 **Monitoring**: ✅ Available  
-**Integration**: ✅ Complete  
+**Integration**: ✅ Complete
 
 **Ready for production use!** 🚀
 
@@ -412,4 +426,3 @@ The Code Roach expert system is modeled after our 5-expert packages:
 
 **Last Updated**: 2025-01-15  
 **Maintained By**: Code Roach Team
-

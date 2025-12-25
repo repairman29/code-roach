@@ -16,6 +16,7 @@ npm run code-roach issues --review --open --cursor
 ```
 
 This will:
+
 - ✅ Fetch issues needing review
 - ✅ Display them in the terminal
 - ✅ Automatically open files in Cursor at the problematic lines
@@ -198,6 +199,7 @@ npm run code-roach issues --review --open --cursor --fix --deploy
 ### 1. Review Before Fixing
 
 Always review issues in Cursor before applying fixes:
+
 ```bash
 npm run code-roach issues --review --open --cursor
 ```
@@ -205,6 +207,7 @@ npm run code-roach issues --review --open --cursor
 ### 2. Fix by Priority
 
 Start with critical/high severity issues:
+
 ```bash
 npm run code-roach issues --severity critical --open --cursor
 npm run code-roach issues --severity high --open --cursor
@@ -217,6 +220,7 @@ Group similar issues and fix them together in Cursor using multi-cursor editing.
 ### 4. Test After Fixes
 
 Always test after applying fixes:
+
 ```bash
 npm test
 ```
@@ -226,29 +230,34 @@ npm test
 When fixing issues, use automated browser debugging:
 
 ```javascript
-const browserDebuggingService = require('./server/services/browserDebuggingService');
+const browserDebuggingService = require("./server/services/browserDebuggingService");
 
 // Debug before fixing
-const result = await browserDebuggingService.autoDebugAndDocument('http://localhost:3000', {
+const result = await browserDebuggingService.autoDebugAndDocument(
+  "http://localhost:3000",
+  {
     headless: true,
     captureConsole: true,
     captureNetwork: true,
-    documentFixes: true
-});
+    documentFixes: true,
+  },
+);
 
 // Check for errors
 if (result.analysis.totalErrors > 0) {
-    console.log('Errors found:', result.analysis.errorCategories);
-    // Fix issues based on analysis
+  console.log("Errors found:", result.analysis.errorCategories);
+  // Fix issues based on analysis
 }
 ```
 
 **CLI Alternative**:
+
 ```bash
 npm run debug:browser http://localhost:3000 --headless --json
 ```
 
 **API Alternative**:
+
 ```bash
 curl -X POST http://localhost:3000/api/browser-debug/auto-debug \
   -H "Content-Type: application/json" \
@@ -260,6 +269,7 @@ curl -X POST http://localhost:3000/api/browser-debug/auto-debug \
 ### 6. Commit Meaningfully
 
 Use descriptive commit messages:
+
 ```bash
 git commit -m "Code Roach: Fix console.log statements and line length issues"
 ```
@@ -270,18 +280,24 @@ Before committing, verify fixes work programmatically:
 
 ```javascript
 // Automated verification
-const result = await browserDebuggingService.autoDebugAndDocument('http://localhost:3000', {
+const result = await browserDebuggingService.autoDebugAndDocument(
+  "http://localhost:3000",
+  {
     headless: true,
     captureConsole: true,
-    captureNetwork: true
-});
+    captureNetwork: true,
+  },
+);
 
 if (result.analysis.totalErrors > 0) {
-    throw new Error(`Found ${result.analysis.totalErrors} errors - fix before committing`);
+  throw new Error(
+    `Found ${result.analysis.totalErrors} errors - fix before committing`,
+  );
 }
 ```
 
 **CLI Alternative**:
+
 ```bash
 npm run debug:browser http://localhost:3000 --headless --json > debug-report.json
 if [ $(cat debug-report.json | jq '.analysis.totalErrors') -gt 0 ]; then
@@ -310,11 +326,13 @@ While reviewing issues in Cursor:
 If files don't open in Cursor:
 
 1. **Check Cursor is installed**: Make sure `cursor` command is available
+
    ```bash
    which cursor
    ```
 
 2. **Try VS Code instead**:
+
    ```bash
    npm run code-roach issues --review --open --code
    ```
@@ -326,6 +344,7 @@ If files don't open in Cursor:
 If too many files open at once:
 
 1. Use filters to reduce the number:
+
    ```bash
    npm run code-roach issues --severity high --open --cursor
    ```
@@ -402,4 +421,3 @@ $ git push
 ---
 
 **Happy fixing! 🚀**
-

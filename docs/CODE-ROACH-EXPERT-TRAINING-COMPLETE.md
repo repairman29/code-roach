@@ -1,4 +1,5 @@
 # Code Roach Expert Training System - Complete Implementation
+
 ## Summary of Customer-Specific Expert Training Integration
 
 **Date**: 2025-01-15  
@@ -17,6 +18,7 @@ A comprehensive system that automatically trains Code Roach's AI agents to be ex
 ### 1. Core Services
 
 #### `customerCodebaseAnalyzer.js`
+
 - Analyzes customer codebases to identify:
   - Tech stack (languages, frameworks, databases)
   - Architecture patterns (MVC, Microservices, etc.)
@@ -26,6 +28,7 @@ A comprehensive system that automatically trains Code Roach's AI agents to be ex
   - Dependencies and code style
 
 #### `expertTrainingService.js`
+
 - Generates customer-specific expert guides:
   - Comprehensive guides (like our 5-expert packages)
   - Quick reference guides
@@ -34,6 +37,7 @@ A comprehensive system that automatically trains Code Roach's AI agents to be ex
   - Quality scoring
 
 #### `customerOnboardingService.js`
+
 - Orchestrates the onboarding workflow:
   - Analyzes codebase
   - Generates experts
@@ -44,6 +48,7 @@ A comprehensive system that automatically trains Code Roach's AI agents to be ex
 ### 2. API Routes
 
 #### `apiExpertTraining.js`
+
 - `POST /api/expert-training/onboard` - Start onboarding
 - `GET /api/expert-training/status/:projectId` - Get status
 - `POST /api/expert-training/retry/:projectId` - Retry onboarding
@@ -55,6 +60,7 @@ A comprehensive system that automatically trains Code Roach's AI agents to be ex
 ### 3. Database Schema
 
 #### Migration: `20250115000000_code_roach_expert_training.sql`
+
 - `customer_codebase_analysis` - Stores codebase analysis
 - `customer_expert_guides` - Stores generated expert guides
 - `expert_training_status` - Tracks training progress
@@ -73,6 +79,7 @@ A comprehensive system that automatically trains Code Roach's AI agents to be ex
 ### Onboarding Flow
 
 1. **Customer connects repository**
+
    ```javascript
    await customerOnboardingService.startOnboarding(projectId, repositoryUrl);
    ```
@@ -103,6 +110,7 @@ A comprehensive system that automatically trains Code Roach's AI agents to be ex
 ### Expert Types Generated
 
 Based on customer codebase, generates experts for:
+
 - **Stack-specific**: Language, Framework, Database, Infrastructure
 - **Architecture**: Architecture Pattern, API Design, State Management
 - **Domain**: Testing, Security, Performance
@@ -152,11 +160,11 @@ expert_training_status (
 ### Start Onboarding
 
 ```javascript
-const customerOnboardingService = require('./server/services/customerOnboardingService');
+const customerOnboardingService = require("./server/services/customerOnboardingService");
 
 const result = await customerOnboardingService.startOnboarding(
-    'project-uuid',
-    'https://github.com/user/repo'
+  "project-uuid",
+  "https://github.com/user/repo",
 );
 
 console.log(`Generated ${result.experts_generated} experts`);
@@ -167,12 +175,12 @@ console.log(`Generated ${result.experts_generated} experts`);
 ```javascript
 // Get customer experts
 const { data: experts } = await supabase
-    .from('customer_expert_guides')
-    .select('*')
-    .eq('project_id', projectId);
+  .from("customer_expert_guides")
+  .select("*")
+  .eq("project_id", projectId);
 
 // Use in fix generation
-const dbExpert = experts.find(e => e.expert_type === 'database');
+const dbExpert = experts.find((e) => e.expert_type === "database");
 const prompt = `
     Customer Database Patterns:
     ${JSON.stringify(dbExpert.guide_content, null, 2)}
@@ -186,8 +194,8 @@ const prompt = `
 
 ```javascript
 const status = await customerOnboardingService.getOnboardingStatus(projectId);
-if (status.status === 'completed') {
-    console.log(`Quality: ${status.quality_score}`);
+if (status.status === "completed") {
+  console.log(`Quality: ${status.quality_score}`);
 }
 ```
 
@@ -233,29 +241,34 @@ if (status.status === 'completed') {
 ✅ **Quality Scoring** - Validates expert completeness  
 ✅ **Multi-Tenant** - Secure, isolated per customer  
 ✅ **API-Driven** - REST API for all operations  
-✅ **Continuous Learning** - Can update experts as codebase evolves  
+✅ **Continuous Learning** - Can update experts as codebase evolves
 
 ---
 
 ## 📚 Related Files
 
 ### Services
+
 - `server/services/customerCodebaseAnalyzer.js`
 - `server/services/expertTrainingService.js`
 - `server/services/customerOnboardingService.js`
 
 ### API Routes
+
 - `server/routes/apiExpertTraining.js`
 
 ### Database
+
 - `supabase/migrations/20250115000000_code_roach_expert_training.sql`
 
 ### Documentation
+
 - `docs/CODE-ROACH-EXPERT-TRAINING-SYSTEM.md`
 - `docs/CODE-ROACH-EXPERT-TRAINING-INTEGRATION.md`
 - `docs/CODE-ROACH-EXPERT-TRAINING-COMPLETE.md` (this file)
 
 ### Reference (Smugglers Experts)
+
 - `docs/5-EXPERT-COMPLETE-SUMMARY.md`
 - `docs/DATABASE-EXPERTISE-GUIDE.md`
 - `docs/TESTING-EXPERTISE-GUIDE.md`
@@ -297,4 +310,3 @@ if (status.status === 'completed') {
 ---
 
 **Next Step**: Integrate customer experts into Code Roach's fix generation services.
-

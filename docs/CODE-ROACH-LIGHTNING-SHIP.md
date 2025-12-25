@@ -11,6 +11,7 @@ Now that Code Roach is connected to Supabase, here are **20 high-impact strategi
 **What**: Block commits with known issue patterns before they reach the repo.
 
 **How**:
+
 ```bash
 # .git/hooks/pre-commit
 #!/bin/bash
@@ -30,6 +31,7 @@ fi
 **What**: Auto-comment on PRs with quality scores and issue summaries.
 
 **How**:
+
 ```javascript
 // GitHub Actions workflow
 - name: Code Roach PR Analysis
@@ -47,6 +49,7 @@ fi
 **What**: Get Slack/Discord alerts for critical issues as they're detected.
 
 **How**:
+
 ```sql
 -- Supabase function triggers webhook on critical issues
 CREATE TRIGGER critical_issue_alert
@@ -65,11 +68,12 @@ EXECUTE FUNCTION notify_critical_issue();
 **What**: Predict which files will have issues before you even touch them.
 
 **How**:
+
 ```javascript
 // Before starting work on a file
-const riskScore = await getFileRiskScore('server/routes/api.js');
+const riskScore = await getFileRiskScore("server/routes/api.js");
 if (riskScore > 0.7) {
-  console.log('⚠️  High-risk file - review patterns first');
+  console.log("⚠️  High-risk file - review patterns first");
   // Show similar past issues
 }
 ```
@@ -83,10 +87,11 @@ if (riskScore > 0.7) {
 **What**: Fix issues automatically as you code in Cursor/VS Code.
 
 **How**:
+
 ```javascript
 // VS Code extension auto-fixes on save
 vscode.workspace.onDidSaveTextDocument(async (doc) => {
-  if (doc.languageId === 'javascript') {
+  if (doc.languageId === "javascript") {
     await codeRoach.autoFix(doc.uri.fsPath);
   }
 });
@@ -101,6 +106,7 @@ vscode.workspace.onDidSaveTextDocument(async (doc) => {
 **What**: Block deployments if code quality drops below threshold.
 
 **How**:
+
 ```yaml
 # CI/CD pipeline
 - name: Quality Gate
@@ -121,9 +127,10 @@ vscode.workspace.onDidSaveTextDocument(async (doc) => {
 **What**: Track how fast developers fix issues and ship features.
 
 **How**:
+
 ```sql
 -- Developer performance dashboard
-SELECT 
+SELECT
   reviewed_by as developer,
   COUNT(*) as issues_resolved,
   AVG(resolution_time_seconds) as avg_fix_time,
@@ -143,13 +150,14 @@ ORDER BY issues_resolved DESC;
 **What**: Auto-rollback if new deployment introduces critical issues.
 
 **How**:
+
 ```javascript
 // Post-deployment monitoring
 setInterval(async () => {
   const criticalIssues = await getCriticalIssuesSince(deploymentTime);
   if (criticalIssues.length > 5) {
     await triggerRollback();
-    await notifyTeam('🚨 Auto-rollback triggered due to critical issues');
+    await notifyTeam("🚨 Auto-rollback triggered due to critical issues");
   }
 }, 60000); // Check every minute
 ```
@@ -163,9 +171,10 @@ setInterval(async () => {
 **What**: Auto-generate tests for code patterns that frequently break.
 
 **How**:
+
 ```javascript
 // When pattern is detected
-const pattern = await getPattern('async-without-error-handling');
+const pattern = await getPattern("async-without-error-handling");
 if (pattern.occurrence_count > 10) {
   await generateTestSuite(pattern);
   // Creates tests that catch this pattern
@@ -181,6 +190,7 @@ if (pattern.occurrence_count > 10) {
 **What**: New developers get instant feedback on code style and patterns.
 
 **How**:
+
 ```javascript
 // First-time contributor detection
 if (isFirstContribution(author)) {
@@ -198,6 +208,7 @@ if (isFirstContribution(author)) {
 **What**: Auto-comment on PRs with specific, actionable feedback.
 
 **How**:
+
 ```javascript
 // PR review bot
 const issues = await analyzePR(prNumber);
@@ -205,7 +216,7 @@ for (const issue of issues) {
   await commentOnPR(prNumber, {
     path: issue.file,
     line: issue.line,
-    body: `⚠️ ${issue.message}\n💡 Fix: ${issue.fix_code}`
+    body: `⚠️ ${issue.message}\n💡 Fix: ${issue.fix_code}`,
   });
 }
 ```
@@ -219,9 +230,10 @@ for (const issue of issues) {
 **What**: Track and prioritize technical debt based on real impact.
 
 **How**:
+
 ```sql
 -- Technical debt dashboard
-SELECT 
+SELECT
   error_file,
   COUNT(*) as debt_items,
   SUM(CASE WHEN error_severity = 'high' THEN 1 ELSE 0 END) as high_priority,
@@ -241,6 +253,7 @@ ORDER BY high_priority DESC, debt_items DESC;
 **What**: Real-time detection of security issues with auto-fix.
 
 **How**:
+
 ```javascript
 // Security scanner
 const vulnerabilities = await scanForSecurityIssues();
@@ -262,9 +275,10 @@ for (const vuln of vulnerabilities) {
 **What**: Detect performance issues before they hit production.
 
 **How**:
+
 ```sql
 -- Performance regression query
-SELECT 
+SELECT
   error_file,
   COUNT(*) as performance_issues,
   AVG(resolution_time_seconds) as avg_fix_time
@@ -285,6 +299,7 @@ ORDER BY performance_issues DESC;
 **What**: Suggest refactorings based on successful patterns.
 
 **How**:
+
 ```javascript
 // Refactoring engine
 const patterns = await getSuccessfulRefactoringPatterns();
@@ -304,13 +319,14 @@ for (const pattern of patterns) {
 **What**: Update docs when code patterns change.
 
 **How**:
+
 ```javascript
 // Doc generator
 const newPatterns = await getNewPatternsSince(lastDocUpdate);
 if (newPatterns.length > 0) {
   await updateDocs({
     newPatterns,
-    deprecatedPatterns: await getDeprecatedPatterns()
+    deprecatedPatterns: await getDeprecatedPatterns(),
   });
 }
 ```
@@ -324,6 +340,7 @@ if (newPatterns.length > 0) {
 **What**: Only notify about issues that matter to each developer.
 
 **How**:
+
 ```sql
 -- Personalized notifications
 SELECT DISTINCT i.*
@@ -343,12 +360,13 @@ WHERE dfo.developer = $1
 **What**: Automatically enable/disable features based on code health.
 
 **How**:
+
 ```javascript
 // Feature flag logic
-const fileHealth = await getFileHealth('feature/new-payment-system.js');
+const fileHealth = await getFileHealth("feature/new-payment-system.js");
 if (fileHealth.score < 60) {
-  await disableFeatureFlag('new-payment-system');
-  await notifyTeam('Feature disabled due to low code health');
+  await disableFeatureFlag("new-payment-system");
+  await notifyTeam("Feature disabled due to low code health");
 }
 ```
 
@@ -361,9 +379,10 @@ if (fileHealth.score < 60) {
 **What**: Generate changelogs from fixed issues.
 
 **How**:
+
 ```sql
 -- Changelog query
-SELECT 
+SELECT
   DATE_TRUNC('day', resolved_at) as date,
   error_type,
   COUNT(*) as fixes,
@@ -384,9 +403,10 @@ ORDER BY date DESC;
 **What**: Leaderboards and achievements for code quality.
 
 **How**:
+
 ```sql
 -- Developer leaderboard
-SELECT 
+SELECT
   reviewed_by as developer,
   COUNT(*) as issues_fixed,
   AVG(resolution_time_seconds) as avg_fix_time,
@@ -406,18 +426,21 @@ ORDER BY rank;
 ## 🚀 Implementation Priority
 
 ### Phase 1: Quick Wins (Week 1)
+
 1. ✅ Pre-commit hooks (#1)
 2. ✅ Real-time alerts (#3)
 3. ✅ Auto-fix on save (#5)
 4. ✅ Deployment gates (#6)
 
 ### Phase 2: High Impact (Week 2-3)
+
 5. ✅ PR quality scoring (#2)
 6. ✅ Predictive detection (#4)
 7. ✅ Automated rollback (#8)
 8. ✅ Security detection (#13)
 
 ### Phase 3: Advanced (Week 4+)
+
 9. ✅ Pattern-based tests (#9)
 10. ✅ Technical debt tracking (#12)
 11. ✅ Automated refactoring (#15)
@@ -428,6 +451,7 @@ ORDER BY rank;
 ## 📊 ROI Calculation
 
 **Time Saved Per Week**:
+
 - Pre-commit hooks: 2 hours (catches issues early)
 - Auto-fix: 5 hours (fixes applied automatically)
 - PR automation: 3 hours (less manual review)
@@ -435,6 +459,7 @@ ORDER BY rank;
 - **Total: ~11 hours/week saved**
 
 **Quality Improvements**:
+
 - 50% reduction in critical issues
 - 70% faster issue resolution
 - 30% fewer production incidents
@@ -445,6 +470,7 @@ ORDER BY rank;
 ## 🛠️ Quick Start Scripts
 
 ### 1. Setup Pre-Commit Hook
+
 ```bash
 #!/bin/bash
 # scripts/setup-pre-commit-hook.sh
@@ -456,6 +482,7 @@ chmod +x .git/hooks/pre-commit
 ```
 
 ### 2. Setup PR Bot
+
 ```bash
 # .github/workflows/code-roach-pr.yml
 name: Code Roach PR Analysis
@@ -470,6 +497,7 @@ jobs:
 ```
 
 ### 3. Setup Real-Time Alerts
+
 ```javascript
 // server/services/codeRoachAlerts.js
 setInterval(async () => {
@@ -507,4 +535,3 @@ Track these to measure impact:
 **The Goal**: Ship faster, break less, fix quicker, learn continuously.
 
 **The Result**: Your codebase gets better every day, automatically. 🚀
-

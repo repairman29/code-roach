@@ -1,4 +1,5 @@
 # Code Roach Expert Training Integration Guide
+
 ## How to Use Customer-Specific Expert Training in Code Roach
 
 **Date**: 2025-01-15  
@@ -19,13 +20,15 @@ The Expert Training System automatically generates customer-specific expert guid
 When a customer connects their repository:
 
 ```javascript
-const customerOnboardingService = require('./server/services/customerOnboardingService');
+const customerOnboardingService = require("./server/services/customerOnboardingService");
 
 // Start onboarding
 const result = await customerOnboardingService.startOnboarding(
-    projectId,
-    repositoryUrl,
-    { /* options */ }
+  projectId,
+  repositoryUrl,
+  {
+    /* options */
+  },
 );
 
 console.log(`Generated ${result.experts_generated} experts`);
@@ -43,12 +46,12 @@ console.log(`Status: ${status.status}, Quality: ${status.quality_score}`);
 ```javascript
 // In Code Roach services, use customer-specific experts
 const { data: experts } = await supabase
-    .from('customer_expert_guides')
-    .select('*')
-    .eq('project_id', projectId);
+  .from("customer_expert_guides")
+  .select("*")
+  .eq("project_id", projectId);
 
 // Use expert guides in fix generation
-const expertContext = experts.find(e => e.expert_type === 'database');
+const expertContext = experts.find((e) => e.expert_type === "database");
 // Include expert context in LLM prompts
 ```
 
@@ -62,9 +65,9 @@ Update `codebaseCrawler.js` to use customer experts:
 
 ```javascript
 const { data: experts } = await supabase
-    .from('customer_expert_guides')
-    .select('*')
-    .eq('project_id', projectId);
+  .from("customer_expert_guides")
+  .select("*")
+  .eq("project_id", projectId);
 
 // Include expert context when analyzing code
 const expertContext = this.buildExpertContext(experts);
@@ -79,10 +82,10 @@ Update `llmFixGenerator.js` to use customer patterns:
 async generateFix(issue, projectId) {
     // Get customer experts
     const experts = await this.getCustomerExperts(projectId);
-    
+
     // Build prompt with customer-specific patterns
     const prompt = this.buildFixPrompt(issue, experts);
-    
+
     // Generate fix using customer patterns
     return await llmService.generateText({ prompt });
 }
@@ -96,10 +99,10 @@ Update `codebaseAwareFixGenerator.js`:
 async generateContextAwareFix(issue, projectId) {
     // Get customer expert guides
     const expertGuides = await this.getExpertGuides(projectId);
-    
+
     // Use customer's architecture patterns
     const architecture = expertGuides.find(e => e.expert_type === 'architecture');
-    
+
     // Generate fix respecting customer's patterns
     return await this.generateFix(issue, architecture);
 }
@@ -110,6 +113,7 @@ async generateContextAwareFix(issue, projectId) {
 ## 🔧 API Endpoints
 
 ### Start Onboarding
+
 ```bash
 POST /api/expert-training/onboard
 {
@@ -120,11 +124,13 @@ POST /api/expert-training/onboard
 ```
 
 ### Get Status
+
 ```bash
 GET /api/expert-training/status/:projectId
 ```
 
 ### Retry Onboarding
+
 ```bash
 POST /api/expert-training/retry/:projectId
 {
@@ -133,6 +139,7 @@ POST /api/expert-training/retry/:projectId
 ```
 
 ### Update Experts
+
 ```bash
 POST /api/expert-training/update/:projectId
 {
@@ -141,11 +148,13 @@ POST /api/expert-training/update/:projectId
 ```
 
 ### Get Experts
+
 ```bash
 GET /api/expert-training/experts/:projectId?expert_type=database
 ```
 
 ### Get Analysis
+
 ```bash
 GET /api/expert-training/analysis/:projectId
 ```
@@ -165,17 +174,17 @@ GET /api/expert-training/analysis/:projectId
 ```javascript
 // Get all experts for a project
 const { data: experts } = await supabase
-    .from('customer_expert_guides')
-    .select('*')
-    .eq('project_id', projectId);
+  .from("customer_expert_guides")
+  .select("*")
+  .eq("project_id", projectId);
 
 // Get specific expert type
 const { data: dbExpert } = await supabase
-    .from('customer_expert_guides')
-    .select('*')
-    .eq('project_id', projectId)
-    .eq('expert_type', 'database')
-    .single();
+  .from("customer_expert_guides")
+  .select("*")
+  .eq("project_id", projectId)
+  .eq("expert_type", "database")
+  .single();
 
 // Get expert guide content
 const guide = dbExpert.guide_content;
@@ -191,14 +200,14 @@ const helperCode = dbExpert.helper_service_code;
 
 ```javascript
 async function generateFixWithCustomerExpert(issue, projectId) {
-    // 1. Get customer experts
-    const experts = await getCustomerExperts(projectId);
-    
-    // 2. Find relevant expert
-    const relevantExpert = findRelevantExpert(issue, experts);
-    
-    // 3. Build prompt with expert context
-    const prompt = `
+  // 1. Get customer experts
+  const experts = await getCustomerExperts(projectId);
+
+  // 2. Find relevant expert
+  const relevantExpert = findRelevantExpert(issue, experts);
+
+  // 3. Build prompt with expert context
+  const prompt = `
         Customer Expert Guide Context:
         ${JSON.stringify(relevantExpert.guide_content, null, 2)}
         
@@ -207,9 +216,9 @@ async function generateFixWithCustomerExpert(issue, projectId) {
         
         Generate a fix following the customer's patterns...
     `;
-    
-    // 4. Generate fix
-    return await llmService.generateText({ prompt });
+
+  // 4. Generate fix
+  return await llmService.generateText({ prompt });
 }
 ```
 
@@ -217,18 +226,18 @@ async function generateFixWithCustomerExpert(issue, projectId) {
 
 ```javascript
 async function analyzeCodeWithCustomerPatterns(filePath, projectId) {
-    // 1. Get customer architecture expert
-    const archExpert = await getExpert(projectId, 'architecture');
-    
-    // 2. Analyze code against customer patterns
-    const code = await fs.readFile(filePath, 'utf8');
-    const violations = checkPatternViolations(code, archExpert.guide_content);
-    
-    // 3. Generate suggestions based on customer patterns
-    return violations.map(v => ({
-        ...v,
-        suggestion: generateSuggestion(v, archExpert.guide_content)
-    }));
+  // 1. Get customer architecture expert
+  const archExpert = await getExpert(projectId, "architecture");
+
+  // 2. Analyze code against customer patterns
+  const code = await fs.readFile(filePath, "utf8");
+  const violations = checkPatternViolations(code, archExpert.guide_content);
+
+  // 3. Generate suggestions based on customer patterns
+  return violations.map((v) => ({
+    ...v,
+    suggestion: generateSuggestion(v, archExpert.guide_content),
+  }));
 }
 ```
 
@@ -236,13 +245,13 @@ async function analyzeCodeWithCustomerPatterns(filePath, projectId) {
 
 ```javascript
 // Customer experts include generated helper services
-const expert = await getExpert(projectId, 'database');
+const expert = await getExpert(projectId, "database");
 
 // Load helper service dynamically
 const helperServicePath = path.join(
-    __dirname,
-    '../generated-helpers',
-    `${projectId}-${expert.expert_type}Helper.js`
+  __dirname,
+  "../generated-helpers",
+  `${projectId}-${expert.expert_type}Helper.js`,
 );
 
 // Write helper service code
@@ -250,7 +259,7 @@ await fs.writeFile(helperServicePath, expert.helper_service_code);
 
 // Use helper service
 const helper = require(helperServicePath);
-await helper.validateSchema('users', ['id', 'email']);
+await helper.validateSchema("users", ["id", "email"]);
 ```
 
 ---
@@ -301,11 +310,11 @@ const fix = await generateFix(issue);
 const expertCache = new Map();
 
 async function getCachedExperts(projectId) {
-    if (!expertCache.has(projectId)) {
-        const experts = await getCustomerExperts(projectId);
-        expertCache.set(projectId, experts);
-    }
-    return expertCache.get(projectId);
+  if (!expertCache.has(projectId)) {
+    const experts = await getCustomerExperts(projectId);
+    expertCache.set(projectId, experts);
+  }
+  return expertCache.get(projectId);
 }
 ```
 
@@ -313,11 +322,11 @@ async function getCachedExperts(projectId) {
 
 ```javascript
 async function getExpertOrFallback(projectId, expertType) {
-    const expert = await getExpert(projectId, expertType);
-    if (!expert || expert.quality_score < 0.5) {
-        return getGenericExpert(expertType);
-    }
-    return expert;
+  const expert = await getExpert(projectId, expertType);
+  if (!expert || expert.quality_score < 0.5) {
+    return getGenericExpert(expertType);
+  }
+  return expert;
 }
 ```
 
@@ -325,12 +334,12 @@ async function getExpertOrFallback(projectId, expertType) {
 
 ```javascript
 async function useExpertIfValid(projectId, expertType) {
-    const expert = await getExpert(projectId, expertType);
-    if (expert.quality_score >= 0.7) {
-        return expert;
-    }
-    console.warn(`Expert ${expertType} quality too low: ${expert.quality_score}`);
-    return null;
+  const expert = await getExpert(projectId, expertType);
+  if (expert.quality_score >= 0.7) {
+    return expert;
+  }
+  console.warn(`Expert ${expertType} quality too low: ${expert.quality_score}`);
+  return null;
 }
 ```
 
@@ -341,11 +350,13 @@ async function useExpertIfValid(projectId, expertType) {
 ### Issue: Experts Not Generated
 
 **Check**:
+
 1. Onboarding status: `GET /api/expert-training/status/:projectId`
 2. Analysis completed: `GET /api/expert-training/analysis/:projectId`
 3. Error logs: Check `expert_training_status.error_message`
 
 **Fix**:
+
 ```javascript
 // Retry onboarding
 await customerOnboardingService.retryOnboarding(projectId, repositoryUrl);
@@ -354,15 +365,17 @@ await customerOnboardingService.retryOnboarding(projectId, repositoryUrl);
 ### Issue: Low Quality Experts
 
 **Check**:
+
 ```javascript
 const { data: experts } = await supabase
-    .from('customer_expert_guides')
-    .select('quality_score, expert_type')
-    .eq('project_id', projectId)
-    .lt('quality_score', 0.7);
+  .from("customer_expert_guides")
+  .select("quality_score, expert_type")
+  .eq("project_id", projectId)
+  .lt("quality_score", 0.7);
 ```
 
 **Fix**:
+
 ```javascript
 // Re-generate experts
 await customerOnboardingService.updateExperts(projectId, repositoryUrl);
@@ -393,4 +406,3 @@ await customerOnboardingService.updateExperts(projectId, repositoryUrl);
 3. **Add Continuous Learning** - Update experts as codebase evolves
 4. **Add Quality Monitoring** - Track expert effectiveness
 5. **Add UI Integration** - Show expert status in dashboard
-

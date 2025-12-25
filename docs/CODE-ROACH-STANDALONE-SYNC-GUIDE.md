@@ -1,4 +1,5 @@
 # Code Roach Standalone Sync Guide
+
 ## Parallel Development Without Breaking Smugglers
 
 ---
@@ -8,6 +9,7 @@
 This guide explains how to maintain a **parallel standalone Code Roach structure** while continuing to develop it within the Smugglers game project.
 
 **Key Principles:**
+
 - ✅ Code Roach continues to evolve in Smugglers
 - ✅ Standalone version syncs automatically
 - ✅ Both can evolve independently
@@ -45,6 +47,7 @@ code-roach-standalone/              # Standalone product (synced)
 ### Initial Setup
 
 1. **Run sync script:**
+
    ```bash
    cd smugglers
    npm run code-roach:sync-standalone
@@ -66,8 +69,9 @@ npm run code-roach:sync-standalone
 ```
 
 The script will:
+
 - ✅ Copy new/changed files
-- ⏭️  Skip unchanged files
+- ⏭️ Skip unchanged files
 - 📝 Track what's been synced
 - 🔄 Preserve standalone-specific changes
 
@@ -79,17 +83,18 @@ The script will:
 
 The sync script maps files from Smugglers to standalone:
 
-| Smugglers Location | Standalone Location |
-|-------------------|---------------------|
-| `server/services/codebaseIndexer.js` | `src/services/codebaseIndexer.js` |
-| `server/routes/api.js` | `src/routes/api.js` |
-| `public/code-roach-dashboard.html` | `public/code-roach-dashboard.html` |
-| `scripts/batch-review-issues.js` | `scripts/batch-review-issues.js` |
-| `docs/CODE-ROACH-*.md` | `docs/CODE-ROACH-*.md` |
+| Smugglers Location                   | Standalone Location                |
+| ------------------------------------ | ---------------------------------- |
+| `server/services/codebaseIndexer.js` | `src/services/codebaseIndexer.js`  |
+| `server/routes/api.js`               | `src/routes/api.js`                |
+| `public/code-roach-dashboard.html`   | `public/code-roach-dashboard.html` |
+| `scripts/batch-review-issues.js`     | `scripts/batch-review-issues.js`   |
+| `docs/CODE-ROACH-*.md`               | `docs/CODE-ROACH-*.md`             |
 
 ### Transformations
 
 Files are automatically transformed:
+
 - ✅ Header comments added (source tracking)
 - ✅ Relative paths adjusted if needed
 - ✅ Game-specific code preserved (for now)
@@ -97,6 +102,7 @@ Files are automatically transformed:
 ### Sync Manifest
 
 `.sync-manifest.json` tracks:
+
 - Last sync timestamp
 - All synced files
 - File sizes and modification times
@@ -141,16 +147,19 @@ code-roach-standalone/
 ### Scenario 1: Code Roach Improvement in Smugglers
 
 1. **Make changes in Smugglers:**
+
    ```bash
    # Edit server/services/codebaseIndexer.js
    ```
 
 2. **Test in Smugglers:**
+
    ```bash
    npm test
    ```
 
 3. **Sync to standalone:**
+
    ```bash
    npm run code-roach:sync-standalone
    ```
@@ -160,6 +169,7 @@ code-roach-standalone/
 ### Scenario 2: Standalone-Only Feature
 
 1. **Create in standalone:**
+
    ```bash
    # Create .standalone-overrides/custom-feature.js
    ```
@@ -196,6 +206,7 @@ code-roach-standalone/
 ### ✅ Synced (105+ files)
 
 **Core Services (79 files):**
+
 - Code intelligence (indexing, search, analysis)
 - Fix generation (all fix generators)
 - Learning systems (knowledge base, learning)
@@ -206,35 +217,42 @@ code-roach-standalone/
 - Analytics
 
 **Routes:**
+
 - API endpoints (94 Code Roach endpoints)
 - Knowledge base routes
 
 **UI/Dashboards:**
+
 - Code quality dashboard
 - Knowledge base dashboard
 - IDE integration
 
 **Scripts:**
+
 - Batch review
 - Super worker integration
 - Asset extraction
 - Monitoring
 
 **Documentation:**
+
 - All Code Roach docs
 
 **Migrations:**
+
 - Supabase schema migrations
 
 ### ❌ NOT Synced
 
 **Game-Specific:**
+
 - Game services (NPC, economy, etc.)
 - Game routes
 - Game UI
 - Game-specific scripts
 
 **Standalone Overrides:**
+
 - `.standalone-overrides/` directory
 - Standalone-specific configs
 
@@ -245,6 +263,7 @@ code-roach-standalone/
 ### 1. Don't Edit Synced Files Directly
 
 **❌ Bad:**
+
 ```bash
 # Editing synced file directly
 vim code-roach-standalone/src/services/codebaseIndexer.js
@@ -252,6 +271,7 @@ vim code-roach-standalone/src/services/codebaseIndexer.js
 ```
 
 **✅ Good:**
+
 ```bash
 # Use override directory
 cp code-roach-standalone/src/services/codebaseIndexer.js \
@@ -269,16 +289,19 @@ cp code-roach-standalone/src/services/codebaseIndexer.js \
 ### 3. Track Standalone Changes
 
 Document standalone-specific changes:
+
 ```markdown
 # .standalone-overrides/CHANGES.md
 
 ## Standalone-Specific Modifications
 
 ### config.js
+
 - Removed game-specific config
 - Added multi-tenant support
 
 ### package.json
+
 - Added standalone dependencies
 - Removed game dependencies
 ```
@@ -293,11 +316,11 @@ Edit `scripts/sync-code-roach-standalone.js`:
 
 ```javascript
 const FILE_MAPPINGS = {
-    services: [
-        // Add new service files here
-        'newService.js',
-    ],
-    // ...
+  services: [
+    // Add new service files here
+    "newService.js",
+  ],
+  // ...
 };
 ```
 
@@ -325,21 +348,25 @@ transformForStandalone(content, filePath) {
 ## 📈 Future Evolution
 
 ### Phase 1: Parallel Development (Current)
+
 - ✅ Sync structure in place
 - ✅ Both projects evolve
 - ✅ No breaking changes
 
 ### Phase 2: Standalone Customization
+
 - Standalone-specific features
 - Different dependencies
 - Custom branding
 
 ### Phase 3: Independent Evolution
+
 - Standalone becomes independent
 - Shared core library
 - Separate versioning
 
 ### Phase 4: Product Launch
+
 - Standalone package
 - NPM package
 - Full productization
@@ -349,18 +376,21 @@ transformForStandalone(content, filePath) {
 ## 🎯 Benefits
 
 ### For Smugglers
+
 - ✅ Code Roach continues to improve
 - ✅ No disruption to game development
 - ✅ Innovation continues
 - ✅ Both projects benefit
 
 ### For Standalone
+
 - ✅ Ready for productization
 - ✅ Can customize independently
 - ✅ Tracked sync process
 - ✅ Future-ready structure
 
 ### For You
+
 - ✅ No breaking changes
 - ✅ Parallel development
 - ✅ Future flexibility
@@ -371,22 +401,26 @@ transformForStandalone(content, filePath) {
 ## 🚀 Quick Start
 
 1. **Initial sync:**
+
    ```bash
    cd smugglers
    npm run code-roach:sync-standalone
    ```
 
 2. **Check standalone structure:**
+
    ```bash
    ls -la ../code-roach-standalone/
    ```
 
 3. **Make Code Roach changes in Smugglers:**
+
    ```bash
    # Edit Code Roach files
    ```
 
 4. **Sync again:**
+
    ```bash
    npm run code-roach:sync-standalone
    ```

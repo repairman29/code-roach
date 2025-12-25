@@ -7,12 +7,14 @@ Code Roach has been updated to use the **new multi-provider LLM system** with co
 ## Files Updated
 
 ### 1. `server/services/llmFixGenerator.js`
+
 - ✅ Updated `generateFixWithLLM()` to use `llmService.generateNarrative()`
 - ✅ Added context-aware routing based on issue severity
 - ✅ Added provider tracking with `source: 'code-roach-fix'`
 - ✅ Added helper methods: `getContextTypeForIssue()`, `buildContextForFix()`
 
 ### 2. `server/services/codebaseAwareFixGenerator.js`
+
 - ✅ Updated `extractIntent()` to use new multi-provider system
 - ✅ Updated `generateFixFromPatterns()` to use smart routing
 - ✅ Updated `generateCodeFromPatterns()` to use new system
@@ -22,39 +24,43 @@ Code Roach has been updated to use the **new multi-provider LLM system** with co
 ## Benefits
 
 ### 1. **Cost Optimization**
+
 - **Routine fixes** → Gemini 2.5 Flash (cheapest: $0.075/$0.30 per 1M tokens)
 - **Critical fixes** → Gemini 3.0 Pro or Claude Sonnet (best quality)
 - **Complex fixes** → Gemini 3.0 Deep Think (reasoning)
 - **Expected savings: 50-70%** vs using GPT-4o-mini for everything
 
 ### 2. **Smart Routing**
+
 - Automatically selects best provider based on:
   - Issue severity (critical → premium models)
   - Issue type (security → Claude, reasoning → Deep Think)
   - Context complexity
 
 ### 3. **Provider Tracking**
+
 - All Code Roach LLM usage tracked with `source: 'code-roach-fix'`
 - Enables cost analysis and quality tracking
 - Dashboard shows Code Roach-specific metrics
 
 ### 4. **Reliability**
+
 - Automatic failover if one provider fails
 - Load balancing across providers
 - Rate limit protection
 
 ## Provider Strategy for Code Roach
 
-| Issue Type | Provider | Model | Reason |
-|------------|----------|-------|--------|
-| Syntax errors | Gemini | 2.5 Flash | Simple, cost-effective |
-| Type errors | Gemini | 2.5 Flash | Routine fixes |
-| Security issues | Claude | Sonnet | Safety-focused |
-| Logic errors | Gemini | 3.0 Deep Think | Complex reasoning |
-| Performance | Gemini | 3.0 Pro | Quality |
-| Async errors | Gemini | 3.0 Deep Think | Complex reasoning |
-| Database errors | Gemini | 3.0 Pro | Quality |
-| API errors | Gemini | 3.0 Pro | Quality |
+| Issue Type      | Provider | Model          | Reason                 |
+| --------------- | -------- | -------------- | ---------------------- |
+| Syntax errors   | Gemini   | 2.5 Flash      | Simple, cost-effective |
+| Type errors     | Gemini   | 2.5 Flash      | Routine fixes          |
+| Security issues | Claude   | Sonnet         | Safety-focused         |
+| Logic errors    | Gemini   | 3.0 Deep Think | Complex reasoning      |
+| Performance     | Gemini   | 3.0 Pro        | Quality                |
+| Async errors    | Gemini   | 3.0 Deep Think | Complex reasoning      |
+| Database errors | Gemini   | 3.0 Pro        | Quality                |
+| API errors      | Gemini   | 3.0 Pro        | Quality                |
 
 ## Cost Mode Strategy
 
@@ -65,13 +71,15 @@ Code Roach has been updated to use the **new multi-provider LLM system** with co
 ## Tracking & Analytics
 
 All Code Roach LLM usage is tracked in `llm_provider_usage` table with:
+
 - `source: 'code-roach-fix'` or `'code-roach-intent'` or `'code-roach-generate'`
 - Provider, model, cost, response time
 - Issue type, severity, context type
 
 Query Code Roach usage:
+
 ```sql
-SELECT 
+SELECT
   provider,
   COUNT(*) as fixes,
   AVG(cost_usd) as avg_cost,
@@ -101,4 +109,3 @@ GROUP BY provider;
 - **Better fix quality** for critical issues (premium models)
 - **Faster fixes** for routine issues (cheaper, faster models)
 - **Complete visibility** into Code Roach AI costs and performance
-

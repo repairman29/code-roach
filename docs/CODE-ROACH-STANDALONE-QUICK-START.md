@@ -8,6 +8,7 @@ npm run code-roach:sync-standalone
 ```
 
 That's it! Your standalone structure is ready at:
+
 ```
 ../code-roach-standalone/
 ```
@@ -39,16 +40,19 @@ code-roach-standalone/
 ### Making Code Roach Changes
 
 1. **Edit in Smugglers:**
+
    ```bash
    # Edit server/services/codebaseIndexer.js
    ```
 
 2. **Test in Smugglers:**
+
    ```bash
    npm test
    ```
 
 3. **Sync to Standalone:**
+
    ```bash
    npm run code-roach:sync-standalone
    ```
@@ -58,6 +62,7 @@ code-roach-standalone/
 ### Making Standalone-Only Changes
 
 1. **Add to safe zone:**
+
    ```bash
    cd ../code-roach-standalone
    mkdir -p .standalone-overrides/src/services
@@ -72,12 +77,14 @@ code-roach-standalone/
 ## ⚠️ Important Rules
 
 ### ✅ DO:
+
 - Make Code Roach improvements in **Smugglers**
 - Sync regularly: `npm run code-roach:sync-standalone`
 - Put standalone-only changes in `.standalone-overrides/`
 - Test in Smugglers first
 
 ### ❌ DON'T:
+
 - Edit synced files directly (they'll be overwritten)
 - Break Smugglers integration
 - Skip syncing for too long
@@ -87,13 +94,15 @@ code-roach-standalone/
 ## 📊 Sync Status
 
 Check what's been synced:
+
 ```bash
 cat ../code-roach-standalone/.sync-manifest.json
 ```
 
 Last sync shows:
+
 - ✅ Files copied
-- ⏭️  Files skipped (unchanged)
+- ⏭️ Files skipped (unchanged)
 - 📁 Total files tracked
 
 ---
@@ -101,6 +110,7 @@ Last sync shows:
 ## 🎯 Next Steps
 
 1. **Review structure:**
+
    ```bash
    ls -la ../code-roach-standalone/
    ```

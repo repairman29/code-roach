@@ -3,6 +3,7 @@
 ## Current State
 
 Code Roach is a comprehensive codebase analysis and fixing system, but it **doesn't currently use LLM services** for:
+
 - Code fix generation
 - Documentation generation
 - Code analysis
@@ -11,6 +12,7 @@ Code Roach is a comprehensive codebase analysis and fixing system, but it **does
 ## Opportunity: Integrate Multi-Provider LLM System
 
 We now have a **sophisticated multi-provider LLM system** with:
+
 - 5 providers (OpenAI, Anthropic, Gemini, Mistral, Cohere)
 - Context-aware routing
 - Cost optimization
@@ -24,34 +26,37 @@ We now have a **sophisticated multi-provider LLM system** with:
 **Current**: Code Roach identifies issues but doesn't generate fixes using AI
 
 **Opportunity**: Use LLM to generate code fixes based on:
+
 - Issue type and severity
 - Code context
 - Similar fixes from knowledge base
 - Best practices
 
 **Provider Strategy**:
+
 - **Complex fixes** → Gemini 3.0 Deep Think or Claude Opus (reasoning)
 - **Routine fixes** → Gemini 2.5 Flash (cost-effective)
 - **Security fixes** → Claude Sonnet (safety-focused)
 - **Documentation fixes** → Cohere Command R Plus (long-form)
 
 **Implementation**:
+
 ```javascript
 // In fixOrchestrationService.js or new fixGenerationService.js
-const llmService = require('./llmService');
+const llmService = require("./llmService");
 
 async function generateFixWithAI(issue, context) {
-    const prompt = buildFixPrompt(issue, context);
-    
-    // Use context-aware routing
-    const result = await llmService.generateNarrative({
-        userMessage: prompt,
-        gameStateContext: buildCodeContext(issue, context),
-        costMode: issue.severity === 'critical' ? 'quality' : 'balanced',
-        source: 'code-roach' // Track Code Roach usage
-    });
-    
-    return parseFixFromResponse(result.narrative);
+  const prompt = buildFixPrompt(issue, context);
+
+  // Use context-aware routing
+  const result = await llmService.generateNarrative({
+    userMessage: prompt,
+    gameStateContext: buildCodeContext(issue, context),
+    costMode: issue.severity === "critical" ? "quality" : "balanced",
+    source: "code-roach", // Track Code Roach usage
+  });
+
+  return parseFixFromResponse(result.narrative);
 }
 ```
 
@@ -60,12 +65,14 @@ async function generateFixWithAI(issue, context) {
 **Current**: FixDocumentationService exists but doesn't use AI for documentation
 
 **Opportunity**: Use LLM to generate:
+
 - Fix explanations
 - Root cause analysis
 - Prevention strategies
 - Code comments
 
 **Provider Strategy**:
+
 - **Long-form docs** → Cohere Command R Plus
 - **Quick explanations** → Gemini 2.5 Flash
 - **Technical depth** → Claude Sonnet
@@ -75,12 +82,14 @@ async function generateFixWithAI(issue, context) {
 **Current**: Codebase crawler identifies issues
 
 **Opportunity**: Use LLM for:
+
 - Pattern detection
 - Code smell identification
 - Architecture suggestions
 - Performance analysis
 
 **Provider Strategy**:
+
 - **Pattern analysis** → Gemini 3.0 Deep Think
 - **Quick scans** → Gemini 2.5 Flash
 - **Deep analysis** → Claude Opus
@@ -90,11 +99,13 @@ async function generateFixWithAI(issue, context) {
 **Current**: fixConfidenceCalibrationService exists
 
 **Opportunity**: Use LLM to:
+
 - Validate fix correctness
 - Predict fix success probability
 - Suggest improvements
 
 **Provider Strategy**:
+
 - **Validation** → Gemini 3.0 Pro (balanced)
 - **Quick checks** → Gemini 2.5 Flash
 
@@ -103,11 +114,13 @@ async function generateFixWithAI(issue, context) {
 **Current**: Explainability service exists
 
 **Opportunity**: Use LLM to generate:
+
 - User-friendly fix explanations
 - Why fixes were suggested
 - Impact descriptions
 
 **Provider Strategy**:
+
 - **User explanations** → Gemini 2.5 Flash (cost-effective)
 - **Complex explanations** → Claude Sonnet (quality)
 
@@ -116,18 +129,22 @@ async function generateFixWithAI(issue, context) {
 ### For Code Roach (Standalone Product)
 
 **High-Volume Operations** (80% of requests):
+
 - Use **Gemini 2.5 Flash** ($0.075/$0.30 per 1M tokens)
 - Routine fixes, quick analyses, simple documentation
 
 **Quality-Critical Operations** (15% of requests):
+
 - Use **Gemini 3.0 Pro** or **Claude Sonnet**
 - Complex fixes, security issues, critical bugs
 
 **Reasoning-Heavy Operations** (5% of requests):
+
 - Use **Gemini 3.0 Deep Think** or **Claude Opus**
 - Architecture analysis, pattern detection, deep code analysis
 
 **Expected Cost Savings**:
+
 - If 80% use Gemini Flash: **~50-70% cost reduction**
 - If 15% use Gemini Pro: **~30% cost reduction**
 - **Total: ~60% cost savings** vs using GPT-4o-mini for everything
@@ -185,11 +202,13 @@ async function generateFixWithAI(issue, context) {
 ### 1. **Source Tracking**
 
 All Code Roach LLM usage should be tagged:
+
 ```javascript
-source: 'code-roach' // Or 'code-roach-fix', 'code-roach-docs', etc.
+source: "code-roach"; // Or 'code-roach-fix', 'code-roach-docs', etc.
 ```
 
 This enables:
+
 - Separate cost tracking
 - Quality analysis
 - Provider optimization for Code Roach
@@ -197,6 +216,7 @@ This enables:
 ### 2. **Context Types**
 
 Code Roach has different context types:
+
 - `code-fix` - Generating code fixes
 - `documentation` - Generating documentation
 - `analysis` - Code analysis
@@ -213,11 +233,11 @@ Code Roach has different context types:
 
 ```javascript
 const providerStrategy = {
-    'syntax-error': 'gemini-2.5-flash',      // Simple, cheap
-    'security-issue': 'claude-sonnet',        // Safety-focused
-    'logic-error': 'gemini-3.0-deep-think',   // Reasoning
-    'performance-issue': 'gemini-3.0-pro',    // Quality
-    'documentation': 'cohere-command-r-plus'  // Long-form
+  "syntax-error": "gemini-2.5-flash", // Simple, cheap
+  "security-issue": "claude-sonnet", // Safety-focused
+  "logic-error": "gemini-3.0-deep-think", // Reasoning
+  "performance-issue": "gemini-3.0-pro", // Quality
+  documentation: "cohere-command-r-plus", // Long-form
 };
 ```
 
@@ -250,53 +270,53 @@ const providerStrategy = {
 
 ```javascript
 // server/services/fixGenerationService.js
-const llmService = require('./llmService');
-const llmProviderTrackingService = require('./llmProviderTrackingService');
+const llmService = require("./llmService");
+const llmProviderTrackingService = require("./llmProviderTrackingService");
 
 class FixGenerationService {
-    async generateFix(issue, context) {
-        const prompt = this.buildFixPrompt(issue, context);
-        
-        // Determine provider strategy
-        const costMode = issue.severity === 'critical' ? 'quality' : 'balanced';
-        const contextType = this.getContextType(issue);
-        
-        // Generate fix using LLM
-        const result = await llmService.generateNarrative({
-            userMessage: prompt,
-            gameStateContext: this.buildCodeContext(issue, context),
-            costMode: costMode,
-            source: 'code-roach-fix',
-            // Context for routing
-            context: {
-                contextType: contextType,
-                importance: issue.severity === 'critical' ? 'critical' : 'medium',
-                isCritical: issue.severity === 'critical'
-            }
-        });
-        
-        // Parse and validate fix
-        const fix = this.parseFix(result.narrative);
-        
-        return {
-            fix: fix,
-            provider: result.provider,
-            model: result.model,
-            confidence: result.qualityScore,
-            cost: result.cost
-        };
-    }
-    
-    getContextType(issue) {
-        const typeMap = {
-            'syntax-error': 'routine',
-            'security-issue': 'critical',
-            'logic-error': 'complex',
-            'performance-issue': 'high',
-            'documentation': 'routine'
-        };
-        return typeMap[issue.type] || 'routine';
-    }
+  async generateFix(issue, context) {
+    const prompt = this.buildFixPrompt(issue, context);
+
+    // Determine provider strategy
+    const costMode = issue.severity === "critical" ? "quality" : "balanced";
+    const contextType = this.getContextType(issue);
+
+    // Generate fix using LLM
+    const result = await llmService.generateNarrative({
+      userMessage: prompt,
+      gameStateContext: this.buildCodeContext(issue, context),
+      costMode: costMode,
+      source: "code-roach-fix",
+      // Context for routing
+      context: {
+        contextType: contextType,
+        importance: issue.severity === "critical" ? "critical" : "medium",
+        isCritical: issue.severity === "critical",
+      },
+    });
+
+    // Parse and validate fix
+    const fix = this.parseFix(result.narrative);
+
+    return {
+      fix: fix,
+      provider: result.provider,
+      model: result.model,
+      confidence: result.qualityScore,
+      cost: result.cost,
+    };
+  }
+
+  getContextType(issue) {
+    const typeMap = {
+      "syntax-error": "routine",
+      "security-issue": "critical",
+      "logic-error": "complex",
+      "performance-issue": "high",
+      documentation: "routine",
+    };
+    return typeMap[issue.type] || "routine";
+  }
 }
 ```
 
@@ -307,4 +327,3 @@ class FixGenerationService {
 3. **Provider Performance**: Which providers work best for Code Roach
 4. **Time Savings**: How much faster with AI vs manual
 5. **Customer Satisfaction**: CSAT for AI-generated fixes
-

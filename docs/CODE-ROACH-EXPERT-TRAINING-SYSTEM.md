@@ -1,4 +1,5 @@
 # Code Roach Expert Training System
+
 ## Training AI Agents to be Experts on Customer Codebases
 
 **Date**: 2025-01-15  
@@ -13,6 +14,7 @@ Just like we created deep expertise guides for Smugglers (Database, Testing, Sec
 ### The Vision
 
 When a customer onboards:
+
 1. **Analyze** their codebase to identify tech stack, patterns, architecture
 2. **Generate** customer-specific expert guides (like our 5-expert packages)
 3. **Train** Code Roach's AI agents to be experts on that customer's stack
@@ -61,22 +63,26 @@ When a customer onboards:
 Based on customer codebase analysis, generate experts for:
 
 ### 1. **Stack-Specific Experts**
+
 - **Language Expert** (JavaScript, Python, TypeScript, etc.)
 - **Framework Expert** (React, Vue, Express, Django, etc.)
 - **Database Expert** (PostgreSQL, MongoDB, Redis, etc.)
 - **Infrastructure Expert** (AWS, Docker, Kubernetes, etc.)
 
 ### 2. **Architecture Experts**
+
 - **Architecture Pattern Expert** (MVC, Microservices, Serverless, etc.)
 - **API Design Expert** (REST, GraphQL, gRPC, etc.)
 - **State Management Expert** (Redux, Zustand, Context, etc.)
 
 ### 3. **Domain Experts**
+
 - **Testing Expert** (Jest, Pytest, Cypress, etc.)
 - **Security Expert** (Auth patterns, encryption, etc.)
 - **Performance Expert** (Caching, optimization patterns, etc.)
 
 ### 4. **Code Style Experts**
+
 - **Code Style Expert** (ESLint rules, Prettier config, etc.)
 - **Naming Convention Expert** (camelCase, snake_case, etc.)
 - **File Organization Expert** (folder structure, module patterns, etc.)
@@ -86,13 +92,15 @@ Based on customer codebase analysis, generate experts for:
 ## 🔄 Onboarding Workflow
 
 ### Step 1: Initial Codebase Scan
+
 ```javascript
 // Customer connects repository
-const analyzer = require('./server/services/customerCodebaseAnalyzer');
+const analyzer = require("./server/services/customerCodebaseAnalyzer");
 const analysis = await analyzer.analyzeCodebase(projectId, repositoryUrl);
 ```
 
 **Output**:
+
 - Tech stack detected
 - Architecture patterns identified
 - Code organization analyzed
@@ -100,36 +108,42 @@ const analysis = await analyzer.analyzeCodebase(projectId, repositoryUrl);
 - Security practices detected
 
 ### Step 2: Expert Generation
+
 ```javascript
 // Generate customer-specific experts
-const expertTrainer = require('./server/services/expertTrainingService');
+const expertTrainer = require("./server/services/expertTrainingService");
 const experts = await expertTrainer.generateExperts(projectId, analysis);
 ```
 
 **Output**:
+
 - Expert guides generated
 - Helper services created
 - Integration guides written
 - Quick references created
 
 ### Step 3: Expert Training
+
 ```javascript
 // Train Code Roach agents on customer experts
 await expertTrainer.trainAgents(projectId, experts);
 ```
 
 **Output**:
+
 - Agents trained on customer patterns
 - Fix generation uses customer experts
 - Suggestions respect customer architecture
 
 ### Step 4: Validation
+
 ```javascript
 // Validate expert training
 const validation = await expertTrainer.validateTraining(projectId);
 ```
 
 **Output**:
+
 - Expert quality scores
 - Coverage metrics
 - Training completeness
@@ -189,21 +203,25 @@ CREATE TABLE expert_training_status (
 ## 🔧 Implementation Plan
 
 ### Phase 1: Core Services (Week 1)
+
 - [ ] `customerCodebaseAnalyzer.js` - Analyze customer codebases
 - [ ] `expertTrainingService.js` - Generate expert guides
 - [ ] Database migrations for expert storage
 
 ### Phase 2: Onboarding Integration (Week 2)
+
 - [ ] `customerOnboardingService.js` - Orchestrate onboarding
 - [ ] API endpoints for expert training
 - [ ] Onboarding UI integration
 
 ### Phase 3: Expert Integration (Week 3)
+
 - [ ] Update `codebaseCrawler.js` to use customer experts
 - [ ] Update `llmFixGenerator.js` to use customer patterns
 - [ ] Update fix services to respect customer architecture
 
 ### Phase 4: Continuous Learning (Week 4)
+
 - [ ] Re-analyze codebase on changes
 - [ ] Update experts as patterns evolve
 - [ ] Learn from fix success/failure
@@ -213,6 +231,7 @@ CREATE TABLE expert_training_status (
 ## 📚 Example: Customer Expert Generation
 
 ### Input: Customer Codebase Analysis
+
 ```json
 {
   "tech_stack": {
@@ -242,6 +261,7 @@ CREATE TABLE expert_training_status (
 5. **Redux Expert Guide** - Customer's state management
 
 Each expert includes:
+
 - Comprehensive guide (like our 5-expert packages)
 - Quick reference
 - Helper service code
@@ -298,4 +318,3 @@ Each expert includes:
 - `docs/CODE-ROACH-EXECUTION-ROADMAP.md` - Code Roach roadmap
 - `server/services/codebaseCrawler.js` - Code analysis service
 - `server/services/crossProjectLearningService.js` - Pattern learning
-

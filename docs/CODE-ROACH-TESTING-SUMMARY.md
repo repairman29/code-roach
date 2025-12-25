@@ -50,26 +50,31 @@ npm run test:code-roach:value
 ## 📊 What Gets Tested
 
 ### ✅ Codebase Search Integration
+
 - Semantic search finds similar errors
 - File context retrieval works
 - Pattern matching finds relevant code
 
 ### ✅ Fix Generation
+
 - Fixes generated for test cases
 - Confidence scores are reasonable
 - Fixes use codebase patterns
 
 ### ✅ API Endpoints
+
 - `/api/code-roach/fix/codebase-aware` responds
 - `/api/code-roach/generate/codebase-patterns` responds
 - Endpoints return valid fixes
 
 ### ✅ Real Codebase Files
+
 - Works with actual project files
 - Handles large files
 - Generates contextually appropriate fixes
 
 ### ✅ Performance
+
 - Fix generation is fast (<2s average)
 - Can handle multiple requests
 - Doesn't slow down crawler
@@ -79,18 +84,21 @@ npm run test:code-roach:value
 ## 🎯 Success Criteria
 
 ### High Value (80%+)
+
 - ✅ 70%+ tests passing
 - ✅ Average confidence > 0.7
 - ✅ Patterns being used
 - ✅ Performance < 2s
 
 ### Good Value (60-80%)
+
 - ⚠️ 50%+ tests passing
 - ⚠️ Average confidence > 0.5
 - ⚠️ Some patterns used
 - ⚠️ Performance < 5s
 
 ### Needs Improvement (<60%)
+
 - ❌ <50% tests passing
 - ❌ Low confidence
 - ❌ No patterns used
@@ -101,34 +109,42 @@ npm run test:code-roach:value
 ## 🔧 Troubleshooting
 
 ### No Patterns Found
+
 **Problem:** Tests show "No patterns found"
 
 **Solution:**
+
 ```bash
 npm run codebase:sync
 ```
 
 ### Low Confidence Scores
+
 **Problem:** Fixes have confidence < 0.5
 
 **Solutions:**
+
 1. Index more code: `npm run codebase:sync`
 2. Add more error patterns to Supabase
 3. Improve error descriptions
 
 ### API Endpoints Not Responding
+
 **Problem:** "ERR_CONNECTION_REFUSED"
 
 **Solution:**
+
 ```bash
 npm start
 curl http://localhost:3000/health
 ```
 
 ### Slow Performance
+
 **Problem:** Fix generation takes >5s
 
 **Solutions:**
+
 1. Add caching to codebase search
 2. Limit search results
 3. Use parallel processing
@@ -164,6 +180,7 @@ The tests measure:
 ## 💡 How to Know It's Working
 
 You'll see:
+
 - ✅ Tests passing (70%+)
 - ✅ Patterns being used
 - ✅ High confidence scores (>0.7)
@@ -171,6 +188,7 @@ You'll see:
 - ✅ Real fixes generated
 
 You'll know it's valuable when:
+
 - Fixes match your codebase style
 - Similar errors are found quickly
 - Fixes are applied successfully
@@ -189,4 +207,3 @@ You'll know it's valuable when:
 ---
 
 **Full Guide:** `docs/CODE-ROACH-TESTING-GUIDE.md`
-

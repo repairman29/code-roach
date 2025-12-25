@@ -34,12 +34,14 @@
 **Critical Issue:** API endpoint paths in the extension don't match the actual backend endpoints.
 
 **Current (Wrong) Paths in Extension:**
+
 - `/api/code-roach/health-score` ❌
 - `/api/code-roach/code-review` ❌
 - `/api/code-roach/code-review/autofix` ❌
 - `/api/code-roach/nl-query` ❌
 
 **Actual Backend Endpoints:**
+
 - `/api/code-roach/health/:filePath` ✅
 - `/api/code-roach/review` ✅
 - `/api/code-roach/review/autofix` ✅
@@ -52,7 +54,9 @@
 ### File: `.vscode-extension/src/extension.ts`
 
 #### Fix 1: Health Score Endpoint (Line 42-44)
+
 **Current:**
+
 ```typescript
 async getHealthScore(filePath: string): Promise<any> {
     return this.request(`/api/code-roach/health-score?filePath=${encodeURIComponent(filePath)}`);
@@ -60,6 +64,7 @@ async getHealthScore(filePath: string): Promise<any> {
 ```
 
 **Should be:**
+
 ```typescript
 async getHealthScore(filePath: string): Promise<any> {
     // Use path parameter instead of query parameter
@@ -68,7 +73,9 @@ async getHealthScore(filePath: string): Promise<any> {
 ```
 
 #### Fix 2: Analyze Code Endpoint (Line 46-51)
+
 **Current:**
+
 ```typescript
 async analyzeCode(code: string, filePath: string): Promise<any> {
     return this.request('/api/code-roach/code-review', {
@@ -79,6 +86,7 @@ async analyzeCode(code: string, filePath: string): Promise<any> {
 ```
 
 **Should be:**
+
 ```typescript
 async analyzeCode(code: string, filePath: string): Promise<any> {
     return this.request('/api/code-roach/review', {
@@ -89,7 +97,9 @@ async analyzeCode(code: string, filePath: string): Promise<any> {
 ```
 
 #### Fix 3: Auto-Fix Endpoint (Line 53-58)
+
 **Current:**
+
 ```typescript
 async autoFix(code: string, filePath: string, issueTypes?: string[]): Promise<any> {
     return this.request('/api/code-roach/code-review/autofix', {
@@ -100,6 +110,7 @@ async autoFix(code: string, filePath: string, issueTypes?: string[]): Promise<an
 ```
 
 **Should be:**
+
 ```typescript
 async autoFix(code: string, filePath: string, issueTypes?: string[]): Promise<any> {
     return this.request('/api/code-roach/review/autofix', {
@@ -110,7 +121,9 @@ async autoFix(code: string, filePath: string, issueTypes?: string[]): Promise<an
 ```
 
 #### Fix 4: Query Endpoint (Line 60-65)
+
 **Current:**
+
 ```typescript
 async query(question: string): Promise<any> {
     return this.request('/api/code-roach/nl-query', {
@@ -121,6 +134,7 @@ async query(question: string): Promise<any> {
 ```
 
 **Should be:**
+
 ```typescript
 async query(question: string): Promise<any> {
     return this.request('/api/code-roach/query', {
@@ -135,12 +149,15 @@ async query(question: string): Promise<any> {
 ## 📡 API Endpoint Documentation
 
 ### 1. Health Score
+
 **Endpoint:** `GET /api/code-roach/health/:filePath`
 
 **Parameters:**
+
 - `filePath` (path parameter) - File path to analyze
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -158,8 +175,9 @@ async query(question: string): Promise<any> {
 ```
 
 **Usage in Extension:**
+
 ```typescript
-const result = await client.getHealthScore('/path/to/file.js');
+const result = await client.getHealthScore("/path/to/file.js");
 // result.score.overall - Overall score (0-100)
 // result.score.grade - Letter grade (A-F)
 // result.score.components - Component scores
@@ -168,9 +186,11 @@ const result = await client.getHealthScore('/path/to/file.js');
 ---
 
 ### 2. Code Review / Analysis
+
 **Endpoint:** `POST /api/code-roach/review`
 
 **Request Body:**
+
 ```json
 {
   "code": "const x = 1;",
@@ -180,6 +200,7 @@ const result = await client.getHealthScore('/path/to/file.js');
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -199,6 +220,7 @@ const result = await client.getHealthScore('/path/to/file.js');
 ```
 
 **Usage in Extension:**
+
 ```typescript
 const analysis = await client.analyzeCode(code, filePath);
 // analysis.review.score - Score (0-100)
@@ -209,9 +231,11 @@ const analysis = await client.analyzeCode(code, filePath);
 ---
 
 ### 3. Auto-Fix
+
 **Endpoint:** `POST /api/code-roach/review/autofix`
 
 **Request Body:**
+
 ```json
 {
   "code": "const x = 1;",
@@ -221,6 +245,7 @@ const analysis = await client.analyzeCode(code, filePath);
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -237,8 +262,9 @@ const analysis = await client.analyzeCode(code, filePath);
 ```
 
 **Usage in Extension:**
+
 ```typescript
-const fixResult = await client.autoFix(code, filePath, ['security']);
+const fixResult = await client.autoFix(code, filePath, ["security"]);
 // fixResult.fixedCode - Fixed code string
 // fixResult.fixesApplied - Number of fixes
 // fixResult.fixes - Array of fix details
@@ -247,9 +273,11 @@ const fixResult = await client.autoFix(code, filePath, ['security']);
 ---
 
 ### 4. Natural Language Query
+
 **Endpoint:** `POST /api/code-roach/query`
 
 **Request Body:**
+
 ```json
 {
   "query": "Explain this error: Cannot read property x of undefined",
@@ -258,6 +286,7 @@ const fixResult = await client.autoFix(code, filePath, ['security']);
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -270,6 +299,7 @@ const fixResult = await client.autoFix(code, filePath, ['security']);
 ```
 
 **Usage in Extension:**
+
 ```typescript
 const result = await client.query("How do I fix this error?");
 // result.response.title - Response title
@@ -284,6 +314,7 @@ const result = await client.query("How do I fix this error?");
 After making the fixes, test each command:
 
 ### 1. Test Health Score
+
 - [ ] Open a file in VS Code
 - [ ] Run command: `Code Roach: Show Health Score`
 - [ ] Verify webview panel opens with score
@@ -291,6 +322,7 @@ After making the fixes, test each command:
 - [ ] Verify component scores display
 
 ### 2. Test Code Analysis
+
 - [ ] Open a file with issues
 - [ ] Run command: `Code Roach: Analyze File`
 - [ ] Verify diagnostics appear in Problems panel
@@ -298,6 +330,7 @@ After making the fixes, test each command:
 - [ ] Verify issues are color-coded by severity
 
 ### 3. Test Auto-Fix
+
 - [ ] Open a file with fixable issues
 - [ ] Run command: `Code Roach: Auto-Fix Errors`
 - [ ] Select fix type from quick pick
@@ -305,6 +338,7 @@ After making the fixes, test each command:
 - [ ] Verify notification shows fixes applied
 
 ### 4. Test Natural Language Query
+
 - [ ] Run command: `Code Roach: Ask Question`
 - [ ] Enter a question
 - [ ] Verify webview panel opens with answer
@@ -312,6 +346,7 @@ After making the fixes, test each command:
 - [ ] Verify code examples display if provided
 
 ### 5. Test Configuration
+
 - [ ] Open VS Code Settings
 - [ ] Search for "Code Roach"
 - [ ] Verify `codeRoach.serverUrl` setting exists
@@ -323,6 +358,7 @@ After making the fixes, test each command:
 ## 📦 Building & Packaging
 
 ### Development Mode
+
 ```bash
 cd .vscode-extension
 npm install
@@ -331,6 +367,7 @@ npm run compile
 ```
 
 ### Package for Distribution
+
 ```bash
 cd .vscode-extension
 npm install -g vsce  # VS Code Extension Manager
@@ -339,6 +376,7 @@ vsce package
 ```
 
 ### Install Locally
+
 ```bash
 code --install-extension code-roach-1.0.0.vsix
 ```
@@ -374,25 +412,29 @@ code --install-extension code-roach-1.0.0.vsix
 ## 📝 Response Format Expectations
 
 ### Health Score Response
+
 The extension expects:
+
 ```typescript
 {
   success: boolean;
   score: {
-    overall: number;        // 0-100
-    grade: string;          // "A", "B", "C", etc.
+    overall: number; // 0-100
+    grade: string; // "A", "B", "C", etc.
     components: {
-      errorRate: number;    // 0-100
-      complexity: number;   // 0-100
-      security: number;     // 0-100
-      performance: number;  // 0-100
+      errorRate: number; // 0-100
+      complexity: number; // 0-100
+      security: number; // 0-100
+      performance: number; // 0-100
     }
   }
 }
 ```
 
 ### Review Response
+
 The extension expects:
+
 ```typescript
 {
   success: boolean;
@@ -410,7 +452,9 @@ The extension expects:
 ```
 
 ### Auto-Fix Response
+
 The extension expects:
+
 ```typescript
 {
   success: boolean;
@@ -425,7 +469,9 @@ The extension expects:
 ```
 
 ### Query Response
+
 The extension expects:
+
 ```typescript
 {
   success: boolean;
@@ -477,4 +523,3 @@ If you encounter issues:
 **Ready to build!** 🚀
 
 The extension template is 95% complete - just needs the API path corrections and testing.
-

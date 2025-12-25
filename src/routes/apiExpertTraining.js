@@ -3,212 +3,128 @@
  * REST API endpoints for customer expert training system
  */
 
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const customerOnboardingService = require('../services/customerOnboardingService');
-const expertTrainingService = require('../services/expertTrainingService');
-const customerCodebaseAnalyzer = require('../services/customerCodebaseAnalyzer');
+const customerOnboardingService = require("../services/customerOnboardingService");
+const customerCodebaseAnalyzer = require("../services/customerCodebaseAnalyzer");
 
-/**
- * POST /api/expert-training/onboard
- * Start onboarding process for a project
- */
-router.post('/onboard', async (req, res) => {
-    try {
-        const { project_id, repository_url, options } = req.body;
+const {
+  asyncHandler,
+  ValidationError,
+  NotFoundError,
+} = require("../utils/errorHandler");
+const { sendSuccess } = require("../utils/responseHandler");
 
-        if (!project_id || !repository_url) {
-            return res.status(400).json({
-                error: 'Missing required fields: project_id, repository_url'
-            });
-        }
+router.post(
+  "/onboard",
+  asyncHandler(async (req, res) => {
+    const { project_id, repository_url, options } = req.body;
 
-        const result = await customerOnboardingService.startOnboarding(
-            project_id,
-            repository_url,
-            options || {}
-        );
-
-        res.json({
-            success: true,
-            data: result
-        });
-    } catch (err) {
-        console.error('[Expert Training API] Error starting onboarding:', err);
-        res.status(500).json({
-            error: 'Failed to start onboarding',
-            message: err.message
-        });
+    if (!project_id || !repository_url) {
+      throw new ValidationError(
+        "Missing required fields: project_id, repository_url",
+      );
     }
-});
 
-/**
- * GET /api/expert-training/status/:projectId
- * Get onboarding status for a project
- */
-router.get('/status/:projectId', async (req, res) => {
-    try {
-        const { projectId } = req.params;
-        const status = await customerOnboardingService.getOnboardingStatus(projectId);
+    const result = await customerOnboardingService.startOnboarding(
+      project_id,
+      repository_url,
+      options || {},
+    );
+    sendSuccess(res, result);
+  }),
+);
 
-        res.json({
-            success: true,
-            data: status
-        });
-    } catch (err) {
-        console.error('[Expert Training API] Error getting status:', err);
-        res.status(500).json({
-            error: 'Failed to get onboarding status',
-            message: err.message
-        });
+router.get(
+  "/status/:projectId",
+  asyncHandler(async (req, res) => {
+    const { projectId } = req.params;
+    const status =
+      await customerOnboardingService.getOnboardingStatus(projectId);
+    sendSuccess(res, status);
+  }),
+);
+
+router.post(
+  "/retry/:projectId",
+  asyncHandler(async (req, res) => {
+    const { projectId } = req.params;
+    const { repository_url } = req.body;
+
+    if (!repository_url) {
+      throw new ValidationError("Missing required field: repository_url");
     }
-});
 
-/**
- * POST /api/expert-training/retry/:projectId
- * Retry failed onboarding
- */
-router.post('/retry/:projectId', async (req, res) => {
-    try {
-        const { projectId } = req.params;
-        const { repository_url } = req.body;
+    const result = await customerOnboardingService.retryOnboarding(
+      projectId,
+      repository_url,
+    );
+    sendSuccess(res, result);
+  }),
+);
 
-        if (!repository_url) {
-            return res.status(400).json({
-                error: 'Missing required field: repository_url'
-            });
-        }
+router.post(
+  "/update/:projectId",
+  asyncHandler(async (req, res) => {
+    const { projectId } = req.params;
+    const { repository_url } = req.body;
 
-        const result = await customerOnboardingService.retryOnboarding(projectId, repository_url);
-
-        res.json({
-            success: true,
-            data: result
-        });
-    } catch (err) {
-        console.error('[Expert Training API] Error retrying onboarding:', err);
-        res.status(500).json({
-            error: 'Failed to retry onboarding',
-            message: err.message
-        });
+    if (!repository_url) {
+      throw new ValidationError("Missing required field: repository_url");
     }
-});
 
-/**
- * POST /api/expert-training/update/:projectId
- * Update experts for a project (re-analyze and regenerate)
- */
-router.post('/update/:projectId', async (req, res) => {
-    try {
-        const { projectId } = req.params;
-        const { repository_url } = req.body;
+    const result = await customerOnboardingService.updateExperts(
+      projectId,
+      repository_url,
+    );
+    sendSuccess(res, result);
+  }),
+);
 
-        if (!repository_url) {
-            return res.status(400).json({
-                error: 'Missing required field: repository_url'
-            });
-        }
+router.get(
+  "/experts/:projectId",
+  asyncHandler(async (req, res) => {
+    const { projectId } = req.params;
 
-        const result = await customerOnboardingService.updateExperts(projectId, repository_url);
+    sendSuccess(res, {
+      project_id: projectId,
+      experts: [],
+      message: "Expert guides endpoint - implementation needed",
+    });
+  }),
+);
 
-        res.json({
-            success: true,
-            data: result
-        });
-    } catch (err) {
-        console.error('[Expert Training API] Error updating experts:', err);
-        res.status(500).json({
-            error: 'Failed to update experts',
-            message: err.message
-        });
+router.get(
+  "/analysis/:projectId",
+  asyncHandler(async (req, res) => {
+    const { projectId } = req.params;
+    const analysis =
+      await customerCodebaseAnalyzer.getCachedAnalysis(projectId);
+
+    if (!analysis) {
+      throw new NotFoundError("Analysis not found for this project");
     }
-});
 
-/**
- * GET /api/expert-training/experts/:projectId
- * Get all expert guides for a project
- */
-router.get('/experts/:projectId', async (req, res) => {
-    try {
-        const { projectId } = req.params;
-        const { expert_type } = req.query;
+    sendSuccess(res, analysis);
+  }),
+);
 
-        // This would query the database for expert guides
-        // For now, return a placeholder
-        res.json({
-            success: true,
-            data: {
-                project_id: projectId,
-                experts: [],
-                message: 'Expert guides endpoint - implementation needed'
-            }
-        });
-    } catch (err) {
-        console.error('[Expert Training API] Error getting experts:', err);
-        res.status(500).json({
-            error: 'Failed to get expert guides',
-            message: err.message
-        });
+router.post(
+  "/analyze/:projectId",
+  asyncHandler(async (req, res) => {
+    const { projectId } = req.params;
+    const { repository_url } = req.body;
+
+    if (!repository_url) {
+      throw new ValidationError("Missing required field: repository_url");
     }
-});
 
-/**
- * GET /api/expert-training/analysis/:projectId
- * Get codebase analysis for a project
- */
-router.get('/analysis/:projectId', async (req, res) => {
-    try {
-        const { projectId } = req.params;
-        const analysis = await customerCodebaseAnalyzer.getCachedAnalysis(projectId);
-
-        if (!analysis) {
-            return res.status(404).json({
-                error: 'Analysis not found for this project'
-            });
-        }
-
-        res.json({
-            success: true,
-            data: analysis
-        });
-    } catch (err) {
-        console.error('[Expert Training API] Error getting analysis:', err);
-        res.status(500).json({
-            error: 'Failed to get codebase analysis',
-            message: err.message
-        });
-    }
-});
-
-/**
- * POST /api/expert-training/analyze/:projectId
- * Trigger codebase analysis for a project
- */
-router.post('/analyze/:projectId', async (req, res) => {
-    try {
-        const { projectId } = req.params;
-        const { repository_url } = req.body;
-
-        if (!repository_url) {
-            return res.status(400).json({
-                error: 'Missing required field: repository_url'
-            });
-        }
-
-        const analysis = await customerCodebaseAnalyzer.analyzeCodebase(projectId, repository_url);
-
-        res.json({
-            success: true,
-            data: analysis
-        });
-    } catch (err) {
-        console.error('[Expert Training API] Error analyzing codebase:', err);
-        res.status(500).json({
-            error: 'Failed to analyze codebase',
-            message: err.message
-        });
-    }
-});
+    const analysis = await customerCodebaseAnalyzer.analyzeCodebase(
+      projectId,
+      repository_url,
+    );
+    sendSuccess(res, analysis);
+  }),
+);
 
 module.exports = router;
-

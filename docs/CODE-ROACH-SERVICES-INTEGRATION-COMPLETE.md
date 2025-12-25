@@ -30,6 +30,7 @@ All Code Roach services are now **always available** and **integrated into the c
 ### Service Registry Integration
 
 All services are **auto-registered** with the Service Registry:
+
 - ✅ Discoverable via `serviceRegistry.getService(name)`
 - ✅ Health monitoring available
 - ✅ Dependency tracking enabled
@@ -42,25 +43,27 @@ All services are **auto-registered** with the Service Registry:
 ### 1. Services Always Available
 
 **Before:**
+
 ```javascript
 // Services loaded conditionally with try/catch
 let fixOrchestrationService = null;
 try {
-    fixOrchestrationService = require('./fixOrchestrationService');
+  fixOrchestrationService = require("./fixOrchestrationService");
 } catch (err) {
-    // Optional - fallback if not available
+  // Optional - fallback if not available
 }
 ```
 
 **After:**
+
 ```javascript
 // Services always available - required directly
-const fixOrchestrationService = require('./fixOrchestrationService');
-const fixImpactPredictionService = require('./fixImpactPredictionService');
-const fixConfidenceCalibrationService = require('./fixConfidenceCalibrationService');
-const fixCostBenefitAnalysisService = require('./fixCostBenefitAnalysisService');
-const fixMonitoringService = require('./fixMonitoringService');
-const fixDocumentationGenerationService = require('./fixDocumentationGenerationService');
+const fixOrchestrationService = require("./fixOrchestrationService");
+const fixImpactPredictionService = require("./fixImpactPredictionService");
+const fixConfidenceCalibrationService = require("./fixConfidenceCalibrationService");
+const fixCostBenefitAnalysisService = require("./fixCostBenefitAnalysisService");
+const fixMonitoringService = require("./fixMonitoringService");
+const fixDocumentationGenerationService = require("./fixDocumentationGenerationService");
 ```
 
 **Impact:** Services are now guaranteed to be available, removing conditional logic and fallback paths.
@@ -68,28 +71,34 @@ const fixDocumentationGenerationService = require('./fixDocumentationGenerationS
 ### 2. Orchestration is Default
 
 **Before:**
+
 ```javascript
 // Orchestration optional - only used if flag is not false
 if (fixOrchestrationService && options.useOrchestration !== false) {
-    // Use orchestration
+  // Use orchestration
 } else {
-    // Use legacy path
+  // Use legacy path
 }
 ```
 
 **After:**
+
 ```javascript
 // Orchestration is default - only skip if explicitly disabled
 if (options.useOrchestration !== false) {
-    // Use orchestration (always available now)
-    const orchestrationResult = await fixOrchestrationService.orchestrateFix(issue, context);
-    // ... handle result
+  // Use orchestration (always available now)
+  const orchestrationResult = await fixOrchestrationService.orchestrateFix(
+    issue,
+    context,
+  );
+  // ... handle result
 } else {
-    // Legacy path only if explicitly disabled
+  // Legacy path only if explicitly disabled
 }
 ```
 
 **Impact:** All fixes now go through the unified orchestration pipeline by default, ensuring:
+
 - Impact prediction before applying
 - Cost-benefit analysis
 - Confidence calibration
@@ -101,6 +110,7 @@ if (options.useOrchestration !== false) {
 ### 3. Simplified Logic
 
 **Removed:**
+
 - Conditional service availability checks
 - Duplicate service usage in legacy code (orchestration handles it)
 - Unnecessary fallback paths
@@ -154,12 +164,14 @@ When a fix is needed, the crawler now uses this unified pipeline:
 ## 🎯 Expected Results
 
 ### Before Integration
+
 - **Service Utilization:** 0% (services existed but unused)
 - **Fix Quality:** Basic (no impact prediction, no cost-benefit analysis)
 - **Developer Trust:** 46% (no explainability, no confidence calibration)
 - **Fix Success Rate:** ~70% (no monitoring, no rollback intelligence)
 
 ### After Integration
+
 - **Service Utilization:** 100% (all fixes go through orchestration)
 - **Fix Quality:** Improved (impact prediction, cost-benefit analysis)
 - **Developer Trust:** Expected 80%+ (explainability, confidence calibration)
@@ -170,7 +182,9 @@ When a fix is needed, the crawler now uses this unified pipeline:
 ## 🔍 Verification
 
 ### Service Registration
+
 All services are auto-registered with Service Registry:
+
 ```bash
 ✅ fixOrchestrationService
 ✅ fixImpactPredictionService
@@ -182,11 +196,13 @@ All services are auto-registered with Service Registry:
 ```
 
 ### Code Changes
+
 - ✅ `server/services/codebaseCrawler.js` - Services always available, orchestration default
 - ✅ No linting errors
 - ✅ Backward compatible (legacy path still available if explicitly disabled)
 
 ### Integration Points
+
 - ✅ Orchestration pipeline integrated into crawler workflow
 - ✅ All services accessible via Service Registry
 - ✅ Event Bus integration (services can emit/subscribe to events)
@@ -197,20 +213,22 @@ All services are auto-registered with Service Registry:
 ## 📝 Usage
 
 ### Default Behavior (Orchestration)
+
 ```javascript
 // Orchestration is used by default
 await crawler.crawlCodebase({
-    projectId: 'my-project',
-    // useOrchestration defaults to true
+  projectId: "my-project",
+  // useOrchestration defaults to true
 });
 ```
 
 ### Disable Orchestration (Legacy Path)
+
 ```javascript
 // Only if you need legacy behavior
 await crawler.crawlCodebase({
-    projectId: 'my-project',
-    useOrchestration: false // Explicitly disable
+  projectId: "my-project",
+  useOrchestration: false, // Explicitly disable
 });
 ```
 
@@ -235,4 +253,3 @@ await crawler.crawlCodebase({
 ---
 
 **Status:** ✅ **COMPLETE - READY FOR PRODUCTION**
-

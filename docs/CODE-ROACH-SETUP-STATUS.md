@@ -7,6 +7,7 @@
 ## ✅ What's Complete
 
 ### Infrastructure (100%)
+
 - ✅ Job Queue Service (`jobQueue.js`)
 - ✅ Cache Service (`cacheService.js`)
 - ✅ Authentication Middleware (`auth.js`)
@@ -17,6 +18,7 @@
 - ✅ Crawl Worker (`crawlWorker.js`)
 
 ### CLI Tools (100%)
+
 - ✅ Main CLI (`code-roach-saas.js`) - 15+ commands
 - ✅ Setup scripts
 - ✅ Health check
@@ -25,6 +27,7 @@
 - ✅ Batch operations
 
 ### API Endpoints (100%)
+
 - ✅ Core endpoints (`/api/code-roach/*`)
 - ✅ GitHub webhooks (`/api/github/*`)
 - ✅ Project management
@@ -32,6 +35,7 @@
 - ✅ Analytics endpoints
 
 ### Database Schema (100%)
+
 - ✅ Migration file created
 - ✅ All tables defined
 - ✅ RLS policies
@@ -43,9 +47,11 @@
 ## ⏳ What's Pending
 
 ### Required
+
 - [ ] **Run database migration** (see instructions below)
 
 ### Optional (for full functionality)
+
 - [ ] Set `REDIS_URL` for persistent queue/cache
 - [ ] Set `GITHUB_TOKEN` for GitHub integration
 
@@ -56,6 +62,7 @@
 ### 1. Run Database Migration
 
 **Option A: Supabase Dashboard (Recommended)**
+
 1. Go to https://supabase.com/dashboard
 2. Select your project
 3. Click "SQL Editor"
@@ -65,6 +72,7 @@
 7. Click "Run"
 
 **Option B: Supabase CLI**
+
 ```bash
 # If you have Supabase CLI installed
 supabase link --project-ref YOUR_PROJECT_REF
@@ -72,6 +80,7 @@ supabase db push
 ```
 
 **Option C: Direct SQL**
+
 ```bash
 # View migration file
 cat supabase/migrations/20251213_code_roach_saas.sql
@@ -108,6 +117,7 @@ code-roach-saas status
 **From last setup check:**
 
 ✅ **Working:**
+
 - Environment variables configured
 - All services available
 - CLI working
@@ -115,6 +125,7 @@ code-roach-saas status
 - Codebase crawler ready
 
 ⚠️ **Needs Attention:**
+
 - Database migration (required)
 - Redis configuration (optional)
 - GitHub token (optional)
@@ -147,11 +158,13 @@ code-roach-saas --help
 Once migration is complete:
 
 1. **Verify:**
+
    ```bash
    npm run code-roach:setup:complete
    ```
 
 2. **Test:**
+
    ```bash
    code-roach-saas test
    code-roach-saas crawl

@@ -19,6 +19,7 @@ This is the **META learning layer** that makes developers code better, faster.
 ### 1. Pattern Analysis
 
 Code Roach analyzes:
+
 - **Problematic patterns**: Issues that occur frequently
 - **Successful fixes**: What works and why
 - **File-level insights**: Which files have issues, which improve
@@ -27,6 +28,7 @@ Code Roach analyzes:
 ### 2. Rule Generation
 
 Using LLM analysis, Code Roach generates:
+
 - **Specific Cursor rules** that prevent common issues
 - **Category-based rules** (security, performance, style, best-practice)
 - **Evidence-based rules** backed by pattern data
@@ -34,6 +36,7 @@ Using LLM analysis, Code Roach generates:
 ### 3. Effectiveness Tracking
 
 Every time an issue is found:
+
 - **Tracks if rules were followed**
 - **Measures if rules prevented issues**
 - **Calculates success rates**
@@ -76,6 +79,7 @@ curl -X POST http://localhost:3000/api/code-roach/learning/analyze
 ```
 
 This will:
+
 1. Analyze top problematic patterns
 2. Generate new Cursor rules
 3. Update `.cursorrules` file
@@ -91,6 +95,7 @@ curl "http://localhost:3000/api/code-roach/learning/rules?file=server/routes/api
 ### Track Rule Effectiveness
 
 When an issue is found, Code Roach automatically tracks:
+
 - Was the rule followed?
 - Did it prevent the issue?
 - What was the severity?
@@ -102,6 +107,7 @@ This data feeds back into rule success rates.
 ## Example Workflow
 
 ### Day 1: Issues Found
+
 ```
 - 50 "console.log in production" issues
 - 30 "missing error handling" issues
@@ -109,26 +115,35 @@ This data feeds back into rule success rates.
 ```
 
 ### Day 2: Rules Generated
+
 Code Roach analyzes patterns and generates:
 
 ```markdown
 ## STYLE Rules
 
 ### 1. prevent_console_log_production
+
 # Always remove console.log statements before committing
+
 # Based on pattern analysis showing 50 occurrences
+
 # Use proper logging service instead
 
 ## BEST-PRACTICE Rules
 
 ### 2. require_error_handling
+
 # All async code must have error handling
+
 # Based on 30 occurrences of unhandled promises
+
 # Use try-catch or .catch() for all async operations
 ```
 
 ### Day 3: Rules Applied
+
 Developers code with new rules. Issues drop:
+
 ```
 - 5 "console.log" issues (90% reduction)
 - 8 "missing error handling" issues (73% reduction)
@@ -136,7 +151,9 @@ Developers code with new rules. Issues drop:
 ```
 
 ### Day 4: Rules Updated
+
 Code Roach tracks effectiveness:
+
 - `prevent_console_log_production`: 90% success rate ✅
 - `require_error_handling`: 73% success rate ✅
 - Rules get prioritized in `.cursorrules`
@@ -158,7 +175,7 @@ LIMIT 10;
 ### Issues Prevented by Rules
 
 ```sql
-SELECT 
+SELECT
   cr.rule_name,
   COUNT(CASE WHEN re.issue_was_prevented THEN 1 END) as prevented,
   COUNT(re.id) as total_applications,
@@ -172,7 +189,7 @@ ORDER BY prevented DESC;
 ### Quality Improvement Over Time
 
 ```sql
-SELECT 
+SELECT
   DATE_TRUNC('week', created_at) as week,
   COUNT(*) as improvements,
   SUM(issues_prevented_count) as issues_prevented,
@@ -187,31 +204,45 @@ ORDER BY week DESC;
 ## Integration Points
 
 ### 1. Error Detection
+
 When Code Roach finds an issue:
+
 ```javascript
 // Check if any rules should have prevented this
-const applicableRules = await cursorRulesLearningService.getRecommendedRulesForFile(filePath);
+const applicableRules =
+  await cursorRulesLearningService.getRecommendedRulesForFile(filePath);
 // Track effectiveness
-await cursorRulesLearningService.trackRuleEffectiveness(ruleName, issueId, false);
+await cursorRulesLearningService.trackRuleEffectiveness(
+  ruleName,
+  issueId,
+  false,
+);
 ```
 
 ### 2. Code Review
+
 During code review:
+
 ```javascript
 // Get rules for the file being reviewed
-const rules = await cursorRulesLearningService.getRecommendedRulesForFile(filePath);
+const rules =
+  await cursorRulesLearningService.getRecommendedRulesForFile(filePath);
 // Show in review UI
 ```
 
 ### 3. Pre-commit Hooks
+
 Before committing:
+
 ```javascript
 // Check if code follows active rules
 // Prevent commit if critical rules violated
 ```
 
 ### 4. Periodic Learning
+
 Schedule daily/weekly:
+
 ```bash
 # Cron job or scheduled task
 0 2 * * * /path/to/scripts/code-roach-learn-and-update.sh
@@ -243,7 +274,7 @@ Rules are generated using LLM (OpenAI GPT-4 by default). Configure in:
 ```javascript
 // Uses llmService from server/services/llmService.js
 // Configure OpenAI API key in .env
-OPENAI_API_KEY=your_key_here
+OPENAI_API_KEY = your_key_here;
 ```
 
 ---
@@ -251,17 +282,20 @@ OPENAI_API_KEY=your_key_here
 ## Metrics & KPIs
 
 ### Code Quality Metrics
+
 - **Issue reduction rate**: % decrease in issues over time
 - **Rule effectiveness**: % of issues prevented by rules
 - **File health improvement**: Average health score increase
 - **Auto-fix success rate**: % of issues auto-fixed successfully
 
 ### Development Velocity Metrics
+
 - **Time to fix**: Average time from detection to resolution
 - **Review time**: Time spent reviewing issues
 - **Prevention rate**: Issues prevented vs issues found
 
 ### Learning Metrics
+
 - **Rules generated**: Number of rules created
 - **Rules active**: Number of active rules
 - **Patterns learned**: Unique patterns identified
@@ -272,24 +306,28 @@ OPENAI_API_KEY=your_key_here
 ## Future Enhancements
 
 ### Phase 1: Current (✅)
+
 - Pattern analysis
 - Rule generation
 - Effectiveness tracking
 - `.cursorrules` updates
 
 ### Phase 2: Advanced Learning
+
 - **Predictive rules**: Rules that prevent issues before they occur
 - **Context-aware rules**: Rules that adapt to codebase patterns
 - **Team-specific rules**: Rules tailored to team preferences
 - **A/B testing**: Test rule variations
 
 ### Phase 3: Deep Integration
+
 - **IDE integration**: Real-time rule suggestions in Cursor
 - **Git hooks**: Automatic rule checking on commit
 - **PR analysis**: Rule compliance in pull requests
 - **Code generation**: Generate code that follows rules
 
 ### Phase 4: Meta-Learning
+
 - **Rule optimization**: Automatically optimize rule content
 - **Pattern prediction**: Predict new issue types
 - **Cross-project learning**: Learn from multiple projects
@@ -302,11 +340,13 @@ OPENAI_API_KEY=your_key_here
 ### Rules Not Generating
 
 1. **Check Supabase connection**:
+
    ```bash
    curl http://localhost:3000/api/code-roach/learning/rules
    ```
 
 2. **Check LLM configuration**:
+
    ```bash
    echo $OPENAI_API_KEY
    ```
@@ -319,11 +359,13 @@ OPENAI_API_KEY=your_key_here
 ### Rules Not Updating .cursorrules
 
 1. **Check file permissions**:
+
    ```bash
    ls -la .cursorrules
    ```
 
 2. **Check service logs**:
+
    ```bash
    # Look for file write errors
    ```
@@ -376,4 +418,3 @@ npm run code-roach crawl
 ---
 
 **The goal**: Not just fixing issues, but **preventing them** and **improving how we code**.
-

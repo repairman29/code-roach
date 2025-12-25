@@ -1,4 +1,5 @@
 # Code Roach Meta-Learning System
+
 ## Teaching Code Roach to Become an Expert Developer
 
 ---
@@ -14,11 +15,13 @@ Code Roach now has **meta-learning capabilities** - it learns to improve itself 
 ## 🎯 What Meta-Learning Does
 
 ### 1. **Self-Analysis**
+
 - Analyzes Code Roach's own fix success patterns
 - Identifies what methods work best
 - Tracks improvement over time
 
 ### 2. **Expertise Development**
+
 - Tracks expertise levels across 13 domains:
   - Syntax fixes
   - Error handling
@@ -35,16 +38,19 @@ Code Roach now has **meta-learning capabilities** - it learns to improve itself 
   - Backend patterns
 
 ### 3. **Strategy Optimization**
+
 - Adjusts strategy weights based on success rates
 - Learns when to use which fix method
 - Optimizes confidence thresholds
 
 ### 4. **Meta-Pattern Learning**
+
 - Learns "how to learn better"
 - Identifies patterns in successful fixes
 - Stores meta-patterns in knowledge base
 
 ### 5. **Self-Improvement**
+
 - Reviews its own code for issues
 - Identifies areas for improvement
 - Continuously refines itself
@@ -55,14 +61,14 @@ Code Roach now has **meta-learning capabilities** - it learns to improve itself 
 
 Code Roach tracks expertise from **0.0 to 5.0**:
 
-| Level | Name | Criteria |
-|-------|------|----------|
-| 0.0 | None | No experience |
-| 1.0-1.9 | Novice | 0-50% success, <10 fixes |
-| 2.0-2.9 | Beginner | 50-70% success, 10-50 fixes |
-| 3.0-3.9 | Intermediate | 70-85% success, 50-200 fixes |
-| 4.0-4.9 | Advanced | 85-95% success, 200-500 fixes |
-| 5.0 | Expert | 95%+ success, 500+ fixes |
+| Level   | Name         | Criteria                      |
+| ------- | ------------ | ----------------------------- |
+| 0.0     | None         | No experience                 |
+| 1.0-1.9 | Novice       | 0-50% success, <10 fixes      |
+| 2.0-2.9 | Beginner     | 50-70% success, 10-50 fixes   |
+| 3.0-3.9 | Intermediate | 70-85% success, 50-200 fixes  |
+| 4.0-4.9 | Advanced     | 85-95% success, 200-500 fixes |
+| 5.0     | Expert       | 95%+ success, 500+ fixes      |
 
 ---
 
@@ -71,11 +77,13 @@ Code Roach tracks expertise from **0.0 to 5.0**:
 ### Run Meta-Learning Analysis
 
 **Command:**
+
 ```bash
 npm run meta-learning
 ```
 
 **What it does:**
+
 1. Analyzes all fix attempts
 2. Calculates expertise levels
 3. Optimizes strategies
@@ -83,6 +91,7 @@ npm run meta-learning
 5. Self-reviews Code Roach's code
 
 **Output:**
+
 ```
 🧠 Code Roach Meta-Learning
 ==================================================
@@ -122,21 +131,25 @@ npm run meta-learning
 ### API Endpoints
 
 **Trigger Analysis:**
+
 ```bash
 POST /api/meta-learning/analyze
 ```
 
 **Get Expertise Levels:**
+
 ```bash
 GET /api/meta-learning/expertise
 ```
 
 **Get Strategy Weights:**
+
 ```bash
 GET /api/meta-learning/strategies
 ```
 
 **Get Full Insights:**
+
 ```bash
 GET /api/meta-learning/insights
 ```
@@ -206,12 +219,14 @@ GET /api/meta-learning/insights
 ## 📈 Benefits
 
 ### For Code Roach
+
 - ✅ **Self-improvement** - Gets better over time
 - ✅ **Expertise tracking** - Knows its strengths
 - ✅ **Strategy optimization** - Uses best methods
 - ✅ **Meta-learning** - Learns how to learn
 
 ### For Developers
+
 - ✅ **Better fixes** - Higher success rates
 - ✅ **Faster fixes** - Optimized strategies
 - ✅ **Domain expertise** - Leverages strengths
@@ -242,21 +257,27 @@ CREATE TABLE code_roach_expertise (
 ### Automatic Meta-Learning
 
 **Enable periodic analysis:**
+
 ```javascript
 // In server.js or cron job
-setInterval(async () => {
+setInterval(
+  async () => {
     await metaLearningService.analyzeAndLearn();
-}, 24 * 60 * 60 * 1000); // Every 24 hours
+  },
+  24 * 60 * 60 * 1000,
+); // Every 24 hours
 ```
 
 ### Manual Trigger
 
 **Via API:**
+
 ```bash
 curl -X POST http://localhost:3000/api/meta-learning/analyze
 ```
 
 **Via Script:**
+
 ```bash
 node scripts/run-meta-learning.js
 ```
@@ -268,11 +289,13 @@ node scripts/run-meta-learning.js
 ### View Expertise Dashboard
 
 **API:**
+
 ```bash
 curl http://localhost:3000/api/meta-learning/expertise
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -296,11 +319,13 @@ curl http://localhost:3000/api/meta-learning/expertise
 ### Track Improvement
 
 **Check improvement trend:**
+
 ```bash
 GET /api/meta-learning/insights
 ```
 
 **Response includes:**
+
 - Expertise levels over time
 - Success rate trends
 - Strategy optimization
@@ -333,6 +358,7 @@ Code Roach develops expertise in:
 ### What Makes Fixes Successful?
 
 Meta-learning identifies:
+
 - **Best methods** - Which fix method works best
 - **Confidence thresholds** - Optimal confidence ranges
 - **Domain expertise** - Where Code Roach excels
@@ -341,6 +367,7 @@ Meta-learning identifies:
 ### Strategy Optimization
 
 Strategies are weighted based on:
+
 - **Success rate** - Higher success = higher weight
 - **Reliability** - More data = more reliable
 - **Usage** - How often strategy is used
@@ -348,6 +375,7 @@ Strategies are weighted based on:
 ### Meta-Patterns
 
 Meta-patterns stored in knowledge base:
+
 - When to use which method
 - Optimal confidence thresholds
 - Domain-specific strategies
@@ -358,6 +386,7 @@ Meta-patterns stored in knowledge base:
 ## 🚀 Future Enhancements
 
 ### Planned Features
+
 - [ ] Cross-domain learning (apply expertise from one domain to another)
 - [ ] Collaborative learning (learn from other Code Roach instances)
 - [ ] Predictive expertise (predict success before attempting fix)
@@ -369,6 +398,7 @@ Meta-patterns stored in knowledge base:
 ## ✅ Summary
 
 **Code Roach Meta-Learning:**
+
 - ✅ Analyzes its own performance
 - ✅ Develops expertise across domains
 - ✅ Optimizes strategies
@@ -376,6 +406,7 @@ Meta-patterns stored in knowledge base:
 - ✅ Self-improves continuously
 
 **Result:**
+
 - 🎯 Code Roach becomes an expert developer
 - 📈 Success rates improve over time
 - 🚀 Better fixes, faster

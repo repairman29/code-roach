@@ -1,4 +1,5 @@
 # Code Roach Auto-Sync Guide
+
 ## Automatic Syncing with Timestamps
 
 ---
@@ -20,17 +21,20 @@ Code Roach can now automatically sync to the standalone structure with full time
 **Automatically syncs after each commit** that touches Code Roach files.
 
 **Setup:**
+
 ```bash
 # Hooks are already installed in .git/hooks/
 # They're automatically executable
 ```
 
 **How it works:**
+
 - After each commit, checks if Code Roach files changed
 - If yes, automatically runs sync
 - Timestamps the sync in manifest
 
 **Example:**
+
 ```bash
 git add server/services/codebaseIndexer.js
 git commit -m "Improve codebase indexing"
@@ -38,6 +42,7 @@ git commit -m "Improve codebase indexing"
 ```
 
 **Status:**
+
 - ✅ Installed: `.git/hooks/post-commit`
 - ✅ Active: Runs automatically
 - ✅ Timestamped: Every sync is logged
@@ -49,26 +54,31 @@ git commit -m "Improve codebase indexing"
 **Watches for file changes and syncs automatically.**
 
 **Start watching:**
+
 ```bash
 npm run code-roach:sync-watch
 ```
 
 **How it works:**
+
 - Watches Code Roach files for changes
 - Debounces (waits 2 seconds after last change)
 - Auto-syncs when files change
 - Logs all sync events with timestamps
 
 **Features:**
+
 - 👀 Watches: services, routes, UI, scripts, docs
-- ⏱️  Debounced: Waits 2s after last change
+- ⏱️ Debounced: Waits 2s after last change
 - 📝 Logged: All syncs logged to `.code-roach-sync.log`
 - 🔄 Periodic: Also checks every 5 minutes
 
 **Stop watching:**
+
 - Press `Ctrl+C`
 
 **Log file:**
+
 ```bash
 cat .code-roach-sync.log
 ```
@@ -84,6 +94,7 @@ npm run code-roach:sync-standalone
 ```
 
 **Output includes:**
+
 - ✅ Files copied/skipped
 - 🕐 Last sync timestamp
 - 📊 Sync count
@@ -115,11 +126,13 @@ Every sync updates `.sync-manifest.json`:
 ### Simple Timestamp File
 
 Quick check of last sync:
+
 ```bash
 cat ../code-roach-standalone/.last-sync
 ```
 
 Output:
+
 ```
 2025-12-14T07:30:48.829Z
 12/14/2025, 12:30:48 AM
@@ -145,6 +158,7 @@ Watch mode creates `.code-roach-sync.log`:
 ### For Active Development
 
 **Use Watch Mode:**
+
 ```bash
 # Terminal 1: Start watcher
 npm run code-roach:sync-watch
@@ -156,6 +170,7 @@ npm run code-roach:sync-watch
 ### For Git Workflow
 
 **Use Git Hooks (already active):**
+
 ```bash
 # Just commit normally
 git commit -m "Code Roach improvements"
@@ -165,6 +180,7 @@ git commit -m "Code Roach improvements"
 ### For Scheduled Syncs
 
 **Add to cron (optional):**
+
 ```bash
 # Sync every hour
 0 * * * * cd /path/to/smugglers && npm run code-roach:sync-standalone
@@ -197,6 +213,7 @@ grep "$(date +%Y-%m-%d)" .code-roach-sync.log
 ### Sync History
 
 The manifest tracks:
+
 - Total sync count
 - Last sync timestamp (ISO, human-readable, Unix)
 - Files synced
@@ -209,23 +226,26 @@ The manifest tracks:
 ### Git Hooks
 
 **Post-commit hook:** `.git/hooks/post-commit`
+
 - Syncs after commits with Code Roach changes
 - Can be disabled by removing execute permission
 
 **Pre-commit hook:** `.git/hooks/pre-commit`
+
 - Currently just checks (doesn't sync)
 - Uncomment sync line if you want pre-commit sync
 
 ### Watch Mode
 
 **Watched patterns** (in `sync-code-roach-standalone-watch.js`):
+
 ```javascript
 const WATCH_PATTERNS = [
-    'server/services/**/*.js',
-    'server/routes/api*.js',
-    'public/**/*code-roach*.html',
-    'scripts/batch-review-issues.js',
-    // ... more patterns
+  "server/services/**/*.js",
+  "server/routes/api*.js",
+  "public/**/*code-roach*.html",
+  "scripts/batch-review-issues.js",
+  // ... more patterns
 ];
 ```
 

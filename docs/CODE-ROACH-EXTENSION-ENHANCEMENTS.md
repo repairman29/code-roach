@@ -1,4 +1,5 @@
 # Code Roach VS Code Extension - Enhanced Features
+
 ## December 2024 - Major Update
 
 ---
@@ -54,6 +55,7 @@ The Code Roach VS Code extension has been significantly enhanced with **unique f
 ## 🚀 New Commands
 
 ### 1. **Show Code Roach Expertise** (`codeRoach.showExpertise`)
+
 - **Command:** `Code Roach: Show Code Roach Expertise (Meta-Learning)`
 - **What it does:** Displays Code Roach's expertise across 13 domains
 - **Shows:**
@@ -64,6 +66,7 @@ The Code Roach VS Code extension has been significantly enhanced with **unique f
   - Learning insights
 
 ### 2. **Show Learning Analytics** (`codeRoach.showLearningAnalytics`)
+
 - **Command:** `Code Roach: Show Learning Analytics`
 - **What it does:** Visualizes continuous learning progress
 - **Shows:**
@@ -74,6 +77,7 @@ The Code Roach VS Code extension has been significantly enhanced with **unique f
   - Learning velocity
 
 ### 3. **Show Language Knowledge** (`codeRoach.showLanguageKnowledge`)
+
 - **Command:** `Code Roach: Show Language Knowledge (1000+ Developers)`
 - **What it does:** Displays aggregated knowledge for current file's language
 - **Shows:**
@@ -83,6 +87,7 @@ The Code Roach VS Code extension has been significantly enhanced with **unique f
   - Language-specific patterns
 
 ### 4. **Quick Fix** (`codeRoach.quickFix`)
+
 - **Command:** Auto-fix via code action (lightbulb icon)
 - **What it does:** One-click fix for detected issues
 - **Features:**
@@ -96,6 +101,7 @@ The Code Roach VS Code extension has been significantly enhanced with **unique f
 ## 📊 Status Bar
 
 The status bar now shows:
+
 - **Expertise Level:** Novice → Beginner → Intermediate → Advanced → Expert
 - **Average Level:** Numeric value (0.0-5.0)
 - **Click Action:** Opens expertise dashboard
@@ -107,24 +113,28 @@ The status bar now shows:
 ## 🎯 Competitive Advantages Showcased
 
 ### 1. **Self-Improving AI** (Meta-Learning)
+
 - **What:** Code Roach learns from every fix
 - **How:** Expertise levels increase with experience
 - **Display:** Visual progress bars, experience counts
 - **Unique:** No competitor shows this
 
 ### 2. **Knowledge from 1000+ Developers**
+
 - **What:** Aggregated patterns from community
 - **How:** Language-specific best practices
 - **Display:** Best practices, common issues
 - **Unique:** Community knowledge aggregation
 
 ### 3. **Complete Learning Cycle**
+
 - **What:** Fix → Test → Deploy → Learn
 - **How:** Continuous learning analytics
 - **Display:** Learning cycles, success rates
 - **Unique:** End-to-end learning visualization
 
 ### 4. **Validated Fixes**
+
 - **What:** Tests before applying
 - **How:** Code actions with validation
 - **Display:** Quick fix suggestions
@@ -164,6 +174,7 @@ The status bar now shows:
 ## 📦 Building & Packaging
 
 ### Development
+
 ```bash
 cd .vscode-extension
 npm install
@@ -172,6 +183,7 @@ npm run compile
 ```
 
 ### Package for Distribution
+
 ```bash
 cd .vscode-extension
 npm install -g vsce
@@ -180,6 +192,7 @@ vsce package
 ```
 
 ### Install Locally
+
 ```bash
 code --install-extension code-roach-1.0.0.vsix
 ```
@@ -189,6 +202,7 @@ code --install-extension code-roach-1.0.0.vsix
 ## 🎨 UI/UX Improvements
 
 ### Webview Panels
+
 - **Dark Theme:** Matches VS Code's dark theme
 - **Color Coding:**
   - Green (#4ec9b0): Success, expertise
@@ -197,11 +211,13 @@ code --install-extension code-roach-1.0.0.vsix
   - Gray (#888): Secondary info
 
 ### Progress Indicators
+
 - Loading states for all async operations
 - Progress messages for long operations
 - Cancellable operations where appropriate
 
 ### Visualizations
+
 - Progress bars for expertise levels
 - Color-coded severity indicators
 - Interactive learning dashboards
@@ -212,21 +228,25 @@ code --install-extension code-roach-1.0.0.vsix
 ## 🚀 Usage Examples
 
 ### View Expertise
+
 1. Click status bar: `🪳 Code Roach: Advanced (3.5)`
 2. Or run command: `Code Roach: Show Code Roach Expertise`
 3. See expertise across 13 domains
 
 ### Get Language Knowledge
+
 1. Open a JavaScript/TypeScript file
 2. Run: `Code Roach: Show Language Knowledge`
 3. See best practices and common issues
 
 ### View Learning Progress
+
 1. Run: `Code Roach: Show Learning Analytics`
 2. See recent learning cycles
 3. Track success rates
 
 ### Quick Fix
+
 1. See issue in Problems panel
 2. Click lightbulb icon
 3. Select: `🪳 Code Roach: Auto-fix this issue`
@@ -237,18 +257,21 @@ code --install-extension code-roach-1.0.0.vsix
 ## 📈 Market Differentiation
 
 ### vs. SonarQube
+
 - ✅ Shows self-improving expertise
 - ✅ Community knowledge aggregation
 - ✅ Learning cycle visualization
 - ✅ Validated fixes
 
 ### vs. GitHub Copilot
+
 - ✅ Quality-focused (not just generation)
 - ✅ Learning from outcomes
 - ✅ Expertise tracking
 - ✅ Complete learning cycle
 
 ### vs. Cursor AI
+
 - ✅ Issue detection + fixing
 - ✅ Self-improvement tracking
 - ✅ Community knowledge
@@ -273,6 +296,7 @@ The enhanced Code Roach VS Code extension now showcases **all unique competitive
 ## 🔮 Future Enhancements
 
 ### Potential Additions
+
 - [ ] Tree view for issues
 - [ ] Real-time issue notifications
 - [ ] Learning progress notifications

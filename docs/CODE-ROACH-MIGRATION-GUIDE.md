@@ -13,6 +13,7 @@ If you just need Code Roach to work, apply the minimal migration:
 4. **Run** (should complete in < 5 seconds)
 
 This creates the 4 core tables needed for basic functionality:
+
 - ✅ `code_roach_issues` - Store issues
 - ✅ `code_roach_patterns` - Store patterns
 - ✅ `code_roach_file_health` - Track file health
@@ -23,6 +24,7 @@ This creates the 4 core tables needed for basic functionality:
 For complete functionality, apply the full migration in batches:
 
 ### Batch Files Location
+
 ```
 supabase/migrations-batches/
 ```
@@ -50,6 +52,7 @@ supabase/migrations-batches/
 ### Batch Application Process
 
 For each batch:
+
 1. Open Supabase Dashboard > SQL Editor
 2. Open the batch file
 3. Copy SQL
@@ -78,6 +81,7 @@ node scripts/check-code-roach-tables.js
 ```
 
 Expected output:
+
 ```
 ✅ code_roach_issues: 0 records
 ✅ code_roach_patterns: 0 records
@@ -89,18 +93,22 @@ Expected output:
 ## Troubleshooting
 
 ### Connection Timeout
+
 - **Cause:** Migration too large or complex
 - **Fix:** Use essential tables first, then apply batches
 
 ### "Table already exists" errors
+
 - **Safe to ignore** - Migrations use `IF NOT EXISTS`
 - Tables are idempotent
 
 ### "Column already exists" errors
+
 - **Safe to ignore** - Migrations check before adding columns
 - Indicates partial migration was applied
 
 ### Missing tables after batch
+
 - Check which batch failed
 - Re-run that specific batch
 - Verify with checker script
@@ -108,11 +116,13 @@ Expected output:
 ## Recommended Approach
 
 **For Quick Setup:**
+
 1. Apply `code_roach_essential_tables.sql` (4 core tables)
 2. Test Code Roach functionality
 3. Apply full batches later if needed
 
 **For Complete Setup:**
+
 1. Apply batches 1-16 sequentially
 2. Verify after each batch
 3. Test full functionality

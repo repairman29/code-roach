@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/patternSuggestionService.js
- * Last Sync: 2025-12-20T22:26:03.328Z
+ * Last Sync: 2025-12-25T04:10:02.872Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -14,18 +14,21 @@
  */
 
 const agentKnowledgeService = require('./agentKnowledgeService');
+const { createLogger } = require('../utils/logger');
+const log = createLogger('PatternSuggestionService');
 const codebaseSearch = require('./codebaseSearch');
 const { createClient } = require('@supabase/supabase-js');
 const config = require('../config');
+const { getSupabaseService } = require('../utils/supabaseClient');
 
 class PatternSuggestionService {
     constructor() {
         // Only create Supabase client if credentials are available
-        if (config.supabase.serviceRoleKey) {
+        if (config.getSupabaseService().serviceRoleKey) {
             try {
                 this.supabase = createClient(
-                    config.supabase.url,
-                    config.supabase.serviceRoleKey
+                    config.getSupabaseService().url,
+                    config.getSupabaseService().serviceRoleKey
                 );
             } catch (error) {
                 console.warn('[patternSuggestionService] Supabase not configured:', error.message);

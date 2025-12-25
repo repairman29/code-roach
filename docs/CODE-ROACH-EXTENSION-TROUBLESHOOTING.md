@@ -27,6 +27,7 @@ code --install-extension code-roach-1.0.0.vsix
 ```
 
 Or in Cursor:
+
 1. Open Command Palette (`Cmd+Shift+P`)
 2. Type: "Extensions: Install from VSIX..."
 3. Navigate to `.vscode-extension/code-roach-1.0.0.vsix`
@@ -51,6 +52,7 @@ This reloads the extension and registers all commands.
 ### Try Different Search Terms
 
 In Command Palette, try searching for:
+
 - `Code Roach`
 - `Show Issues`
 - `Issues Review`
@@ -133,14 +135,17 @@ Then reinstall the extension.
 If the extension still doesn't work, you can use:
 
 ### CLI Method
+
 ```bash
 npm run code-roach issues --review
 ```
 
 ### Dashboard Method
+
 Open: `http://localhost:3000/code-roach-dashboard`
 
 ### API Method
+
 ```bash
 curl http://localhost:3000/api/code-roach/issues/review
 ```
@@ -180,4 +185,3 @@ If the command exists but doesn't show in palette, you can execute it directly:
 3. Press Enter
 
 This bypasses the title search and uses the command ID directly.
-

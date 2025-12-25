@@ -9,21 +9,25 @@ This guide explains how to review issues in batches and teach Code Roach to auto
 ## 🚀 Quick Start
 
 ### 1. View Report
+
 ```bash
 npm run code-roach:review:report
 ```
 
 ### 2. Review Critical Issues
+
 ```bash
 npm run code-roach:review:critical
 ```
 
 ### 3. Batch Review with Auto-Approval
+
 ```bash
 npm run code-roach:review:batch
 ```
 
 ### 4. Interactive Review
+
 ```bash
 npm run code-roach:review:interactive
 ```
@@ -189,6 +193,7 @@ curl http://localhost:3000/api/code-roach/learning/stats
 ```
 
 Returns:
+
 - Fix learning statistics
 - Knowledge base statistics
 - Pattern counts
@@ -201,6 +206,7 @@ Returns:
 ### 1. Review by Priority
 
 Always review in this order:
+
 1. **Critical** security issues
 2. **High** severity issues
 3. **Security** issues (any severity)
@@ -210,6 +216,7 @@ Always review in this order:
 ### 2. Batch Similar Issues
 
 Group similar issues together:
+
 - Same type (e.g., all XSS fixes)
 - Same file (e.g., all issues in one file)
 - Same pattern (e.g., all line length fixes)
@@ -217,6 +224,7 @@ Group similar issues together:
 ### 3. Add Notes
 
 Always add notes when reviewing:
+
 - Why you approved/rejected
 - What the fix does
 - Any context needed
@@ -224,6 +232,7 @@ Always add notes when reviewing:
 ### 4. Verify Fixes
 
 Before auto-fixing:
+
 - Review the fix code
 - Test in a safe environment
 - Verify it doesn't break anything
@@ -231,6 +240,7 @@ Before auto-fixing:
 ### 5. Learn Patterns
 
 When you see the same issue multiple times:
+
 - Create a batch pattern
 - Teach Code Roach the pattern
 - Let it auto-fix next time
@@ -242,8 +252,8 @@ When you see the same issue multiple times:
 ### Custom Batch Processing
 
 ```javascript
-const BatchReviewer = require('./scripts/batch-review-issues');
-const batchLearningService = require('./server/services/batchLearningService');
+const BatchReviewer = require("./scripts/batch-review-issues");
+const batchLearningService = require("./server/services/batchLearningService");
 
 // Get issues
 const reviewer = new BatchReviewer();
@@ -254,34 +264,34 @@ const prioritized = reviewer.prioritizeIssues(issues);
 
 // Review and fix
 for (const issue of prioritized) {
-    // Your custom logic
-    if (shouldAutoApprove(issue)) {
-        await reviewer.reviewIssue(issue, 'approve');
-        if (issue.fix?.code) {
-            await reviewer.applyFixAndLearn(issue, issue.fix.code, issue.error?.file);
-        }
+  // Your custom logic
+  if (shouldAutoApprove(issue)) {
+    await reviewer.reviewIssue(issue, "approve");
+    if (issue.fix?.code) {
+      await reviewer.applyFixAndLearn(issue, issue.fix.code, issue.error?.file);
     }
+  }
 }
 ```
 
 ### Create Batch Patterns
 
 ```javascript
-const batchLearningService = require('./server/services/batchLearningService');
+const batchLearningService = require("./server/services/batchLearningService");
 
 await batchLearningService.learnBatchPattern({
-    name: 'Auto-fix line length',
-    description: 'Automatically fix lines exceeding 120 characters',
-    criteria: {
-        type: 'style',
-        message: 'exceeds 120 characters'
-    },
-    action: 'auto-fix',
-    successRate: 98,
-    examples: [
-        'Split long lines into multiple lines',
-        'Extract variables for long expressions'
-    ]
+  name: "Auto-fix line length",
+  description: "Automatically fix lines exceeding 120 characters",
+  criteria: {
+    type: "style",
+    message: "exceeds 120 characters",
+  },
+  action: "auto-fix",
+  successRate: 98,
+  examples: [
+    "Split long lines into multiple lines",
+    "Extract variables for long expressions",
+  ],
 });
 ```
 
@@ -337,6 +347,7 @@ curl -X POST http://localhost:3000/api/code-roach/learning/batch/auto \
 ### Auto-Batching Not Working
 
 1. Check if patterns exist:
+
    ```bash
    curl http://localhost:3000/api/code-roach/learning/batch/rules
    ```
@@ -364,6 +375,7 @@ curl -X POST http://localhost:3000/api/code-roach/learning/batch/auto \
 ## 🎉 Summary
 
 **Batch Review Process:**
+
 1. Review issues in batches
 2. Apply fixes
 3. Code Roach learns from fixes
@@ -371,12 +383,14 @@ curl -X POST http://localhost:3000/api/code-roach/learning/batch/auto \
 5. Code Roach auto-batches similar issues
 
 **Key Commands:**
+
 - `npm run code-roach:review:report` - View report
 - `npm run code-roach:review:critical` - Review critical
 - `npm run code-roach:review:batch` - Batch review
 - `npm run code-roach:review:interactive` - Interactive review
 
 **Learning:**
+
 - Fixes are automatically learned
 - Patterns can be manually added
 - Auto-batching uses learned patterns

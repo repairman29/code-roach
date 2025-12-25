@@ -47,22 +47,27 @@
 ### What Gets Synced Automatically:
 
 **✅ Services** (79+ files):
+
 - All services in `server/services/` matching the FILE_MAPPINGS list
 - `autonomousMode.js` ✅ (in list)
 - `codebaseCrawler.js` ✅ (in list)
 - `codebaseWatcher.js` ✅ (in list)
 
 **✅ Routes**:
+
 - `codeRoachAPI.js` ✅ (in list)
 
 **✅ UI**:
+
 - `code-roach-dashboard.html` ✅ (in list)
 - All Code Roach HTML files ✅
 
 **✅ Docs**:
+
 - All `CODE-ROACH-*.md` files ✅ (wildcard sync)
 
 **⚠️ May Need Manual Addition**:
+
 - `issueStorageService.js` - Core service, should be synced
 - `databaseService.js` - Infrastructure service, should be synced
 
@@ -73,12 +78,14 @@
 ### 1. Verify Missing Services
 
 **Check if these are in standalone**:
+
 ```bash
 ls -la ../code-roach-standalone/src/services/issueStorageService.js
 ls -la ../code-roach-standalone/src/services/databaseService.js
 ```
 
 **If missing, add to sync script**:
+
 - Add `'issueStorageService.js'` to services list
 - Add `'databaseService.js'` to services list
 
@@ -87,6 +94,7 @@ ls -la ../code-roach-standalone/src/services/databaseService.js
 **File**: `scripts/sync-code-roach-standalone.js`
 
 **Add to services list** (around line 138):
+
 ```javascript
 // Infrastructure Services
 'issueStorageService.js',
@@ -138,6 +146,7 @@ npm run code-roach:sync-standalone
 ### Immediate (High Priority):
 
 1. **Verify Core Services**:
+
    ```bash
    cd ../code-roach-standalone
    ls -la src/services/issueStorageService.js
@@ -205,6 +214,7 @@ After making Code Roach changes:
 These services **MUST** be synced for Code Roach to work:
 
 ### Core Services:
+
 - ✅ `codebaseCrawler.js` - Issue detection
 - ✅ `codebaseWatcher.js` - File watching
 - ✅ `autonomousMode.js` - Autonomous scanning
@@ -212,14 +222,17 @@ These services **MUST** be synced for Code Roach to work:
 - ⚠️ `databaseService.js` - **NEEDS VERIFICATION**
 
 ### Infrastructure:
+
 - ✅ `codebaseIndexer.js` - Codebase indexing
 - ✅ `codebaseSearch.js` - Semantic search
 - ✅ `llmService.js` - LLM operations
 
 ### Routes:
+
 - ✅ `codeRoachAPI.js` - API endpoints
 
 ### UI:
+
 - ✅ `code-roach-dashboard.html` - Dashboard
 - ✅ `code-roach-issues.html` - Issues page
 - ✅ `code-roach-projects.html` - Projects page
@@ -246,4 +259,3 @@ These services **MUST** be synced for Code Roach to work:
 
 **Last Updated**: December 17, 2025  
 **Status**: ✅ In Sync (pending verification of core services)
-

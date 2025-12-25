@@ -35,6 +35,7 @@ npm run code-roach:push-to-repo
 ```
 
 This will:
+
 1. ✅ Sync Code Roach files (if not already done)
 2. ✅ Initialize git repository
 3. ✅ Configure remote to `https://github.com/repairman29/coderoach.git`
@@ -48,12 +49,14 @@ This will:
 ### What's Protected
 
 ✅ **Smugglers Repository:**
+
 - Not touched at all
 - No changes to Smugglers git
 - No commits to Smugglers repo
 - Completely safe
 
 ✅ **Standalone Directory:**
+
 - Created in separate location (`../code-roach-standalone/`)
 - Independent git repository
 - Can be deleted/recreated safely
@@ -82,6 +85,7 @@ This will:
 ### 1. GitHub Repository
 
 Make sure the repository exists:
+
 - ✅ https://github.com/repairman29/coderoach
 - ✅ Can be empty (preferred for initial push)
 - ✅ You have push access
@@ -102,6 +106,7 @@ chmod +x scripts/push-code-roach-to-repo.sh
 ### 3. Git Configuration
 
 Make sure git is configured:
+
 ```bash
 git config --global user.name "Your Name"
 git config --global user.email "your.email@example.com"
@@ -153,11 +158,13 @@ git push -u origin main
 **To update Code Roach in the repo:**
 
 1. **Make changes in Smugglers:**
+
    ```bash
    # Edit Code Roach files in smugglers/
    ```
 
 2. **Sync to standalone:**
+
    ```bash
    npm run code-roach:sync-standalone
    ```
@@ -219,6 +226,7 @@ smugglers/                      # Original (untouched)
 ### What Gets Pushed
 
 ✅ **Included:**
+
 - All Code Roach services
 - API routes
 - CLI tools
@@ -227,6 +235,7 @@ smugglers/                      # Original (untouched)
 - Configuration files
 
 ❌ **Excluded:**
+
 - Smugglers game code
 - Game-specific services
 - Test files (optional)
@@ -244,6 +253,7 @@ smugglers/                      # Original (untouched)
    - Check commit history
 
 2. **Check Local:**
+
    ```bash
    cd ../code-roach-standalone
    git status
@@ -265,6 +275,7 @@ smugglers/                      # Original (untouched)
 ### "Repository not empty"
 
 If the repo already has content:
+
 - Script will ask if you want to continue
 - You can pull first: `git pull origin main --allow-unrelated-histories`
 - Or force push (if you're sure)
@@ -272,6 +283,7 @@ If the repo already has content:
 ### "Permission denied"
 
 Make sure you have push access:
+
 - Check GitHub permissions
 - Verify SSH keys or token
 - Try: `git remote set-url origin https://YOUR_TOKEN@github.com/repairman29/coderoach.git`
@@ -279,6 +291,7 @@ Make sure you have push access:
 ### "Sync script not found"
 
 Make sure you're in the Smugglers directory:
+
 ```bash
 cd smugglers
 pwd  # Should show .../smugglers
@@ -287,6 +300,7 @@ pwd  # Should show .../smugglers
 ### "Standalone directory not found"
 
 Run sync first:
+
 ```bash
 npm run code-roach:sync-standalone
 ```
@@ -296,12 +310,14 @@ npm run code-roach:sync-standalone
 ## 📝 Next Steps After Migration
 
 1. **Set up Railway:**
+
    ```bash
    cd ../code-roach-standalone
    npm run railway:link-code-roach
    ```
 
 2. **Deploy:**
+
    ```bash
    npm run deploy:infrastructure
    ```
@@ -319,17 +335,20 @@ npm run code-roach:sync-standalone
 ## ✅ Checklist
 
 Before migration:
+
 - [ ] Repository exists and is accessible
 - [ ] You have push access
 - [ ] Git is configured
 - [ ] Sync script works: `npm run code-roach:sync-standalone`
 
 During migration:
+
 - [ ] Run: `npm run code-roach:push-to-repo`
 - [ ] Review what will be pushed
 - [ ] Confirm push
 
 After migration:
+
 - [ ] Verify files in GitHub
 - [ ] Test clone
 - [ ] Set up Railway

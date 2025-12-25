@@ -1,4 +1,5 @@
 # Code Roach: Automatic Detection Setup
+
 ## Active Issue Detection During Development
 
 ---
@@ -12,18 +13,21 @@ Code Roach now automatically detects issues while you're developing! It runs in 
 ## ✅ What's Now Active (Development Mode)
 
 ### 1. File Watcher (Real-Time)
+
 - ✅ **Watches** `server/`, `public/`, `scripts/` directories
 - ✅ **Detects issues** when files change
 - ✅ **Debounced** - Waits 3 seconds after last change
 - ✅ **Automatic** - No manual action needed
 
 ### 2. Initial Crawl (Optional)
+
 - ✅ **Runs on server start** (if enabled)
 - ✅ **Background process** - Doesn't block server
 - ✅ **Finds issues** in existing code
 - ✅ **Auto-fixes** (if enabled)
 
 ### 3. Periodic Crawls (Optional)
+
 - ✅ **Runs every 6 hours** (if enabled)
 - ✅ **Comprehensive scan** of codebase
 - ✅ **Review required** - Safe for periodic scans
@@ -53,12 +57,14 @@ CODE_ROACH_PERIODIC_CRAWL=false
 ### Default Behavior
 
 **Development Mode (`NODE_ENV=development`):**
+
 - ✅ File watcher: **Enabled**
 - ❌ Initial crawl: **Disabled** (set `CODE_ROACH_AUTO_CRAWL=true`)
 - ❌ Auto-fix: **Disabled** (set `CODE_ROACH_AUTO_FIX=true`)
 - ❌ Periodic crawl: **Disabled** (set `CODE_ROACH_PERIODIC_CRAWL=true`)
 
 **Production Mode:**
+
 - ❌ All automatic detection: **Disabled**
 - ✅ Alert service: **Enabled** (monitors existing issues)
 
@@ -111,6 +117,7 @@ CODE_ROACH_PERIODIC_CRAWL=false
 ### Console Output
 
 **On Server Start:**
+
 ```
 ⚡ Code Roach Lightning Ship: Alert service started
 👀 Code Roach: File watcher started (real-time issue detection)
@@ -118,12 +125,14 @@ CODE_ROACH_PERIODIC_CRAWL=false
 ```
 
 **When File Changes:**
+
 ```
 [WATCHER] Re-indexing 1 changed file(s)...
 🔍 Detected 3 issue(s) in server/services/myService.js
 ```
 
 **After Initial Crawl:**
+
 ```
 ✅ [Code Roach] Initial crawl complete: 534 issues found, 254 auto-fixed
 ```
@@ -143,6 +152,7 @@ CODE_ROACH_PERIODIC_CRAWL=true
 ```
 
 **Result:**
+
 - Real-time file watching
 - Initial crawl on start
 - Auto-fixes issues
@@ -159,6 +169,7 @@ CODE_ROACH_PERIODIC_CRAWL=false
 ```
 
 **Result:**
+
 - Real-time file watching only
 - No automatic crawling
 - No auto-fixing
@@ -175,6 +186,7 @@ CODE_ROACH_PERIODIC_CRAWL=false
 ```
 
 **Result:**
+
 - Real-time file watching
 - Initial crawl on start
 - Issues detected but not auto-fixed
@@ -190,9 +202,9 @@ Edit `server/server.js`:
 
 ```javascript
 const watcher = new CodebaseWatcher({
-    watchPaths: ['server', 'public', 'scripts', 'tests'], // Add more
-    debounceMs: 5000, // Increase debounce time
-    detectIssues: true
+  watchPaths: ["server", "public", "scripts", "tests"], // Add more
+  debounceMs: 5000, // Increase debounce time
+  detectIssues: true,
 });
 ```
 
@@ -213,18 +225,21 @@ detectIssues: false, // Only re-index, don't detect issues
 ## 📈 Performance Impact
 
 ### File Watcher
+
 - **CPU:** Low (~1-2% when idle)
 - **Memory:** Minimal (~10-20MB)
 - **Disk I/O:** Only on file changes
 - **Network:** None
 
 ### Initial Crawl
+
 - **CPU:** Moderate (during crawl)
 - **Memory:** Moderate (~50-100MB)
 - **Disk I/O:** High (reading all files)
 - **Network:** API calls for embeddings
 
 ### Recommendations
+
 - ✅ **File watcher:** Safe to always enable
 - ⚠️ **Initial crawl:** Enable if you want comprehensive scan
 - ⚠️ **Auto-fix:** Use carefully, review first
@@ -237,11 +252,13 @@ detectIssues: false, // Only re-index, don't detect issues
 ### Watcher Not Starting
 
 **Check:**
+
 1. Is `NODE_ENV=development`?
 2. Is `CODE_ROACH_AUTO_DETECT=true`?
 3. Check console for errors
 
 **Fix:**
+
 ```bash
 export NODE_ENV=development
 export CODE_ROACH_AUTO_DETECT=true
@@ -251,6 +268,7 @@ npm run dev
 ### Too Many Issues Detected
 
 **Solution:**
+
 - Increase debounce time
 - Disable auto-fix
 - Review issues before fixing
@@ -258,6 +276,7 @@ npm run dev
 ### Performance Issues
 
 **Solution:**
+
 - Reduce watched directories
 - Increase debounce time
 - Disable initial crawl
@@ -270,6 +289,7 @@ npm run dev
 ### Minimal Setup (Recommended)
 
 1. **Start server:**
+
    ```bash
    npm run dev
    ```
@@ -281,6 +301,7 @@ npm run dev
 ### Full Setup
 
 1. **Add to `.env`:**
+
    ```bash
    CODE_ROACH_AUTO_DETECT=true
    CODE_ROACH_AUTO_CRAWL=true
@@ -288,6 +309,7 @@ npm run dev
    ```
 
 2. **Start server:**
+
    ```bash
    npm run dev
    ```

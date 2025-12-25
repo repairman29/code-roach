@@ -29,6 +29,7 @@
 **Critical:** API endpoint path corrections needed in `.vscode-extension/src/extension.ts`
 
 **4 Simple Fixes Required:**
+
 1. Health score endpoint path
 2. Code review endpoint path
 3. Auto-fix endpoint path
@@ -41,7 +42,9 @@
 ## 📋 For the Code Roach Team
 
 ### Primary Document
+
 **📄 `docs/CODE-ROACH-VSCODE-EXTENSION-SPEC.md`**
+
 - Complete API documentation
 - Exact code fixes needed
 - Testing checklist
@@ -52,12 +55,14 @@
 **File to Edit:** `.vscode-extension/src/extension.ts`
 
 **Changes Needed:**
+
 - Line ~42: Change `/api/code-roach/health-score` → `/api/code-roach/health/:filePath`
 - Line ~47: Change `/api/code-roach/code-review` → `/api/code-roach/review`
 - Line ~54: Change `/api/code-roach/code-review/autofix` → `/api/code-roach/review/autofix`
 - Line ~61: Change `/api/code-roach/nl-query` → `/api/code-roach/query`
 
 ### Testing
+
 After fixes, test all 4 commands work end-to-end.
 
 ---
@@ -65,6 +70,7 @@ After fixes, test all 4 commands work end-to-end.
 ## 🎯 Completion Criteria
 
 Extension is complete when:
+
 - ✅ All API paths corrected
 - ✅ All 4 commands tested
 - ✅ Extension packages successfully
@@ -73,4 +79,3 @@ Extension is complete when:
 ---
 
 **Ready for the team!** 🚀
-

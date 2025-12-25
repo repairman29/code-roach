@@ -37,6 +37,7 @@ code-roach-saas crawl --project <project-id>
 ```
 
 **Options:**
+
 - `-d, --dir <path>` - Root directory (default: current directory)
 - `-p, --project <id>` - Project ID
 - `-a, --auto-fix` - Auto-fix issues
@@ -154,6 +155,7 @@ npm run code-roach:test
 ```
 
 Tests:
+
 - Codebase Crawler
 - Job Queue
 - Cache Service
@@ -267,10 +269,12 @@ code-roach-saas github --repo https://github.com/myorg/myrepo --file src/index.j
 ## 🔧 Environment Variables
 
 Required:
+
 - `SUPABASE_URL` - Supabase project URL
 - `SUPABASE_SERVICE_ROLE_KEY` - Service role key
 
 Optional:
+
 - `REDIS_URL` - Redis connection URL (for queue/cache)
 - `GITHUB_TOKEN` - GitHub personal access token
 - `GITHUB_WEBHOOK_SECRET` - Webhook secret

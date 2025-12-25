@@ -13,9 +13,11 @@ Code Roach has multiple ways to review and action issues that need human review:
 1. **Open Command Palette** (`Cmd+Shift+P` on Mac, `Ctrl+Shift+P` on Windows/Linux)
 
 2. **Run Command**: Type and select:
+
    ```
    Code Roach: Show Issues Needing Review
    ```
+
    Or use the command ID: `codeRoach.showIssues`
 
 3. **Review Panel Opens**: A side panel will show all issues needing review with:
@@ -209,4 +211,3 @@ git diff
 ---
 
 **Need Help?** Check the dashboard at `http://localhost:3000/code-roach-dashboard` for detailed statistics and issue tracking.
-

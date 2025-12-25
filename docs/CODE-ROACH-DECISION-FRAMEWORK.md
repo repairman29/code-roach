@@ -10,15 +10,16 @@
 
 ### Infrastructure Stack
 
-| Decision | Option 1 (MVP) | Option 2 (Scale) | Recommendation |
-|----------|---------------|------------------|----------------|
-| **Hosting** | Vercel (Serverless) | Railway/Render (Containers) | **Hybrid: Vercel + Railway** |
-| **Database** | Supabase | AWS RDS | **Supabase** (Phase 1-2) |
-| **Cache/Queue** | Upstash Redis | AWS ElastiCache | **Upstash** (Phase 1-2) |
-| **CDN** | Cloudflare Free | Cloudflare Pro | **Cloudflare Free** (Phase 1) |
-| **Monitoring** | Sentry + Logtail | Datadog | **Sentry + Logtail** (Phase 1) |
+| Decision        | Option 1 (MVP)      | Option 2 (Scale)            | Recommendation                 |
+| --------------- | ------------------- | --------------------------- | ------------------------------ |
+| **Hosting**     | Vercel (Serverless) | Railway/Render (Containers) | **Hybrid: Vercel + Railway**   |
+| **Database**    | Supabase            | AWS RDS                     | **Supabase** (Phase 1-2)       |
+| **Cache/Queue** | Upstash Redis       | AWS ElastiCache             | **Upstash** (Phase 1-2)        |
+| **CDN**         | Cloudflare Free     | Cloudflare Pro              | **Cloudflare Free** (Phase 1)  |
+| **Monitoring**  | Sentry + Logtail    | Datadog                     | **Sentry + Logtail** (Phase 1) |
 
 **Rationale:**
+
 - **MVP:** Fast to deploy, low cost, minimal ops
 - **Scale:** Add containers for workers, keep serverless for API
 - **Enterprise:** Full container orchestration, managed services
@@ -27,15 +28,15 @@
 
 ### Technology Decisions
 
-| Component | Technology | Rationale |
-|-----------|-----------|-----------|
-| **Backend** | Node.js/Express | ✅ Already built, team expertise |
-| **Database** | PostgreSQL (Supabase) | ✅ Already integrated, good DX |
-| **Cache** | Redis (Upstash) | ✅ Fast, reliable, serverless option |
-| **Queue** | BullMQ | ✅ Node.js native, Redis-backed |
-| **Auth** | Supabase Auth | ✅ Built-in, OAuth support |
-| **LLM** | OpenAI GPT-4 | ✅ Best quality, can add Anthropic later |
-| **Monitoring** | Sentry | ✅ Already integrated, good free tier |
+| Component      | Technology            | Rationale                                |
+| -------------- | --------------------- | ---------------------------------------- |
+| **Backend**    | Node.js/Express       | ✅ Already built, team expertise         |
+| **Database**   | PostgreSQL (Supabase) | ✅ Already integrated, good DX           |
+| **Cache**      | Redis (Upstash)       | ✅ Fast, reliable, serverless option     |
+| **Queue**      | BullMQ                | ✅ Node.js native, Redis-backed          |
+| **Auth**       | Supabase Auth         | ✅ Built-in, OAuth support               |
+| **LLM**        | OpenAI GPT-4          | ✅ Best quality, can add Anthropic later |
+| **Monitoring** | Sentry                | ✅ Already integrated, good free tier    |
 
 ---
 
@@ -43,11 +44,11 @@
 
 ### Infrastructure Costs (1,000 users)
 
-| Option | Monthly Cost | Pros | Cons |
-|--------|-------------|------|------|
-| **Serverless-First** | $400-1,000 | Low ops, auto-scale | Cold starts, vendor lock-in |
-| **Container-Based** | $1,000-3,000 | Full control, better perf | More ops, manual scaling |
-| **Hybrid** | $800-2,000 | Best of both | More complex |
+| Option               | Monthly Cost | Pros                      | Cons                        |
+| -------------------- | ------------ | ------------------------- | --------------------------- |
+| **Serverless-First** | $400-1,000   | Low ops, auto-scale       | Cold starts, vendor lock-in |
+| **Container-Based**  | $1,000-3,000 | Full control, better perf | More ops, manual scaling    |
+| **Hybrid**           | $800-2,000   | Best of both              | More complex                |
 
 **Recommendation:** Start with **Hybrid** - Vercel for API, Railway for workers.
 
@@ -58,6 +59,7 @@
 **Current:** ~$0.01-0.05 per fix (GPT-4)
 
 **Optimization Strategies:**
+
 1. **Cache common fixes** → 50-70% cost reduction
 2. **Use GPT-3.5 for simple fixes** → 10x cost reduction
 3. **Fine-tune models** → 5-10x cost reduction long-term
@@ -71,24 +73,25 @@
 
 ### Launch Strategy
 
-| Approach | Pros | Cons | Recommendation |
-|----------|------|------|----------------|
-| **Product Hunt First** | High visibility, early adopters | One-shot opportunity | ✅ **Yes** - Do this |
-| **Direct Outreach** | Targeted, personal | Time-consuming | ✅ **Yes** - Parallel |
-| **Content Marketing** | Long-term, SEO | Slow start | ✅ **Yes** - Start early |
-| **Paid Ads** | Fast results | Expensive, low ROI early | ❌ **No** - Wait for PMF |
+| Approach               | Pros                            | Cons                     | Recommendation           |
+| ---------------------- | ------------------------------- | ------------------------ | ------------------------ |
+| **Product Hunt First** | High visibility, early adopters | One-shot opportunity     | ✅ **Yes** - Do this     |
+| **Direct Outreach**    | Targeted, personal              | Time-consuming           | ✅ **Yes** - Parallel    |
+| **Content Marketing**  | Long-term, SEO                  | Slow start               | ✅ **Yes** - Start early |
+| **Paid Ads**           | Fast results                    | Expensive, low ROI early | ❌ **No** - Wait for PMF |
 
 ---
 
 ### Pricing Strategy
 
-| Tier | Price | Target | Rationale |
-|------|-------|--------|-----------|
-| **Starter** | $99/mo | Individual devs | Low barrier, high volume |
-| **Professional** | $499/mo | Small teams | Sweet spot, good margins |
-| **Enterprise** | Custom | Large orgs | High value, high margin |
+| Tier             | Price   | Target          | Rationale                |
+| ---------------- | ------- | --------------- | ------------------------ |
+| **Starter**      | $99/mo  | Individual devs | Low barrier, high volume |
+| **Professional** | $499/mo | Small teams     | Sweet spot, good margins |
+| **Enterprise**   | Custom  | Large orgs      | High value, high margin  |
 
 **Free Tier?**
+
 - ❌ **No free tier initially** - Focus on paying customers
 - ✅ **14-day free trial** - Remove friction
 - ✅ **Open source discount** - Build community
@@ -102,12 +105,14 @@
 **Decision:** **Modular Monolith** (Phase 1-2)
 
 **Rationale:**
+
 - ✅ Faster development
 - ✅ Easier debugging
 - ✅ Lower operational complexity
 - ✅ Can extract services later
 
 **When to Split:**
+
 - Team size > 10 engineers
 - Different scaling needs
 - Independent deployment needs
@@ -119,12 +124,14 @@
 **Decision:** **Single Database** (Supabase) with logical separation
 
 **Rationale:**
+
 - ✅ Simpler operations
 - ✅ ACID transactions
 - ✅ Good performance for scale
 - ✅ Can shard later if needed
 
 **When to Shard:**
+
 - > 10M rows per table
 - > 100GB database size
 - Geographic distribution needed
@@ -140,6 +147,7 @@
 3. **In-Memory** - Hot data (Node.js)
 
 **Cache Invalidation:**
+
 - Time-based (TTL) - Default
 - Event-based - On updates
 - Manual - Admin actions
@@ -153,6 +161,7 @@
 **Decision:** **Supabase Auth** (JWT tokens)
 
 **Rationale:**
+
 - ✅ Already integrated
 - ✅ OAuth support
 - ✅ Secure by default
@@ -167,6 +176,7 @@
 **Decision:** **Supabase encryption** (at rest) + **TLS** (in transit)
 
 **Rationale:**
+
 - ✅ Handled by Supabase
 - ✅ No additional work
 - ✅ Industry standard
@@ -180,17 +190,20 @@
 ### What to Monitor
 
 **Must-Have:**
+
 - ✅ Error rate
 - ✅ Response time
 - ✅ Uptime
 - ✅ Fix success rate
 
 **Nice-to-Have:**
+
 - Business metrics (users, revenue)
 - User behavior (PostHog)
 - Performance profiling
 
 **Tool Stack:**
+
 - **Sentry** - Error tracking (already in use)
 - **Logtail** - Log aggregation ($29/mo)
 - **UptimeRobot** - Uptime monitoring (free)
@@ -240,23 +253,23 @@
 
 ### Technical Risks
 
-| Risk | Impact | Probability | Mitigation |
-|------|--------|-------------|------------|
-| **LLM costs too high** | High | Medium | Cache, use cheaper models |
-| **Scaling issues** | High | Low | Start with serverless, monitor |
-| **Data loss** | Critical | Low | Automated backups, testing |
-| **Security breach** | Critical | Low | Security audit, monitoring |
+| Risk                   | Impact   | Probability | Mitigation                     |
+| ---------------------- | -------- | ----------- | ------------------------------ |
+| **LLM costs too high** | High     | Medium      | Cache, use cheaper models      |
+| **Scaling issues**     | High     | Low         | Start with serverless, monitor |
+| **Data loss**          | Critical | Low         | Automated backups, testing     |
+| **Security breach**    | Critical | Low         | Security audit, monitoring     |
 
 ---
 
 ### Business Risks
 
-| Risk | Impact | Probability | Mitigation |
-|------|--------|-------------|------------|
-| **No product-market fit** | Critical | Medium | Early user feedback, iterate |
-| **Competition** | High | High | Focus on differentiation |
-| **Pricing too high** | Medium | Medium | Flexible pricing, trials |
-| **Team scaling** | Medium | Medium | Hire early, document well |
+| Risk                      | Impact   | Probability | Mitigation                   |
+| ------------------------- | -------- | ----------- | ---------------------------- |
+| **No product-market fit** | Critical | Medium      | Early user feedback, iterate |
+| **Competition**           | High     | High        | Focus on differentiation     |
+| **Pricing too high**      | Medium   | Medium      | Flexible pricing, trials     |
+| **Team scaling**          | Medium   | Medium      | Hire early, document well    |
 
 ---
 

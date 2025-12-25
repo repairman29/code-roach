@@ -46,6 +46,7 @@ npm install
 ```
 
 **Required packages:**
+
 - `bullmq` - Job queue
 - `ioredis` - Redis client
 - `@octokit/rest` - GitHub API
@@ -57,6 +58,7 @@ npm install
 ### 3. Database Migration
 
 **Option A: Supabase Dashboard**
+
 1. Go to https://supabase.com/dashboard
 2. Select your project
 3. Go to SQL Editor
@@ -64,12 +66,14 @@ npm install
 5. Paste and run
 
 **Option B: Supabase CLI**
+
 ```bash
 supabase link --project-ref YOUR_PROJECT_REF
 supabase db push
 ```
 
 **Option C: Manual SQL**
+
 - Open `supabase/migrations/20251213_code_roach_saas.sql`
 - Copy SQL
 - Run in Supabase SQL Editor
@@ -145,18 +149,22 @@ code-roach-saas stats
 ## 🎯 Common Issues & Solutions
 
 ### Issue: "Redis URL not configured"
+
 **Solution:** Set `REDIS_URL` or `UPSTASH_REDIS_REST_URL` in `.env`
 **Impact:** Job queue and cache will use in-memory fallback (works but not persistent)
 
 ### Issue: "Database tables not found"
+
 **Solution:** Run database migration (see Step 3)
 **Impact:** Issue storage won't work until migration is run
 
 ### Issue: "GitHub token not configured"
+
 **Solution:** Set `GITHUB_TOKEN` in `.env` (optional)
 **Impact:** GitHub integration features won't work
 
 ### Issue: "Supabase connection failed"
+
 **Solution:** Check `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`
 **Impact:** Database operations won't work
 
@@ -182,6 +190,7 @@ After running setup, you'll see:
 Once setup is complete, Code Roach is ready to use!
 
 **Next Steps:**
+
 1. Run your first crawl
 2. Explore the CLI commands
 3. Set up GitHub webhooks (optional)

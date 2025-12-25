@@ -10,6 +10,7 @@
 This Railway project is dedicated to **Code Roach** and the **99.99% uptime infrastructure** deployment.
 
 **Separate from:**
+
 - `lucky-grace` - Existing Smugglers production deployment
 
 ---
@@ -25,6 +26,7 @@ npm run railway:link-code-roach
 ```
 
 This script will:
+
 1. ✅ Check if already linked
 2. ✅ Unlink current project if needed
 3. ✅ Link to Code Roach project
@@ -52,6 +54,7 @@ npm run railway:check
 ```
 
 **Expected output:**
+
 ```
 ✅ Project is NOT 'lucky-grace'
 Safe to proceed with deployment.
@@ -68,6 +71,7 @@ npm run deploy:infrastructure
 ```
 
 This will:
+
 1. ✅ Verify project is not "lucky-grace"
 2. ✅ Check environment variables
 3. ✅ Sync variables to Railway
@@ -82,11 +86,13 @@ This will:
 Set these in Railway dashboard or via CLI:
 
 **Required:**
+
 - `SUPABASE_URL`
 - `SUPABASE_SERVICE_ROLE_KEY`
 - `NODE_ENV=production`
 
 **Optional (for 99.99% uptime):**
+
 - `SUPABASE_READ_REPLICA_1_URL`
 - `SUPABASE_READ_REPLICA_2_URL`
 - `UPSTASH_REDIS_REST_URL`
@@ -96,6 +102,7 @@ Set these in Railway dashboard or via CLI:
 ### Scaling Configuration
 
 Configured in `railway.json`:
+
 - **Min replicas:** 3
 - **Max replicas:** 10
 - **Health check:** `/api/health/ready`
@@ -129,13 +136,13 @@ railway logs
 
 ## 📝 Quick Reference
 
-| Command | Purpose |
-|---------|---------|
+| Command                           | Purpose                    |
+| --------------------------------- | -------------------------- |
 | `npm run railway:link-code-roach` | Link to Code Roach project |
-| `npm run railway:check` | Check current project |
-| `npm run deploy:infrastructure` | Deploy infrastructure |
-| `npm run deploy:sync-env` | Sync environment variables |
-| `npm run verify:infrastructure` | Verify deployment |
+| `npm run railway:check`           | Check current project      |
+| `npm run deploy:infrastructure`   | Deploy infrastructure      |
+| `npm run deploy:sync-env`         | Sync environment variables |
+| `npm run verify:infrastructure`   | Verify deployment          |
 
 ---
 

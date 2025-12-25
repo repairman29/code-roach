@@ -1,4 +1,5 @@
 # Expert System Monitoring & Self-Learning Guide
+
 ## How to Verify and Improve Expert System Performance
 
 **Date**: 2025-01-15  
@@ -9,6 +10,7 @@
 ## 🎯 Overview
 
 The Expert Training System includes built-in monitoring and self-learning capabilities. This guide shows you how to:
+
 1. Verify experts are being used
 2. Monitor expert performance
 3. Enable self-learning from fix outcomes
@@ -26,6 +28,7 @@ npm run code-roach:verify-experts
 ```
 
 This checks:
+
 - ✅ Experts exist in database
 - ✅ Expert retrieval works
 - ✅ Expert type detection works
@@ -35,11 +38,13 @@ This checks:
 ### What to Look For
 
 **✅ System Working:**
+
 - Experts found in database
 - Expert context built successfully
 - Integration code present
 
 **⚠️ Issues:**
+
 - No experts found → Run onboarding
 - Context building fails → Check database connection
 - Integration missing → Verify code updates
@@ -113,14 +118,16 @@ npm run code-roach:monitor-experts <project-id>
 ### Integration Points
 
 **1. Fix Generation** (`llmFixGenerator.js`)
+
 ```javascript
 // Already integrated! Experts are automatically used when:
 const fix = await llmFixGenerator.generateFix(issue, code, filePath, {
-    project_id: 'your-project-id' // ← This triggers expert usage
+  project_id: "your-project-id", // ← This triggers expert usage
 });
 ```
 
 **2. Fix Application** (`fixApplicationService.js`)
+
 ```javascript
 // Already integrated! Outcomes are tracked when:
 await fixApplicationService.applyFix(fix, issue, filePath);
@@ -132,19 +139,15 @@ await fixApplicationService.applyFix(fix, issue, filePath);
 If you need to manually record outcomes:
 
 ```javascript
-const expertLearningService = require('./server/services/expertLearningService');
+const expertLearningService = require("./server/services/expertLearningService");
 
-await expertLearningService.recordFixOutcome(
-    projectId,
-    expertType,
-    {
-        issue: { type: 'database_error', message: '...' },
-        fix: { code: '...', confidence: 0.9 },
-        outcome: 'success', // or 'failure', 'partial'
-        applied: true,
-        reverted: false
-    }
-);
+await expertLearningService.recordFixOutcome(projectId, expertType, {
+  issue: { type: "database_error", message: "..." },
+  fix: { code: "...", confidence: 0.9 },
+  outcome: "success", // or 'failure', 'partial'
+  applied: true,
+  reverted: false,
+});
 ```
 
 ---
@@ -154,13 +157,16 @@ await expertLearningService.recordFixOutcome(
 ### Get Learning Stats
 
 ```javascript
-const expertLearningService = require('./server/services/expertLearningService');
+const expertLearningService = require("./server/services/expertLearningService");
 
 // Get stats for all experts
 const stats = await expertLearningService.getLearningStats(projectId);
 
 // Get stats for specific expert
-const dbStats = await expertLearningService.getLearningStats(projectId, 'database');
+const dbStats = await expertLearningService.getLearningStats(
+  projectId,
+  "database",
+);
 ```
 
 ### Stats Include
@@ -236,6 +242,7 @@ const dbStats = await expertLearningService.getLearningStats(projectId, 'databas
 ### Automatic (Already Enabled)
 
 The system automatically:
+
 - ✅ Tracks expert usage
 - ✅ Records fix outcomes
 - ✅ Analyzes patterns
@@ -245,13 +252,17 @@ The system automatically:
 
 ```javascript
 // Force expert update based on learning
-const expertLearningService = require('./server/services/expertLearningService');
+const expertLearningService = require("./server/services/expertLearningService");
 
 // Analyze and improve specific expert
-await expertLearningService.analyzeAndImprove(projectId, 'database');
+await expertLearningService.analyzeAndImprove(projectId, "database");
 
 // Update expert quality score
-await expertLearningService.updateExpertQualityScore(projectId, 'database', 0.85);
+await expertLearningService.updateExpertQualityScore(
+  projectId,
+  "database",
+  0.85,
+);
 ```
 
 ---
@@ -306,37 +317,43 @@ await expertLearningService.updateExpertQualityScore(projectId, 'database', 0.85
 ### Issue: Experts Not Being Used
 
 **Check:**
+
 1. Is `project_id` passed in fix context?
 2. Are experts in database?
 3. Is expert type detection working?
 
 **Fix:**
+
 ```javascript
 // Ensure project_id is in context
 const fix = await llmFixGenerator.generateFix(issue, code, filePath, {
-    project_id: 'your-project-id' // ← Required!
+  project_id: "your-project-id", // ← Required!
 });
 ```
 
 ### Issue: No Learning Data
 
 **Check:**
+
 1. Are fixes being applied?
 2. Is `recordFixOutcome` being called?
 3. Is database migration applied?
 
 **Fix:**
+
 - Apply migration: `20250115000001_expert_learning.sql`
 - Verify fix application calls learning service
 
 ### Issue: Low Success Rate
 
 **Check:**
+
 1. Review failure patterns
 2. Check expert quality scores
 3. Verify expert context is relevant
 
 **Fix:**
+
 - System will auto-update experts if success rate < 60%
 - Or manually trigger: `expertLearningService.analyzeAndImprove()`
 
@@ -365,4 +382,3 @@ The expert system is **self-learning** and **self-improving**:
 5. ✅ **Monitors Performance** - Tracks effectiveness
 
 **Just use it** - the system learns and improves automatically! 🚀
-

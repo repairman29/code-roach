@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/securityAlerts.js
- * Last Sync: 2025-12-19T23:29:57.640Z
+ * Last Sync: 2025-12-25T04:10:02.885Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -14,164 +14,168 @@
  */
 
 class SecurityAlerts {
-    constructor(options = {}) {
-        this.config = {
-            email: {
-                enabled: options.email?.enabled || false,
-                to: options.email?.to || process.env.SECURITY_ALERT_EMAIL,
-                from: options.email?.from || process.env.SECURITY_ALERT_FROM || 'security@smugglers.game',
-                ...options.email
-            },
-            webhook: {
-                enabled: options.webhook?.enabled || false,
-                url: options.webhook?.url || process.env.SECURITY_WEBHOOK_URL,
-                ...options.webhook
-            },
-            console: {
-                enabled: options.console?.enabled !== false, // Default enabled
-                ...options.console
-            },
-            ...options
-        };
+  constructor(options = {}) {
+    this.config = {
+      email: {
+        enabled: options.email?.enabled || false,
+        to: options.email?.to || process.env.SECURITY_ALERT_EMAIL,
+        from:
+          options.email?.from ||
+          process.env.SECURITY_ALERT_FROM ||
+          "security@smugglers.game",
+        ...options.email,
+      },
+      webhook: {
+        enabled: options.webhook?.enabled || false,
+        url: options.webhook?.url || process.env.SECURITY_WEBHOOK_URL,
+        ...options.webhook,
+      },
+      console: {
+        enabled: options.console?.enabled !== false, // Default enabled
+        ...options.console,
+      },
+      ...options,
+    };
 
-        // Rate limiting for alerts (don't spam)
-        this.alertCooldown = new Map(); // type -> lastSent
-        this.cooldownDuration = 300000; // 5 minutes
+    // Rate limiting for alerts (don't spam)
+    this.alertCooldown = new Map(); // type -> lastSent
+    this.cooldownDuration = 300000; // 5 minutes
+  }
+
+  /**
+   * Send alert
+   */
+  async send(alert) {
+    const alertKey = `${alert.type}-${alert.securityType}`;
+    const lastSent = this.alertCooldown.get(alertKey);
+    const now = Date.now();
+
+    // Check cooldown
+    if (lastSent && now - lastSent < this.cooldownDuration) {
+      return; // Still in cooldown
     }
 
-    /**
-     * Send alert
-     */
-    async send(alert) {
-        const alertKey = `${alert.type}-${alert.securityType}`;
-        const lastSent = this.alertCooldown.get(alertKey);
-        const now = Date.now();
+    this.alertCooldown.set(alertKey, now);
 
-        // Check cooldown
-        if (lastSent && (now - lastSent) < this.cooldownDuration) {
-            return; // Still in cooldown
-        }
+    // Send via all enabled channels
+    const promises = [];
 
-        this.alertCooldown.set(alertKey, now);
-
-        // Send via all enabled channels
-        const promises = [];
-
-        if (this.config.console.enabled) {
-            promises.push(this.sendConsole(alert));
-        }
-
-        if (this.config.email.enabled && this.config.email.to) {
-            promises.push(this.sendEmail(alert));
-        }
-
-        if (this.config.webhook.enabled && this.config.webhook.url) {
-            promises.push(this.sendWebhook(alert));
-        }
-
-        await Promise.allSettled(promises);
+    if (this.config.console.enabled) {
+      promises.push(this.sendConsole(alert));
     }
 
-    /**
-     * Send console alert
-     */
-    async sendConsole(alert) {
-        const emoji = alert.type === 'critical_event' ? '🚨' : '⚠️';
-        const message = this.formatAlertMessage(alert);
-        
-        console.log(`\n${emoji} SECURITY ALERT ${emoji}`);
-        console.log('='.repeat(70));
-        console.log(message);
-        console.log('='.repeat(70) + '\n');
+    if (this.config.email.enabled && this.config.email.to) {
+      promises.push(this.sendEmail(alert));
     }
 
-    /**
-     * Send email alert
-     */
-    async sendEmail(alert) {
-        // Email sending would require nodemailer or similar
-        // For now, just log that email would be sent
-        console.log(`📧 Email alert would be sent to ${this.config.email.to}`);
-        console.log(`   Subject: Security Alert - ${alert.securityType}`);
-        console.log(`   Body: ${this.formatAlertMessage(alert)}`);
-        
-        // TODO: Implement actual email sending with nodemailer
-        // const nodemailer = require('nodemailer');
-        // const transporter = nodemailer.createTransport({...});
-        // await transporter.sendMail({...});
+    if (this.config.webhook.enabled && this.config.webhook.url) {
+      promises.push(this.sendWebhook(alert));
     }
 
-    /**
-     * Send webhook alert
-     */
-    async sendWebhook(alert) {
-        try {
-            const http = require('http');
-            const https = require('https');
-            const url = require('url');
+    await Promise.allSettled(promises);
+  }
 
-            const parsedUrl = new URL(this.config.webhook.url);
-            const client = parsedUrl.protocol === 'https:' ? https : http;
+  /**
+   * Send console alert
+   */
+  async sendConsole(alert) {
+    const emoji = alert.type === "critical_event" ? "🚨" : "⚠️";
+    const message = this.formatAlertMessage(alert);
 
-            const payload = JSON.stringify({
-                type: 'security_alert',
-                timestamp: new Date().toISOString(),
-                alert
-            });
+    console.log(`\n${emoji} SECURITY ALERT ${emoji}`);
+    console.log("=".repeat(70));
+    console.log(message);
+    console.log("=".repeat(70) + "\n");
+  }
 
-            const options = {
-                hostname: parsedUrl.hostname,
-                port: parsedUrl.port || (parsedUrl.protocol === 'https:' ? 443 : 80),
-                path: parsedUrl.pathname,
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Content-Length': Buffer.byteLength(payload)
-                }
-            };
+  /**
+   * Send email alert
+   */
+  async sendEmail(alert) {
+    // Email sending would require nodemailer or similar
+    // For now, just log that email would be sent
+    console.log(`📧 Email alert would be sent to ${this.config.email.to}`);
+    console.log(`   Subject: Security Alert - ${alert.securityType}`);
+    console.log(`   Body: ${this.formatAlertMessage(alert)}`);
 
-            return new Promise((resolve, reject) => {
-                const req = client.request(options, (res) => {
-                    if (res.statusCode >= 200 && res.statusCode < 300) {
-                        resolve();
-                    } else {
-                        reject(new Error(`Webhook returned ${res.statusCode}`));
-                    }
-                });
+    // TODO: Implement actual email sending with nodemailer
+    // const nodemailer = require('nodemailer');
+    const { createLogger } = require("../utils/logger");
+    const log = createLogger("SecurityAlerts");
+    // const transporter = nodemailer.createTransport({...});
+    // await transporter.sendMail({...});
+  }
 
-                req.on('error', reject);
-                req.write(payload);
-                req.end();
-            });
-        } catch (error) {
-            console.error('Error sending webhook alert:', error);
-        }
+  /**
+   * Send webhook alert
+   */
+  async sendWebhook(alert) {
+    try {
+      const http = require("http");
+      const https = require("https");
+      const url = require("url");
+
+      const parsedUrl = new URL(this.config.webhook.url);
+      const client = parsedUrl.protocol === "https:" ? https : http;
+
+      const payload = JSON.stringify({
+        type: "security_alert",
+        timestamp: new Date().toISOString(),
+        alert,
+      });
+
+      const options = {
+        hostname: parsedUrl.hostname,
+        port: parsedUrl.port || (parsedUrl.protocol === "https:" ? 443 : 80),
+        path: parsedUrl.pathname,
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Content-Length": Buffer.byteLength(payload),
+        },
+      };
+
+      return new Promise((resolve, reject) => {
+        const req = client.request(options, (res) => {
+          if (res.statusCode >= 200 && res.statusCode < 300) {
+            resolve();
+          } else {
+            reject(new Error(`Webhook returned ${res.statusCode}`));
+          }
+        });
+
+        req.on("error", reject);
+        req.write(payload);
+        req.end();
+      });
+    } catch (error) {
+      console.error("Error sending webhook alert:", error);
+    }
+  }
+
+  /**
+   * Format alert message
+   */
+  formatAlertMessage(alert) {
+    let message = "";
+
+    if (alert.type === "threshold_exceeded") {
+      message = `Security threshold exceeded!\n\n`;
+      message += `Type: ${alert.securityType}\n`;
+      message += `Threshold: ${alert.threshold} per hour\n`;
+      message += `Current: ${alert.currentCount} in the last hour\n`;
+      if (alert.event) {
+        message += `Latest Event: ${JSON.stringify(alert.event, null, 2)}\n`;
+      }
+    } else if (alert.type === "critical_event") {
+      message = `CRITICAL SECURITY EVENT!\n\n`;
+      message += `Type: ${alert.securityType}\n`;
+      message += `Event: ${JSON.stringify(alert.event, null, 2)}\n`;
     }
 
-    /**
-     * Format alert message
-     */
-    formatAlertMessage(alert) {
-        let message = '';
-
-        if (alert.type === 'threshold_exceeded') {
-            message = `Security threshold exceeded!\n\n`;
-            message += `Type: ${alert.securityType}\n`;
-            message += `Threshold: ${alert.threshold} per hour\n`;
-            message += `Current: ${alert.currentCount} in the last hour\n`;
-            if (alert.event) {
-                message += `Latest Event: ${JSON.stringify(alert.event, null, 2)}\n`;
-            }
-        } else if (alert.type === 'critical_event') {
-            message = `CRITICAL SECURITY EVENT!\n\n`;
-            message += `Type: ${alert.securityType}\n`;
-            message += `Event: ${JSON.stringify(alert.event, null, 2)}\n`;
-        }
-
-        message += `\nTime: ${new Date().toISOString()}`;
-        return message;
-    }
+    message += `\nTime: ${new Date().toISOString()}`;
+    return message;
+  }
 }
 
 module.exports = SecurityAlerts;
-

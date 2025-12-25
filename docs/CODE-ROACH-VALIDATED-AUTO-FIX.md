@@ -1,4 +1,5 @@
 # Code Roach: Validated Auto-Fix
+
 ## Test & Validate Before Saving/Committing
 
 ---
@@ -8,6 +9,7 @@
 Code Roach now **automatically fixes issues** with **mandatory test validation** before saving or committing changes.
 
 **Safety First:**
+
 - ✅ Validates syntax before applying
 - ✅ Runs tests before saving
 - ✅ Creates backups for rollback
@@ -19,6 +21,7 @@ Code Roach now **automatically fixes issues** with **mandatory test validation**
 ## ✅ What's Enabled
 
 ### 1. Validated Fix Application
+
 - ✅ **Syntax validation** - Checks code syntax
 - ✅ **Type checking** - Validates TypeScript types
 - ✅ **Linter validation** - Runs ESLint
@@ -26,11 +29,13 @@ Code Roach now **automatically fixes issues** with **mandatory test validation**
 - ✅ **Backup creation** - Creates backups for rollback
 
 ### 2. Pre-Commit Validation
+
 - ✅ **Syntax check** - Validates all staged files
 - ✅ **Test execution** - Runs test suite
 - ✅ **Blocks commit** - If validation fails
 
 ### 3. Auto-Fix with Validation
+
 - ✅ **Auto-fixes issues** - When detected
 - ✅ **Tests before saving** - Ensures fixes work
 - ✅ **Rollback on failure** - Restores backup if tests fail
@@ -86,6 +91,7 @@ Code Roach now **automatically fixes issues** with **mandatory test validation**
 ### Environment Variables
 
 **In `.env`:**
+
 ```bash
 # Enable auto-fix
 CODE_ROACH_AUTO_FIX=true
@@ -97,6 +103,7 @@ CODE_ROACH_VALIDATE_FIXES=true
 ### Validation Levels
 
 **Full Validation (Default):**
+
 - Syntax check
 - Type checking (TypeScript)
 - Linter validation
@@ -104,17 +111,21 @@ CODE_ROACH_VALIDATE_FIXES=true
 - Backup & rollback
 
 **Basic Validation:**
+
 ```bash
 CODE_ROACH_VALIDATE_FIXES=basic
 ```
+
 - Syntax check only
 - No tests
 - Still creates backups
 
 **No Validation (Not Recommended):**
+
 ```bash
 CODE_ROACH_VALIDATE_FIXES=false
 ```
+
 - Applies fixes without validation
 - Use only for trusted fixes
 
@@ -125,17 +136,20 @@ CODE_ROACH_VALIDATE_FIXES=false
 ### For Full Validation
 
 **Required:**
+
 - `npm test` command in `package.json`
 - Test files for your code
 - Jest or other test runner
 
 **Optional:**
+
 - TypeScript compiler (`tsc`)
 - ESLint (`eslint`)
 
 ### Test File Detection
 
 Code Roach automatically finds test files:
+
 - `file.test.js` - Jest convention
 - `file.spec.js` - Jasmine/Mocha convention
 - `tests/file.js` - Test directory
@@ -146,6 +160,7 @@ Code Roach automatically finds test files:
 ## 📊 Validation Results
 
 ### Success
+
 ```
 🔍 [Validated Fix] Validating fix for server/services/myService.js...
 ✅ [Validated Fix] Validation passed for server/services/myService.js
@@ -155,6 +170,7 @@ Code Roach automatically finds test files:
 ```
 
 ### Failure
+
 ```
 🔍 [Validated Fix] Validating fix for server/services/myService.js...
 ❌ [Validated Fix] Validation failed for server/services/myService.js
@@ -167,21 +183,25 @@ Code Roach automatically finds test files:
 ## 🔒 Safety Features
 
 ### 1. Automatic Backups
+
 - All fixes backed up to `.code-roach-backups/`
 - Format: `filename.timestamp.backup`
 - Automatic rollback on failure
 
 ### 2. Test Validation
+
 - Tests must pass before fix is saved
 - Blocks commit if tests fail
 - Prevents breaking changes
 
 ### 3. Pre-Commit Hook
+
 - Validates all staged files
 - Runs test suite
 - Blocks commit on failure
 
 ### 4. Rollback on Failure
+
 - Automatic restore from backup
 - Original code preserved
 - No data loss
@@ -193,12 +213,14 @@ Code Roach automatically finds test files:
 ### Automatic (Recommended)
 
 **Just code normally:**
+
 1. Code Roach detects issues
 2. Auto-fixes with validation
 3. Tests run automatically
 4. Fix saved only if tests pass
 
 **On commit:**
+
 1. Pre-commit hook validates
 2. Tests run
 3. Commit proceeds if all pass
@@ -206,22 +228,32 @@ Code Roach automatically finds test files:
 ### Manual Validation
 
 **Validate fix before applying:**
-```javascript
-const validatedFixApplication = require('./server/services/validatedFixApplication');
 
-const result = await validatedFixApplication.validateOnly(fix, filePath, originalCode);
+```javascript
+const validatedFixApplication = require("./server/services/validatedFixApplication");
+
+const result = await validatedFixApplication.validateOnly(
+  fix,
+  filePath,
+  originalCode,
+);
 if (result.valid) {
-    // Fix is safe to apply
+  // Fix is safe to apply
 }
 ```
 
 **Apply with validation:**
+
 ```javascript
-const result = await validatedFixApplication.applyFixWithValidation(fix, filePath, originalCode);
+const result = await validatedFixApplication.applyFixWithValidation(
+  fix,
+  filePath,
+  originalCode,
+);
 if (result.applied) {
-    console.log('Fix applied successfully!');
+  console.log("Fix applied successfully!");
 } else {
-    console.log('Fix validation failed:', result.errors);
+  console.log("Fix validation failed:", result.errors);
 }
 ```
 
@@ -230,6 +262,7 @@ if (result.applied) {
 ## 📁 Backup Management
 
 ### Backup Location
+
 ```
 .code-roach-backups/
 ├── myService.js.1734162648829.backup
@@ -238,6 +271,7 @@ if (result.applied) {
 ```
 
 ### Manual Restore
+
 ```bash
 # Find backup
 ls -la .code-roach-backups/ | grep myService.js
@@ -247,6 +281,7 @@ cp .code-roach-backups/myService.js.1734162648829.backup server/services/myServi
 ```
 
 ### Cleanup Old Backups
+
 ```bash
 # Remove backups older than 7 days
 find .code-roach-backups -name "*.backup" -mtime +7 -delete
@@ -259,11 +294,13 @@ find .code-roach-backups -name "*.backup" -mtime +7 -delete
 ### Tests Not Running
 
 **Check:**
+
 1. Is `npm test` defined in `package.json`?
 2. Are test files in expected locations?
 3. Is test runner installed?
 
 **Fix:**
+
 ```bash
 # Install test dependencies
 npm install --save-dev jest
@@ -275,6 +312,7 @@ npm install --save-dev jest
 ### Validation Too Strict
 
 **Adjust validation level:**
+
 ```bash
 # Basic validation only
 CODE_ROACH_VALIDATE_FIXES=basic
@@ -283,11 +321,13 @@ CODE_ROACH_VALIDATE_FIXES=basic
 ### Pre-Commit Hook Blocking
 
 **Bypass (not recommended):**
+
 ```bash
 git commit --no-verify
 ```
 
 **Better: Fix the issues:**
+
 ```bash
 # Check what's wrong
 npm test
@@ -301,18 +341,21 @@ npm test
 ## 📈 Benefits
 
 ### Safety
+
 - ✅ No broken code committed
 - ✅ Tests must pass
 - ✅ Automatic rollback
 - ✅ Backup protection
 
 ### Quality
+
 - ✅ Higher fix success rate
 - ✅ Fewer regressions
 - ✅ Better code quality
 - ✅ Confidence in fixes
 
 ### Developer Experience
+
 - ✅ Automatic validation
 - ✅ No manual testing needed
 - ✅ Safe auto-fixes
@@ -323,6 +366,7 @@ npm test
 ## ✅ Summary
 
 **Code Roach now:**
+
 - ✅ Auto-fixes issues
 - ✅ Validates before saving
 - ✅ Tests before committing
@@ -330,6 +374,7 @@ npm test
 - ✅ Rolls back on failure
 
 **You can:**
+
 - ✅ Code with confidence
 - ✅ Trust auto-fixes
 - ✅ Commit safely

@@ -13,6 +13,7 @@ npm run code-roach:push-to-repo
 ```
 
 That's it! This will:
+
 1. ✅ Sync Code Roach files to standalone structure
 2. ✅ Initialize git repository
 3. ✅ Push to https://github.com/repairman29/coderoach.git
@@ -23,11 +24,13 @@ That's it! This will:
 ## 🛡️ Safety Guarantees
 
 ✅ **Smugglers is safe:**
+
 - No changes to Smugglers git
 - No commits to Smugglers repo
 - Smugglers code untouched
 
 ✅ **Standalone directory:**
+
 - Created in `../code-roach-standalone/`
 - Independent git repository
 - Can be deleted/recreated safely
@@ -53,6 +56,7 @@ That's it! This will:
 ### Update Code Roach in Repo
 
 1. **Make changes in Smugglers:**
+
    ```bash
    # Edit Code Roach files
    ```
@@ -71,6 +75,7 @@ That's it! This will:
 ## 📁 What Gets Pushed
 
 ✅ **Included:**
+
 - All Code Roach services
 - API routes
 - CLI tools
@@ -79,6 +84,7 @@ That's it! This will:
 - Configuration
 
 ❌ **Excluded:**
+
 - Smugglers game code
 - Game-specific services
 - Node modules
@@ -88,14 +94,17 @@ That's it! This will:
 ## 🆘 Troubleshooting
 
 ### "Repository not empty"
+
 - Script will ask if you want to continue
 - You can pull first or force push
 
 ### "Permission denied"
+
 - Check GitHub permissions
 - Verify SSH keys or token
 
 ### "Sync script not found"
+
 - Make sure you're in `smugglers/` directory
 
 ---

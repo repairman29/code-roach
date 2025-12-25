@@ -29,6 +29,7 @@
 ### **Step 2: Set Environment Variable**
 
 Add to `.env`:
+
 ```bash
 SUPABASE_DB_PASSWORD=your_database_password_here
 ```
@@ -46,14 +47,15 @@ node scripts/run-migration-via-config.js
 Run this in Supabase SQL Editor:
 
 ```sql
-SELECT table_name 
-FROM information_schema.tables 
-WHERE table_schema = 'public' 
+SELECT table_name
+FROM information_schema.tables
+WHERE table_schema = 'public'
 AND table_name LIKE 'code_roach_%'
 ORDER BY table_name;
 ```
 
 You should see the 5 new tables:
+
 - `code_roach_fix_monitoring`
 - `code_roach_fix_pipelines`
 - `code_roach_pattern_ratings`

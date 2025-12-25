@@ -71,15 +71,18 @@ curl -X POST http://localhost:3000/api/error-analysis \
 ## Troubleshooting
 
 ### CSRF Token Error
+
 - **Solution**: Restart the server after the middleware change
 - The `/api/error-analysis` endpoint is now excluded from CSRF protection
 
 ### LLM Not Available
+
 - The endpoint will fall back to pattern matching
 - Check that `OPENAI_API_KEY` or `ANTHROPIC_API_KEY` is set
 - Check `llmService.isAvailable()` returns true
 
 ### Codebase Search Not Working
+
 - Check that codebase index is built: `npm run codebase:sync`
 - Check that `codebaseSearch` service is initialized
 - The endpoint will still work with basic pattern matching
@@ -87,7 +90,7 @@ curl -X POST http://localhost:3000/api/error-analysis \
 ## Next Steps
 
 Once testing passes, we'll implement Sprint 1: Real Auto-Fixing
+
 - Apply fixes automatically (not just return them)
 - Safety system with rollback
 - Fix preview/approval UI
-
