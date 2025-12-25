@@ -1,5 +1,5 @@
 {
-  "lastSync": "2025-12-25T04:27:56.699Z",
+  "lastSync": "2025-12-25T04:48:15.830Z",
   "files": [
     {
       "source": "/Users/jeffadkins/Smugglers/smugglers/server/routes/apiKnowledgeBase.js",
@@ -3955,14 +3955,35 @@
       "size": 28243,
       "modified": "2025-12-25T04:22:09.338Z",
       "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/server/config.js",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/src/config.js",
+      "size": 11860,
+      "modified": "2025-12-25T04:41:47.074Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/server/services/codebaseSearch.js",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/src/services/codebaseSearch.js",
+      "size": 12130,
+      "modified": "2025-12-25T04:47:28.261Z",
+      "success": true
+    },
+    {
+      "source": "/Users/jeffadkins/Smugglers/smugglers/server/services/multiLanguageAST.js",
+      "dest": "/Users/jeffadkins/Smugglers/code-roach-standalone/src/services/multiLanguageAST.js",
+      "size": 23656,
+      "modified": "2025-12-25T04:47:17.931Z",
+      "success": true
     }
   ],
   "stats": {
-    "copied": 565,
-    "skipped": 24157,
+    "copied": 568,
+    "skipped": 24943,
     "errors": 0
   },
-  "lastSyncTimestamp": 1766636876699,
-  "lastSyncHuman": "12/24/2025, 9:27:56 PM",
-  "syncCount": 94
+  "lastSyncTimestamp": 1766638095830,
+  "lastSyncHuman": "12/24/2025, 9:48:15 PM",
+  "syncCount": 97
 }

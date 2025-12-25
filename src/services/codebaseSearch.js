@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/codebaseSearch.js
- * Last Sync: 2025-12-25T04:10:02.825Z
+ * Last Sync: 2025-12-25T04:47:33.849Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -13,7 +13,7 @@
  * Provides semantic search capabilities over indexed codebase
  */
 
-const { createClient } = require("@supabase/supabase-js");
+const { getSupabaseClient } = require("../utils/supabaseClient");
 const config = require("../config");
 const performanceTrackingService = require("./performanceTrackingService");
 const { createLogger } = require("../utils/logger");
@@ -22,25 +22,10 @@ const log = createLogger("CodebaseSearch");
 
 class CodebaseSearch {
   constructor() {
-    // Only create Supabase client if credentials are available
-    if (config.getSupabaseService().serviceRoleKey) {
-      try {
-        this.supabase = createClient(
-          config.getSupabaseService().url,
-          config.getSupabaseService().serviceRoleKey,
-        );
-      } catch (error) {
-        console.warn(
-          "[CodebaseSearch] Supabase not configured:",
-          error.message,
-        );
-        this.supabase = null;
-      }
-    } else {
-      console.warn(
-        "[CodebaseSearch] Supabase credentials not configured. Codebase search will be disabled.",
-      );
-      this.supabase = null;
+    // Use shared Supabase client to avoid multiple instances
+    this.supabase = getSupabaseClient({ requireService: true });
+    if (!this.supabase) {
+      log.warn("Supabase service client not available for CodebaseSearch - search functionality disabled");
     }
     this.openaiApiKey =
       process.env.OPENAI_API_KEY || config.imageGeneration?.openai?.apiKey;

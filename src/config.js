@@ -2,7 +2,7 @@
 // Audit server file server/config.js for security, performance, error handling, and best practices
 
 /**
-const { createLogger } = require('../utils/logger');
+const { createLogger } = require('./utils/logger');
 const log = createLogger('Config');
  * Server Configuration
  * Centralized environment variable management
@@ -231,7 +231,7 @@ const config = {
   supabase: {
     url:
       process.env.SUPABASE_URL ||
-      "https://rbfzlqmkwhbvrrfdcain.getSupabaseService().co",
+      "https://rbfzlqmkwhbvrrfdcain.supabase.co",
     // SECURITY FIX: Removed hardcoded anon key - must be set via environment variable
     // Note: Anon key is safe to expose client-side, but should still use env var for configuration
     anonKey:
@@ -322,6 +322,15 @@ const config = {
       },
     },
   },
+};
+
+/**
+ * Get Supabase configuration
+ * Helper method for backwards compatibility with services expecting config.getSupabaseService()
+ * @returns {Object} Supabase config { url, anonKey, serviceRoleKey }
+ */
+config.getSupabaseService = () => {
+  return config.supabase;
 };
 
 /**
