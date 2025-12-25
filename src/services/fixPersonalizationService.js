@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/fixPersonalizationService.js
- * Last Sync: 2025-12-25T04:10:02.888Z
+ * Last Sync: 2025-12-25T05:17:15.790Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -15,31 +15,29 @@
  * Improvement #5: Fix Personalization
  */
 
-const { createClient } = require("@supabase/supabase-js");
 const config = require("../config");
 const { createLogger } = require("../utils/logger");
 const log = createLogger("FixPersonalizationService");
 const codebaseSearch = require("./codebaseSearch");
 const { getSupabaseService } = require("../utils/supabaseClient");
+const { getSupabaseClient } = require('../utils/supabaseClient');
 
 class FixPersonalizationService {
   constructor() {
     // Only create Supabase client if credentials are available
     if (config.getSupabaseService().serviceRoleKey) {
       try {
-        this.supabase = createClient(
-          config.getSupabaseService().url,
-          config.getSupabaseService().serviceRoleKey,
+        this.supabase = getSupabaseClient({ requireService: true }).serviceRoleKey,
         );
       } catch (error) {
-        console.warn(
+        log.warn(
           "[fixPersonalizationService] Supabase not configured:",
           error.message,
         );
         this.supabase = null;
       }
     } else {
-      console.warn(
+      log.warn(
         "[fixPersonalizationService] Supabase credentials not configured. Service will be disabled.",
       );
       this.supabase = null;
@@ -105,7 +103,7 @@ class FixPersonalizationService {
       this.teamProfiles.set(cacheKey, profile);
       return profile;
     } catch (error) {
-      console.warn("[Fix Personalization] Error loading profile:", error);
+      log.warn("[Fix Personalization] Error loading profile:", error);
       return this.createDefaultProfile();
     }
   }

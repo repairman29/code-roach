@@ -22,7 +22,7 @@ const { sendSuccess } = require("../utils/responseHandler");
 
 // Log Supabase status on load
 if (!isSupabaseConfigured()) {
-  console.warn(
+  log.warn(
     "[apiKnowledgeBase] Supabase config not available - knowledge base endpoints will return empty results",
   );
 }

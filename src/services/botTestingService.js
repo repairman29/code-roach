@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/botTestingService.js
- * Last Sync: 2025-12-25T04:10:02.870Z
+ * Last Sync: 2025-12-25T04:53:21.515Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -179,7 +179,7 @@ class BotTestingService {
         aiGMEnabled = enableResult?.success || bot.aiGMEnabled || false;
         await bot.wait(3000);
       } catch (error) {
-        console.warn(
+        log.warn(
           `[BotTestingService] AI GM enable failed: ${error.message}`,
         );
       }
@@ -264,7 +264,7 @@ class BotTestingService {
           await new Promise((resolve) => setTimeout(resolve, 2000));
         }
       } catch (error) {
-        console.warn(
+        log.warn(
           `[BotTestingService] AI GM enable failed: ${error.message}`,
         );
       }

@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/advancedFixGenerator.js
- * Last Sync: 2025-12-25T04:10:02.833Z
+ * Last Sync: 2025-12-25T04:53:21.499Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -161,7 +161,7 @@ Generate a secure fix in JSON format:
         return fix;
       }
     } catch (err) {
-      console.warn("[Advanced Fix] LLM security fix failed:", err.message);
+      log.warn("[Advanced Fix] LLM security fix failed:", err.message);
     }
 
     return {
@@ -264,7 +264,7 @@ Generate an optimized fix in JSON format:
         return fix;
       }
     } catch (err) {
-      console.warn("[Advanced Fix] LLM performance fix failed:", err.message);
+      log.warn("[Advanced Fix] LLM performance fix failed:", err.message);
     }
 
     return {
@@ -461,7 +461,7 @@ ${similarPatterns.results
         return fix;
       }
     } catch (err) {
-      console.warn("[Advanced Fix] LLM refactoring failed:", err.message);
+      log.warn("[Advanced Fix] LLM refactoring failed:", err.message);
     }
 
     return {
@@ -536,7 +536,7 @@ Generate an architectural fix in JSON format:
         return fix;
       }
     } catch (err) {
-      console.warn("[Advanced Fix] LLM architecture fix failed:", err.message);
+      log.warn("[Advanced Fix] LLM architecture fix failed:", err.message);
     }
 
     return {

@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/mlFixPredictor.js
- * Last Sync: 2025-12-25T04:10:02.861Z
+ * Last Sync: 2025-12-25T04:53:21.510Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -52,7 +52,7 @@ class MLFixPredictor {
 
     // Load or train model
     this.initializeModel().catch((err) => {
-      console.warn(
+      log.warn(
         "[ML Fix Predictor] Model initialization failed:",
         err.message,
       );

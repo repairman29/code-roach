@@ -41,7 +41,7 @@ module.exports = function setupAPIRoutes(app, options = {}) {
     const performanceRoutes = require("./apiPerformance");
     app.use("/api/performance", performanceRoutes);
   } catch (err) {
-    console.warn("⚠️ Performance API routes not available:", err.message);
+    log.warn("⚠️ Performance API routes not available:", err.message);
   }
 
   if (createSession) {
@@ -345,7 +345,7 @@ module.exports = function setupAPIRoutes(app, options = {}) {
     setupCodeRoachRoutes(app, options);
     log.info("Code Roach API routes registered");
   } catch (err) {
-    console.warn("⚠️ Code Roach API routes not available:", err.message);
+    log.warn("⚠️ Code Roach API routes not available:", err.message);
   }
 
   // Autonomous Mode API routes
@@ -354,7 +354,7 @@ module.exports = function setupAPIRoutes(app, options = {}) {
     app.use("/api/autonomous", autonomousModeAPI);
     log.info("Autonomous Mode API routes registered");
   } catch (err) {
-    console.warn("⚠️ Autonomous Mode API routes not available:", err.message);
+    log.warn("⚠️ Autonomous Mode API routes not available:", err.message);
   }
 };
 
@@ -371,7 +371,7 @@ try {
   app.use("/api/github", githubWebhooks);
   log.info("GitHub webhook routes registered");
 } catch (err) {
-  console.warn("⚠️ GitHub webhook routes not available:", err.message);
+  log.warn("⚠️ GitHub webhook routes not available:", err.message);
 }
 
 // Hybrid Storage API - Moved to ./api/storageRoutes.js
@@ -418,7 +418,7 @@ try {
 
   log.info("AI GM Metrics API routes registered");
 } catch (err) {
-  console.warn("⚠️ AI GM Metrics routes not available:", err.message);
+  log.warn("⚠️ AI GM Metrics routes not available:", err.message);
 }
 
 // AI GM Explainability API Endpoints - HEAD OF AI - Short-Term Enhancements
@@ -480,7 +480,7 @@ try {
 
   log.info("AI GM Explainability API routes registered");
 } catch (err) {
-  console.warn("⚠️ AI GM Explainability routes not available:", err.message);
+  log.warn("⚠️ AI GM Explainability routes not available:", err.message);
 }
 
 // AI GM Calibration API Endpoint - HEAD OF AI - Short-Term Enhancements
@@ -707,14 +707,14 @@ try {
           };
         });
     } catch (err) {
-      console.warn("[Calibration API] Error generating historical trend:", err);
+      log.warn("[Calibration API] Error generating historical trend:", err);
       return [];
     }
   }
 
   log.info("AI GM Calibration API route registered");
 } catch (err) {
-  console.warn("⚠️ AI GM Calibration route not available:", err.message);
+  log.warn("⚠️ AI GM Calibration route not available:", err.message);
 }
 
 // AI GM Engagement Events API - HEAD OF AI - Optional Enhancement
@@ -770,7 +770,7 @@ try {
 
   log.info("AI GM Engagement Events API routes registered");
 } catch (err) {
-  console.warn("⚠️ AI GM Engagement Events routes not available:", err.message);
+  log.warn("⚠️ AI GM Engagement Events routes not available:", err.message);
 }
 
 // AI GM Quality Feedback API - HEAD OF AI - Optional Enhancement
@@ -814,7 +814,7 @@ try {
             model: feedback?.model || result.feedback?.model || null, // Sprint 8.2: Model tracking
           });
         } catch (csatErr) {
-          console.warn(
+          log.warn(
             "[API] Error recording CSAT (non-fatal):",
             csatErr.message,
           );
@@ -869,7 +869,7 @@ try {
 
   log.info("AI GM Quality Feedback API routes registered");
 } catch (err) {
-  console.warn("⚠️ AI GM Quality Feedback routes not available:", err.message);
+  log.warn("⚠️ AI GM Quality Feedback routes not available:", err.message);
 }
 
 // HEAD OF AI: A/B Testing API endpoints
@@ -921,7 +921,7 @@ try {
 
   log.info("AI GM A/B Testing API routes registered");
 } catch (err) {
-  console.warn("[API] AI GM A/B Testing service not available:", err.message);
+  log.warn("[API] AI GM A/B Testing service not available:", err.message);
 }
 
 // HEAD OF AI: Quality Prediction API endpoints
@@ -952,7 +952,7 @@ try {
 
   log.info("AI GM Quality Prediction API routes registered");
 } catch (err) {
-  console.warn(
+  log.warn(
     "[API] AI GM Quality Prediction service not available:",
     err.message,
   );
@@ -975,7 +975,7 @@ try {
 
   log.info("AI GM Multi-Model Ensemble API routes registered");
 } catch (err) {
-  console.warn(
+  log.warn(
     "[API] AI GM Multi-Model Ensemble service not available:",
     err.message,
   );
@@ -1057,7 +1057,7 @@ try {
 
   log.info("AI GM CSAT Optimization API routes registered");
 } catch (err) {
-  console.warn(
+  log.warn(
     "[API] AI GM CSAT Optimization service not available:",
     err.message,
   );
@@ -1107,7 +1107,7 @@ try {
           totalResponses: metrics.totalResponses || 0,
         };
       } catch (err) {
-        console.warn("[Admin Hub] Error loading AI GM metrics:", err.message);
+        log.warn("[Admin Hub] Error loading AI GM metrics:", err.message);
       }
 
       // A/B Tests
@@ -1120,7 +1120,7 @@ try {
           total: (await aiGMABTestingService.getAllExperiments()).length || 0,
         };
       } catch (err) {
-        console.warn("[Admin Hub] Error loading experiments:", err.message);
+        log.warn("[Admin Hub] Error loading experiments:", err.message);
       }
 
       // Quality Prediction
@@ -1130,7 +1130,7 @@ try {
         overview.aiGM.predictionConfidence = stats.confidence || 0;
         overview.aiGM.predictionSamples = stats.sampleCount || 0;
       } catch (err) {
-        console.warn(
+        log.warn(
           "[Admin Hub] Error loading prediction stats:",
           err.message,
         );
@@ -1152,7 +1152,7 @@ try {
               : 100,
         };
       } catch (err) {
-        console.warn("[Admin Hub] Error loading system health:", err.message);
+        log.warn("[Admin Hub] Error loading system health:", err.message);
       }
 
       res.json({ success: true, overview });
@@ -1164,7 +1164,7 @@ try {
 
   log.info("Admin Hub Overview API route registered");
 } catch (err) {
-  console.warn("[API] Admin Hub Overview route not available:", err.message);
+  log.warn("[API] Admin Hub Overview route not available:", err.message);
 }
 
 // AI GM Services Health Endpoints - AI GM Team - Phase 1 - 2025-01-15
@@ -1312,7 +1312,7 @@ try {
 
   log.info("AI GM Services Health API routes registered");
 } catch (err) {
-  console.warn("⚠️ AI GM Services Health routes not available:", err.message);
+  log.warn("⚠️ AI GM Services Health routes not available:", err.message);
 }
 
 // Event Bus API Endpoints - System Architecture Expert - 2025-01-15
@@ -1411,7 +1411,7 @@ try {
 
   log.info("Event Bus API routes registered");
 } catch (err) {
-  console.warn("⚠️ Event Bus API routes not available:", err.message);
+  log.warn("⚠️ Event Bus API routes not available:", err.message);
 }
 
 log.info("API routes registered");

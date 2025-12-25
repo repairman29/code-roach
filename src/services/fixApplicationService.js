@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/fixApplicationService.js
- * Last Sync: 2025-12-25T04:10:02.835Z
+ * Last Sync: 2025-12-25T04:53:21.501Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -308,7 +308,7 @@ class FixApplicationService {
             reverted: !success,
           })
           .catch((err) => {
-            console.warn(
+            log.warn(
               "[Fix Application] Failed to record expert learning:",
               err.message,
             );
@@ -322,7 +322,7 @@ class FixApplicationService {
           });
       }
     } catch (err) {
-      console.warn(
+      log.warn(
         "[FixApplication] Failed to record to Supabase:",
         err.message,
       );

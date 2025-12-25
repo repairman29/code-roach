@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/multiLanguageAST.js
- * Last Sync: 2025-12-25T04:47:33.851Z
+ * Last Sync: 2025-12-25T04:53:21.495Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -110,7 +110,7 @@ class MultiLanguageAST {
         const normalizedLang = this.normalizeLanguage(language);
         
         if (!this.supportedLanguages.includes(normalizedLang)) {
-            console.warn(`[Multi-Language AST] Unsupported language: ${language}, falling back to JavaScript`);
+            log.warn(`[Multi-Language AST] Unsupported language: ${language}, falling back to JavaScript`);
             try {
                 const analyzer = getASTAnalyzer();
                 return analyzer.analyzeCode(code, context);
@@ -134,7 +134,7 @@ class MultiLanguageAST {
             // Use language-agnostic pattern detection
             return this.detectPatterns(ast, code, normalizedLang, context);
         } catch (error) {
-            console.warn(`[Multi-Language AST] Parse error for ${normalizedLang}:`, error.message);
+            log.warn(`[Multi-Language AST] Parse error for ${normalizedLang}:`, error.message);
             return this.fallbackAnalysis(code, normalizedLang, context);
         }
     }

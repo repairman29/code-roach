@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/databaseService.js
- * Last Sync: 2025-12-25T04:10:02.876Z
+ * Last Sync: 2025-12-25T05:17:15.776Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -20,13 +20,13 @@
  * - Health monitoring
  */
 
-const { createClient } = require("@supabase/supabase-js");
 const config = require("../config");
 const { createLogger } = require("../utils/logger");
 const log = createLogger("DatabaseService");
 const { circuitBreakerManager } = require("./circuitBreaker");
 const RetryService = require("./retryService");
 const { getSupabaseService } = require("../utils/supabaseClient");
+const { getSupabaseClient } = require('../utils/supabaseClient');
 
 class DatabaseService {
   constructor() {
@@ -73,14 +73,12 @@ class DatabaseService {
         !config.getSupabaseService().url ||
         !config.getSupabaseService().serviceRoleKey
       ) {
-        console.warn("[Database] Supabase not configured");
+        log.warn("[Database] Supabase not configured");
         return;
       }
 
       // Initialize primary (write) client
-      this.client = createClient(
-        config.getSupabaseService().url,
-        config.getSupabaseService().serviceRoleKey,
+      this.client = getSupabaseClient({ requireService: true }).serviceRoleKey,
       );
 
       // Initialize read replicas if configured
@@ -91,7 +89,7 @@ class DatabaseService {
 
       if (replicaUrls.length > 0) {
         this.readReplicas = replicaUrls.map((url) =>
-          createClient(url, config.getSupabaseService().serviceRoleKey),
+          getSupabaseClient({ requireService: true }).serviceRoleKey),
         );
         console.log(
           `[Database] ✅ ${replicaUrls.length} read replica(s) configured`,
@@ -104,7 +102,7 @@ class DatabaseService {
           await this.query("code_roach_projects", { select: "id", limit: 1 });
           return true;
         } catch (err) {
-          console.warn("[Database] Connection test failed:", err.message);
+          log.warn("[Database] Connection test failed:", err.message);
           return false;
         }
       };
@@ -125,11 +123,11 @@ class DatabaseService {
         // Connection test failed or timed out - still mark as initialized
         // The client is created, it just might not be fully ready
         // This allows the server to start even if the test query fails
-        console.warn(
+        log.warn(
           "[Database] ⚠️  Connection test failed, but client created:",
           err.message,
         );
-        console.warn(
+        log.warn(
           "[Database] ⚠️  Database operations may fail until connection is established",
         );
         this.initialized = true; // Mark as initialized anyway to prevent blocking

@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/fixCostBenefitAnalysisService.js
- * Last Sync: 2025-12-25T04:10:02.887Z
+ * Last Sync: 2025-12-25T05:17:15.787Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -15,31 +15,29 @@
  * Critical Missing Feature #5
  */
 
-const { createClient } = require("@supabase/supabase-js");
 const config = require("../config");
 const { createLogger } = require("../utils/logger");
 const log = createLogger("FixCostBenefitAnalysisService");
 const codeHealthScoring = require("./codeHealthScoring");
 const { getSupabaseService } = require("../utils/supabaseClient");
+const { getSupabaseClient } = require('../utils/supabaseClient');
 
 class FixCostBenefitAnalysisService {
   constructor() {
     // Only create Supabase client if credentials are available
     if (config.getSupabaseService().serviceRoleKey) {
       try {
-        this.supabase = createClient(
-          config.getSupabaseService().url,
-          config.getSupabaseService().serviceRoleKey,
+        this.supabase = getSupabaseClient({ requireService: true }).serviceRoleKey,
         );
       } catch (error) {
-        console.warn(
+        log.warn(
           "[fixCostBenefitAnalysisService] Supabase not configured:",
           error.message,
         );
         this.supabase = null;
       }
     } else {
-      console.warn(
+      log.warn(
         "[fixCostBenefitAnalysisService] Supabase credentials not configured. Service will be disabled.",
       );
       this.supabase = null;
@@ -600,7 +598,7 @@ class FixCostBenefitAnalysisService {
           });
         }
       } catch (error) {
-        console.warn(
+        log.warn(
           "[Fix Cost-Benefit Analysis] Error analyzing issue:",
           error,
         );

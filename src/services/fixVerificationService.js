@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/fixVerificationService.js
- * Last Sync: 2025-12-25T04:10:02.835Z
+ * Last Sync: 2025-12-25T04:53:21.502Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -173,7 +173,7 @@ class FixVerificationService {
     } catch (err) {
       // IMPROVED: If validation itself fails, assume valid (don't block fixes)
       // Better to try a fix than reject it due to validation system issues
-      console.warn(
+      log.warn(
         `[Fix Verification] Syntax validation error for ${filePath}:`,
         err.message,
       );

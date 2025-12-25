@@ -8,6 +8,9 @@ const http = require("http");
 const fs = require("fs").promises;
 const path = require("path");
 const readline = require("readline");
+const { createLogger } = require('../utils/logger');
+const log = createLogger('batch-review-issues');
+
 
 const SERVER_URL = process.env.CODE_ROACH_URL || "http://localhost:3000";
 const BATCH_SIZE = 50;
@@ -456,7 +459,7 @@ class BatchReviewer {
         }
       }
     } catch (err) {
-      console.warn(
+      log.warn(
         `${colors.yellow}Warning: Failed to learn batch patterns: ${err.message}${colors.reset}`,
       );
     }

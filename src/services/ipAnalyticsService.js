@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/ipAnalyticsService.js
- * Last Sync: 2025-12-25T04:10:02.884Z
+ * Last Sync: 2025-12-25T05:17:15.782Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -14,10 +14,10 @@
  * Tracks usage, effectiveness, and impact of new IP features
  */
 
-const { createClient } = require("@supabase/supabase-js");
 const config = require("../config");
 const { getSupabaseService } = require("../utils/supabaseClient");
 const { createLogger } = require("../utils/logger");
+const { getSupabaseClient } = require('../utils/supabaseClient');
 const log = createLogger("IpAnalyticsService");
 
 class IPAnalyticsService {
@@ -25,19 +25,17 @@ class IPAnalyticsService {
     // Only create Supabase client if credentials are available
     if (config.getSupabaseService().serviceRoleKey) {
       try {
-        this.supabase = createClient(
-          config.getSupabaseService().url,
-          config.getSupabaseService().serviceRoleKey,
+        this.supabase = getSupabaseClient({ requireService: true }).serviceRoleKey,
         );
       } catch (error) {
-        console.warn(
+        log.warn(
           "[ipAnalyticsService] Supabase not configured:",
           error.message,
         );
         this.supabase = null;
       }
     } else {
-      console.warn(
+      log.warn(
         "[ipAnalyticsService] Supabase credentials not configured. Service will be disabled.",
       );
       this.supabase = null;
@@ -107,7 +105,7 @@ class IPAnalyticsService {
         ),
       };
     } catch (err) {
-      console.warn("[IP Analytics] Error getting test generation stats:", err);
+      log.warn("[IP Analytics] Error getting test generation stats:", err);
       return this.getDefaultStats();
     }
   }
@@ -161,7 +159,7 @@ class IPAnalyticsService {
         refactoringCandidates: lowHealth + mediumHealth,
       };
     } catch (err) {
-      console.warn("[IP Analytics] Error getting refactoring stats:", err);
+      log.warn("[IP Analytics] Error getting refactoring stats:", err);
       return this.getDefaultStats();
     }
   }
@@ -216,7 +214,7 @@ class IPAnalyticsService {
 
       return smells;
     } catch (err) {
-      console.warn("[IP Analytics] Error getting code smell stats:", err);
+      log.warn("[IP Analytics] Error getting code smell stats:", err);
       return this.getDefaultStats();
     }
   }
@@ -248,7 +246,7 @@ class IPAnalyticsService {
         crossProjectSuccessRate: 0, // Would calculate from success rates
       };
     } catch (err) {
-      console.warn("[IP Analytics] Error getting cross-project stats:", err);
+      log.warn("[IP Analytics] Error getting cross-project stats:", err);
       return this.getDefaultStats();
     }
   }
@@ -290,7 +288,7 @@ class IPAnalyticsService {
         ),
       };
     } catch (err) {
-      console.warn("[IP Analytics] Error getting overall stats:", err);
+      log.warn("[IP Analytics] Error getting overall stats:", err);
       return this.getDefaultStats();
     }
   }

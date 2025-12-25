@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/fixImpactPredictionService.js
- * Last Sync: 2025-12-25T04:10:02.885Z
+ * Last Sync: 2025-12-25T05:17:15.785Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -19,7 +19,6 @@ const dependencyAnalysisService = require("./dependencyAnalysisService");
 const { createLogger } = require("../utils/logger");
 const log = createLogger("FixImpactPredictionService");
 const codebaseSearch = require("./codebaseSearch");
-const { createClient } = require("@supabase/supabase-js");
 const config = require("../config");
 
 class FixImpactPredictionService {
@@ -27,19 +26,17 @@ class FixImpactPredictionService {
     // Only create Supabase client if credentials are available
     if (config.getSupabaseService().serviceRoleKey) {
       try {
-        this.supabase = createClient(
-          config.getSupabaseService().url,
-          config.getSupabaseService().serviceRoleKey,
+        this.supabase = getSupabaseClient({ requireService: true }).serviceRoleKey,
         );
       } catch (error) {
-        console.warn(
+        log.warn(
           "[fixImpactPredictionService] Supabase not configured:",
           error.message,
         );
         this.supabase = null;
       }
     } else {
-      console.warn(
+      log.warn(
         "[fixImpactPredictionService] Supabase credentials not configured. Service will be disabled.",
       );
       this.supabase = null;
@@ -159,7 +156,7 @@ class FixImpactPredictionService {
 
       return dependencies;
     } catch (error) {
-      console.warn(
+      log.warn(
         "[Fix Impact Prediction] Error analyzing dependencies:",
         error,
       );
@@ -261,6 +258,7 @@ class FixImpactPredictionService {
         // Try to resolve import path
         const path = require("path");
         const { getSupabaseService } = require("../utils/supabaseClient");
+const { getSupabaseClient } = require('../utils/supabaseClient');
         const baseDir = path.dirname(baseFilePath);
         const resolved = path.resolve(baseDir, dep.name);
 
@@ -319,7 +317,7 @@ class FixImpactPredictionService {
 
       return dependentFiles;
     } catch (error) {
-      console.warn(
+      log.warn(
         "[Fix Impact Prediction] Error finding dependent files:",
         error,
       );
@@ -421,7 +419,7 @@ class FixImpactPredictionService {
           ) / (cascadeFailures.length || 1),
       };
     } catch (error) {
-      console.warn(
+      log.warn(
         "[Fix Impact Prediction] Error getting historical impact:",
         error,
       );

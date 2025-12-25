@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/fixOrchestrationService.js
- * Last Sync: 2025-12-25T04:10:02.887Z
+ * Last Sync: 2025-12-25T04:53:21.527Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -31,7 +31,7 @@ let issuePrioritizationService = null;
 try {
   serviceClient = require("./serviceClient");
 } catch (err) {
-  console.warn(
+  log.warn(
     "[Fix Orchestration] Service Client not available, using direct requires:",
     err.message,
   );
@@ -51,7 +51,7 @@ let eventBus = null;
 try {
   eventBus = require("./eventBus");
 } catch (err) {
-  console.warn("[Fix Orchestration] Event Bus not available:", err.message);
+  log.warn("[Fix Orchestration] Event Bus not available:", err.message);
 }
 
 class FixOrchestrationService {

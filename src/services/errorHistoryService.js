@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/errorHistoryService.js
- * Last Sync: 2025-12-25T04:10:02.866Z
+ * Last Sync: 2025-12-25T05:17:15.771Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -29,7 +29,7 @@ class ErrorHistoryService {
 
     // Load history on initialization
     this.loadHistory().catch((err) => {
-      console.warn("[Error History] Failed to load history:", err.message);
+      log.warn("[Error History] Failed to load history:", err.message);
     });
   }
 
@@ -131,7 +131,7 @@ class ErrorHistoryService {
 
     // Save to Supabase if available (dual-write)
     this.saveToSupabase(record).catch((err) => {
-      console.warn("[Error History] Error saving to Supabase:", err.message);
+      log.warn("[Error History] Error saving to Supabase:", err.message);
     });
 
     // Save asynchronously (don't block)
@@ -147,16 +147,13 @@ class ErrorHistoryService {
    */
   async saveToSupabase(record) {
     try {
-      const { createClient } = require("@supabase/supabase-js");
       const config = require("../config");
 
       if (!config.supabase?.url || !config.supabase?.serviceRoleKey) {
         return; // Supabase not configured
       }
 
-      const supabase = createClient(
-        config.getSupabaseService().url,
-        config.getSupabaseService().serviceRoleKey,
+      const supabase = getSupabaseClient({ requireService: true }).serviceRoleKey,
       );
 
       const insertData = {
@@ -187,7 +184,7 @@ class ErrorHistoryService {
         .upsert(insertData, { onConflict: "id" });
     } catch (err) {
       // Don't throw - this is a background operation
-      console.warn("[Error History] Supabase save failed:", err.message);
+      log.warn("[Error History] Supabase save failed:", err.message);
     }
   }
 
@@ -315,6 +312,7 @@ class ErrorHistoryService {
       try {
         const mlFixPredictor = require("./mlFixPredictor");
         const { getSupabaseService } = require("../utils/supabaseClient");
+const { getSupabaseClient } = require('../utils/supabaseClient');
         if (mlFixPredictor && mlFixPredictor.isTrained) {
           // Score all fixes and pick best
           let bestScore = 0;

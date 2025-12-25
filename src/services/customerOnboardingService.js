@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/customerOnboardingService.js
- * Last Sync: 2025-12-25T04:10:02.891Z
+ * Last Sync: 2025-12-25T05:17:15.795Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -13,32 +13,30 @@
  * Orchestrates the expert training workflow during customer onboarding
  */
 
-const { createClient } = require("@supabase/supabase-js");
 const config = require("../config");
 const { createLogger } = require("../utils/logger");
 const log = createLogger("CustomerOnboardingService");
 const customerCodebaseAnalyzer = require("./customerCodebaseAnalyzer");
 const expertTrainingService = require("./expertTrainingService");
 const { getSupabaseService } = require("../utils/supabaseClient");
+const { getSupabaseClient } = require('../utils/supabaseClient');
 
 class CustomerOnboardingService {
   constructor() {
     // Only create Supabase client if credentials are available
     if (config.getSupabaseService().serviceRoleKey) {
       try {
-        this.supabase = createClient(
-          config.getSupabaseService().url,
-          config.getSupabaseService().serviceRoleKey,
+        this.supabase = getSupabaseClient({ requireService: true }).serviceRoleKey,
         );
       } catch (error) {
-        console.warn(
+        log.warn(
           "[customerOnboardingService] Supabase not configured:",
           error.message,
         );
         this.supabase = null;
       }
     } else {
-      console.warn(
+      log.warn(
         "[customerOnboardingService] Supabase credentials not configured. Service will be disabled.",
       );
       this.supabase = null;
@@ -144,7 +142,7 @@ class CustomerOnboardingService {
 
       if (error) throw error;
     } catch (err) {
-      console.warn(
+      log.warn(
         "[Customer Onboarding] Error initializing training status:",
         err,
       );
@@ -168,7 +166,7 @@ class CustomerOnboardingService {
 
       if (error) throw error;
     } catch (err) {
-      console.warn(
+      log.warn(
         "[Customer Onboarding] Error updating training status:",
         err,
       );
@@ -199,7 +197,7 @@ class CustomerOnboardingService {
 
         if (error) throw error;
       } catch (err) {
-        console.warn("[Customer Onboarding] Error updating project:", err);
+        log.warn("[Customer Onboarding] Error updating project:", err);
       }
     }
   }

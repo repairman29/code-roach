@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/automatedTestGenerator.js
- * Last Sync: 2025-12-25T04:10:02.870Z
+ * Last Sync: 2025-12-25T05:17:15.773Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -14,7 +14,6 @@
  * IP Innovation #9: Self-Healing Test Suite Generation
  */
 
-const { createClient } = require("@supabase/supabase-js");
 const config = require("../config");
 const { createLogger } = require("../utils/logger");
 const log = createLogger("AutomatedTestGenerator");
@@ -23,25 +22,24 @@ const agentKnowledgeService = require("./agentKnowledgeService");
 const fs = require("fs").promises;
 const path = require("path");
 const { getSupabaseService } = require("../utils/supabaseClient");
+const { getSupabaseClient } = require('../utils/supabaseClient');
 
 class AutomatedTestGenerator {
   constructor() {
     // Only create Supabase client if credentials are available
     if (config.getSupabaseService().serviceRoleKey) {
       try {
-        this.supabase = createClient(
-          config.getSupabaseService().url,
-          config.getSupabaseService().serviceRoleKey,
+        this.supabase = getSupabaseClient({ requireService: true }).serviceRoleKey,
         );
       } catch (error) {
-        console.warn(
+        log.warn(
           "[automatedTestGenerator] Supabase not configured:",
           error.message,
         );
         this.supabase = null;
       }
     } else {
-      console.warn(
+      log.warn(
         "[automatedTestGenerator] Supabase credentials not configured. Service will be disabled.",
       );
       this.supabase = null;
@@ -109,7 +107,7 @@ class AutomatedTestGenerator {
       if (error) throw error;
       return data || [];
     } catch (err) {
-      console.warn("[Automated Test Generator] Error getting patterns:", err);
+      log.warn("[Automated Test Generator] Error getting patterns:", err);
       return [];
     }
   }
@@ -160,7 +158,7 @@ class AutomatedTestGenerator {
       if (error) throw error;
       return data || [];
     } catch (err) {
-      console.warn("[Automated Test Generator] Error getting examples:", err);
+      log.warn("[Automated Test Generator] Error getting examples:", err);
       return [];
     }
   }
@@ -183,7 +181,7 @@ class AutomatedTestGenerator {
       if (error) throw error;
       return data || [];
     } catch (err) {
-      console.warn("[Automated Test Generator] Error getting fixes:", err);
+      log.warn("[Automated Test Generator] Error getting fixes:", err);
       return [];
     }
   }
@@ -201,7 +199,7 @@ class AutomatedTestGenerator {
         { knowledgeType: "pattern", limit: 3, threshold: 0.6 },
       );
     } catch (err) {
-      console.warn(
+      log.warn(
         "[Automated Test Generator] Error getting test patterns:",
         err,
       );
@@ -340,7 +338,7 @@ ${test.testCode}
         })
         .eq("fingerprint", fingerprint);
     } catch (err) {
-      console.warn("[Automated Test Generator] Error marking pattern:", err);
+      log.warn("[Automated Test Generator] Error marking pattern:", err);
     }
   }
 

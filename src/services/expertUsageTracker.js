@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/expertUsageTracker.js
- * Last Sync: 2025-12-25T04:10:02.891Z
+ * Last Sync: 2025-12-25T05:17:15.798Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -13,10 +13,10 @@
  * Tracks when experts are used in fix generation
  */
 
-const { createClient } = require("@supabase/supabase-js");
 const config = require("../config");
 const { getSupabaseService } = require("../utils/supabaseClient");
 const { createLogger } = require("../utils/logger");
+const { getSupabaseClient } = require('../utils/supabaseClient');
 const log = createLogger("ExpertUsageTracker");
 
 class ExpertUsageTracker {
@@ -24,19 +24,17 @@ class ExpertUsageTracker {
     // Only create Supabase client if credentials are available
     if (config.getSupabaseService().serviceRoleKey) {
       try {
-        this.supabase = createClient(
-          config.getSupabaseService().url,
-          config.getSupabaseService().serviceRoleKey,
+        this.supabase = getSupabaseClient({ requireService: true }).serviceRoleKey,
         );
       } catch (error) {
-        console.warn(
+        log.warn(
           "[expertUsageTracker] Supabase not configured:",
           error.message,
         );
         this.supabase = null;
       }
     } else {
-      console.warn(
+      log.warn(
         "[expertUsageTracker] Supabase credentials not configured. Service will be disabled.",
       );
       this.supabase = null;

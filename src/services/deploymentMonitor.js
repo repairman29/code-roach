@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/deploymentMonitor.js
- * Last Sync: 2025-12-25T04:10:02.875Z
+ * Last Sync: 2025-12-25T04:53:21.517Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -145,7 +145,7 @@ class AutomaticDeploymentMonitor {
       return false;
     } catch (err) {
       // If we can't read marker, assume new deployment
-      console.warn(
+      log.warn(
         "⚠️  Could not read deployment marker, assuming new deployment:",
         err.message,
       );
@@ -179,7 +179,7 @@ class AutomaticDeploymentMonitor {
         "utf8",
       );
     } catch (err) {
-      console.warn("⚠️  Could not write deployment marker:", err.message);
+      log.warn("⚠️  Could not write deployment marker:", err.message);
     }
   }
 

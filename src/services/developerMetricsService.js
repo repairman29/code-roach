@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/developerMetricsService.js
- * Last Sync: 2025-12-25T04:10:02.880Z
+ * Last Sync: 2025-12-25T05:17:15.779Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -13,10 +13,10 @@
  * ROUND 10: Track developer performance and fix statistics
  */
 
-const { createClient } = require("@supabase/supabase-js");
 const config = require("../config");
 const { getSupabaseService } = require("../utils/supabaseClient");
 const { createLogger } = require("../utils/logger");
+const { getSupabaseClient } = require('../utils/supabaseClient');
 const log = createLogger("DeveloperMetricsService");
 
 class DeveloperMetricsService {
@@ -24,19 +24,17 @@ class DeveloperMetricsService {
     // Only create Supabase client if credentials are available
     if (config.getSupabaseService().serviceRoleKey) {
       try {
-        this.supabase = createClient(
-          config.getSupabaseService().url,
-          config.getSupabaseService().serviceRoleKey,
+        this.supabase = getSupabaseClient({ requireService: true }).serviceRoleKey,
         );
       } catch (error) {
-        console.warn(
+        log.warn(
           "[developerMetricsService] Supabase not configured:",
           error.message,
         );
         this.supabase = null;
       }
     } else {
-      console.warn(
+      log.warn(
         "[developerMetricsService] Supabase credentials not configured. Service will be disabled.",
       );
       this.supabase = null;
@@ -64,7 +62,7 @@ class DeveloperMetricsService {
 
       return fixes || [];
     } catch (err) {
-      console.warn("[Developer Metrics] Error getting developer stats:", err);
+      log.warn("[Developer Metrics] Error getting developer stats:", err);
       return this.getDefaultStats();
     }
   }

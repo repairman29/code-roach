@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/securityAutoFix.js
- * Last Sync: 2025-12-25T04:10:02.834Z
+ * Last Sync: 2025-12-25T04:53:21.500Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -84,7 +84,7 @@ module.exports = {
 
       return vulnerabilities;
     } catch (err) {
-      console.warn(
+      log.warn(
         "[Security Auto Fix] Error scanning for vulnerabilities:",
         err.message,
       );

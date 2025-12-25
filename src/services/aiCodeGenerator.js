@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/aiCodeGenerator.js
- * Last Sync: 2025-12-25T04:10:02.869Z
+ * Last Sync: 2025-12-25T05:17:15.772Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -14,32 +14,30 @@
  * IP Innovation #6: Pattern-Based Code Generation
  */
 
-const { createClient } = require("@supabase/supabase-js");
 const config = require("../config");
 const { createLogger } = require("../utils/logger");
 const log = createLogger("AiCodeGenerator");
 const llmService = require("./llmService");
 const codebaseSearch = require("./codebaseSearch");
 const { getSupabaseService } = require("../utils/supabaseClient");
+const { getSupabaseClient } = require('../utils/supabaseClient');
 
 class AICodeGenerator {
   constructor() {
     // Only create Supabase client if credentials are available
     if (config.getSupabaseService().serviceRoleKey) {
       try {
-        this.supabase = createClient(
-          config.getSupabaseService().url,
-          config.getSupabaseService().serviceRoleKey,
+        this.supabase = getSupabaseClient({ requireService: true }).serviceRoleKey,
         );
       } catch (error) {
-        console.warn(
+        log.warn(
           "[aiCodeGenerator] Supabase not configured:",
           error.message,
         );
         this.supabase = null;
       }
     } else {
-      console.warn(
+      log.warn(
         "[aiCodeGenerator] Supabase credentials not configured. Service will be disabled.",
       );
       this.supabase = null;
@@ -117,7 +115,7 @@ class AICodeGenerator {
         });
       }
     } catch (err) {
-      console.warn(
+      log.warn(
         "[AI Code Generator] Error getting knowledge base patterns:",
         err,
       );
@@ -138,7 +136,7 @@ class AICodeGenerator {
           patterns.push(...data.map((p) => ({ ...p, source: "code_roach" })));
         }
       } catch (err) {
-        console.warn(
+        log.warn(
           "[AI Code Generator] Error getting code roach patterns:",
           err,
         );
@@ -182,7 +180,7 @@ class AICodeGenerator {
 
       return style;
     } catch (err) {
-      console.warn("[AI Code Generator] Error analyzing style:", err);
+      log.warn("[AI Code Generator] Error analyzing style:", err);
       return {};
     }
   }
@@ -200,7 +198,7 @@ class AICodeGenerator {
 
       return results.results || [];
     } catch (err) {
-      console.warn("[AI Code Generator] Error finding examples:", err);
+      log.warn("[AI Code Generator] Error finding examples:", err);
       return [];
     }
   }
@@ -326,7 +324,7 @@ Return only the code, no explanations.`;
         }
       }
     } catch (err) {
-      console.warn(
+      log.warn(
         "[AI Code Generator] Error getting pattern suggestions:",
         err,
       );

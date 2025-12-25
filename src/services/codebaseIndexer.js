@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/codebaseIndexer.js
- * Last Sync: 2025-12-25T04:27:56.591Z
+ * Last Sync: 2025-12-25T05:17:15.748Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -16,7 +16,6 @@
 
 const fs = require("fs").promises;
 const path = require("path");
-const { createClient } = require("@supabase/supabase-js");
 const config = require("../config");
 const { createLogger } = require("../utils/logger");
 
@@ -30,19 +29,17 @@ class CodebaseIndexer {
     // Only create Supabase client if credentials are available
     if (config.getSupabaseService().serviceRoleKey) {
       try {
-        this.supabase = createClient(
-          config.getSupabaseService().url,
-          config.getSupabaseService().serviceRoleKey,
+        this.supabase = getSupabaseClient({ requireService: true }).serviceRoleKey,
         );
       } catch (error) {
-        console.warn(
+        log.warn(
           "[codebaseIndexer] Supabase not configured:",
           error.message,
         );
         this.supabase = null;
       }
     } else {
-      console.warn(
+      log.warn(
         "[codebaseIndexer] Supabase credentials not configured. Service will be disabled.",
       );
       this.supabase = null;
@@ -386,7 +383,7 @@ class CodebaseIndexer {
       }
     } catch (err) {
       // Fallback to original parsing
-      console.warn(
+      log.warn(
         "[Codebase Indexer] Optimal chunking not available, using fallback:",
         err.message,
       );
@@ -543,6 +540,7 @@ class CodebaseIndexer {
 
     const startTime = Date.now();
     const metricsCollector = require("./metricsCollector");
+const { getSupabaseClient } = require('../utils/supabaseClient');
     const { getSupabaseService } = require("../utils/supabaseClient");
 
     // Limit batch size to avoid token limits (2048 inputs max, but we'll use 100 for safety)

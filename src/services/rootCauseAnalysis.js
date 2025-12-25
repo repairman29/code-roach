@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/rootCauseAnalysis.js
- * Last Sync: 2025-12-25T04:10:02.854Z
+ * Last Sync: 2025-12-25T04:53:21.509Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -149,7 +149,7 @@ class RootCauseAnalysis {
 
       return patterns;
     } catch (error) {
-      console.warn(
+      log.warn(
         "[Root Cause Analysis] Error analyzing patterns:",
         error.message,
       );
@@ -192,7 +192,7 @@ class RootCauseAnalysis {
         }
       }
     } catch (error) {
-      console.warn(
+      log.warn(
         "[Root Cause Analysis] Error tracing dependencies:",
         error.message,
       );
@@ -293,7 +293,7 @@ Response format: JSON only, no markdown.`;
         return analysis;
       }
     } catch (error) {
-      console.warn("[Root Cause Analysis] LLM analysis failed:", error.message);
+      log.warn("[Root Cause Analysis] LLM analysis failed:", error.message);
     }
 
     // Fallback to rule-based analysis

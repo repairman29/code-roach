@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/agentKnowledgeService.js
- * Last Sync: 2025-12-25T04:10:02.839Z
+ * Last Sync: 2025-12-25T05:17:15.764Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -13,31 +13,29 @@
  * Shared knowledge repository for all AI agents
  */
 
-const { createClient } = require("@supabase/supabase-js");
 const config = require("../config");
 const { createLogger } = require("../utils/logger");
 const log = createLogger("AgentKnowledgeService");
 const codebaseSearch = require("./codebaseSearch");
 const { getSupabaseService } = require("../utils/supabaseClient");
+const { getSupabaseClient } = require('../utils/supabaseClient');
 
 class AgentKnowledgeService {
   constructor() {
     // Only create Supabase client if credentials are available
     if (config.getSupabaseService().serviceRoleKey) {
       try {
-        this.supabase = createClient(
-          config.getSupabaseService().url,
-          config.getSupabaseService().serviceRoleKey,
+        this.supabase = getSupabaseClient({ requireService: true }).serviceRoleKey,
         );
       } catch (error) {
-        console.warn(
+        log.warn(
           "[AgentKnowledgeService] Supabase not configured:",
           error.message,
         );
         this.supabase = null;
       }
     } else {
-      console.warn(
+      log.warn(
         "[AgentKnowledgeService] Supabase credentials not configured. Knowledge service will be disabled.",
       );
       this.supabase = null;
@@ -49,7 +47,7 @@ class AgentKnowledgeService {
    */
   async searchKnowledge(query, options = {}) {
     if (!this.supabase) {
-      console.warn(
+      log.warn(
         "[AgentKnowledgeService] Cannot search: Supabase not configured",
       );
       return [];

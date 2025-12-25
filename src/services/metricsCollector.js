@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/metricsCollector.js
- * Last Sync: 2025-12-25T04:10:02.882Z
+ * Last Sync: 2025-12-25T05:17:15.781Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -28,13 +28,13 @@
  * - System throughput
  */
 
-const { createClient } = require("@supabase/supabase-js");
 const config = require("../config");
 const { createLogger } = require("../utils/logger");
 const log = createLogger("MetricsCollector");
 const fs = require("fs").promises;
 const path = require("path");
 const { getSupabaseService } = require("../utils/supabaseClient");
+const { getSupabaseClient } = require('../utils/supabaseClient');
 
 class MetricsCollector {
   constructor(options = {}) {
@@ -90,13 +90,11 @@ class MetricsCollector {
 
     // Initialize Supabase client if available
     try {
-      this.supabase = createClient(
-        config.getSupabaseService().url,
-        config.getSupabaseService().serviceRoleKey,
+      this.supabase = getSupabaseClient({ requireService: true }).serviceRoleKey,
       );
       this.useDatabase = true;
     } catch (err) {
-      console.warn(
+      log.warn(
         "[Metrics Collector] Supabase not available, using file storage",
       );
       this.useDatabase = false;
@@ -104,7 +102,7 @@ class MetricsCollector {
 
     // Load existing metrics
     this.loadMetrics().catch((err) => {
-      console.warn("[Metrics Collector] Failed to load metrics:", err.message);
+      log.warn("[Metrics Collector] Failed to load metrics:", err.message);
     });
   }
 

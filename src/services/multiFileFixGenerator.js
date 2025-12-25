@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/multiFileFixGenerator.js
- * Last Sync: 2025-12-25T04:10:02.834Z
+ * Last Sync: 2025-12-25T04:53:21.501Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -225,7 +225,7 @@ class MultiFileFixGenerator {
 
       return dependencies;
     } catch (err) {
-      console.warn(
+      log.warn(
         "[Multi-File Fix] Error analyzing dependencies:",
         err.message,
       );
@@ -427,7 +427,7 @@ class MultiFileFixGenerator {
 
       return [];
     } catch (err) {
-      console.warn(
+      log.warn(
         "[Multi-File Fix] Error finding dependent files:",
         err.message,
       );

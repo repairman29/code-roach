@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/customerCodebaseAnalyzer.js
- * Last Sync: 2025-12-25T04:27:56.632Z
+ * Last Sync: 2025-12-25T05:17:15.792Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -21,10 +21,10 @@ const { createLogger } = require("../utils/logger");
 const log = createLogger("CustomerCodebaseAnalyzer");
 const { exec } = require("child_process");
 const { promisify } = require("util");
-const { createClient } = require("@supabase/supabase-js");
 const config = require("../config");
 const codebaseSearch = require("./codebaseSearch");
 const { getSupabaseService } = require("../utils/supabaseClient");
+const { getSupabaseClient } = require('../utils/supabaseClient');
 const execAsync = promisify(exec);
 
 class CustomerCodebaseAnalyzer {
@@ -32,19 +32,17 @@ class CustomerCodebaseAnalyzer {
     // Only create Supabase client if credentials are available
     if (config.getSupabaseService().serviceRoleKey) {
       try {
-        this.supabase = createClient(
-          config.getSupabaseService().url,
-          config.getSupabaseService().serviceRoleKey,
+        this.supabase = getSupabaseClient({ requireService: true }).serviceRoleKey,
         );
       } catch (error) {
-        console.warn(
+        log.warn(
           "[customerCodebaseAnalyzer] Supabase not configured:",
           error.message,
         );
         this.supabase = null;
       }
     } else {
-      console.warn(
+      log.warn(
         "[customerCodebaseAnalyzer] Supabase credentials not configured. Service will be disabled.",
       );
       this.supabase = null;
@@ -145,7 +143,7 @@ class CustomerCodebaseAnalyzer {
         packageJson,
       );
     } catch (err) {
-      console.warn(
+      log.warn(
         "[Customer Codebase Analyzer] Error analyzing tech stack:",
         err,
       );
@@ -200,7 +198,7 @@ class CustomerCodebaseAnalyzer {
         }
       });
     } catch (err) {
-      console.warn(
+      log.warn(
         "[Customer Codebase Analyzer] Error detecting languages:",
         err,
       );
@@ -347,7 +345,7 @@ class CustomerCodebaseAnalyzer {
         // Ignore
       }
     } catch (err) {
-      console.warn(
+      log.warn(
         "[Customer Codebase Analyzer] Error detecting cloud providers:",
         err,
       );
@@ -489,7 +487,7 @@ class CustomerCodebaseAnalyzer {
         }
       }
     } catch (err) {
-      console.warn(
+      log.warn(
         "[Customer Codebase Analyzer] Error detecting deployment platforms:",
         err,
       );
@@ -526,7 +524,7 @@ class CustomerCodebaseAnalyzer {
       // Detect file structure
       patterns.file_structure = await this.detectFileStructure(codebasePath);
     } catch (err) {
-      console.warn(
+      log.warn(
         "[Customer Codebase Analyzer] Error analyzing architecture:",
         err,
       );
@@ -770,7 +768,7 @@ class CustomerCodebaseAnalyzer {
       if (deps["@istanbuljs/nyc"] || deps.nyc) patterns.coverage_tool = "nyc";
       else if (deps.jest) patterns.coverage_tool = "Jest";
     } catch (err) {
-      console.warn(
+      log.warn(
         "[Customer Codebase Analyzer] Error analyzing testing patterns:",
         err,
       );
@@ -811,7 +809,7 @@ class CustomerCodebaseAnalyzer {
       if (deps.bcrypt || deps["bcryptjs"]) practices.encryption.push("bcrypt");
       if (deps.crypto) practices.encryption.push("crypto");
     } catch (err) {
-      console.warn(
+      log.warn(
         "[Customer Codebase Analyzer] Error analyzing security practices:",
         err,
       );
@@ -876,7 +874,7 @@ class CustomerCodebaseAnalyzer {
           f.includes("stylelint"),
       );
     } catch (err) {
-      console.warn(
+      log.warn(
         "[Customer Codebase Analyzer] Error analyzing code style:",
         err,
       );
@@ -950,7 +948,7 @@ class CustomerCodebaseAnalyzer {
 
       if (error) throw error;
     } catch (err) {
-      console.warn("[Customer Codebase Analyzer] Error storing analysis:", err);
+      log.warn("[Customer Codebase Analyzer] Error storing analysis:", err);
     }
   }
 

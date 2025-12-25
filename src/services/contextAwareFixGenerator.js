@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/contextAwareFixGenerator.js
- * Last Sync: 2025-12-25T04:10:02.832Z
+ * Last Sync: 2025-12-25T04:53:21.499Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -49,7 +49,7 @@ class ContextAwareFixGenerator {
           }
         }
       } catch (err) {
-        console.warn(
+        log.warn(
           "[Context-Aware Fix] Failed to calculate file risk:",
           err.message,
         );
@@ -135,14 +135,14 @@ class ContextAwareFixGenerator {
               applied: false,
             })
             .catch((err) => {
-              console.warn(
+              log.warn(
                 "[Context-Aware Fix] Failed to record:",
                 err.message,
               );
             });
         }
       } catch (err) {
-        console.warn(
+        log.warn(
           "[Context-Aware Fix] Failed to record decision:",
           err.message,
         );
@@ -187,7 +187,7 @@ class ContextAwareFixGenerator {
 
       return conventions;
     } catch (err) {
-      console.warn(
+      log.warn(
         "[Context-Aware Fix] Error getting conventions:",
         err.message,
       );
@@ -282,7 +282,7 @@ class ContextAwareFixGenerator {
 
       return patterns;
     } catch (err) {
-      console.warn("[Context-Aware Fix] Error finding patterns:", err.message);
+      log.warn("[Context-Aware Fix] Error finding patterns:", err.message);
       return [];
     }
   }
@@ -326,7 +326,7 @@ class ContextAwareFixGenerator {
         successRate: p.stats?.successRate || 0,
       }));
     } catch (err) {
-      console.warn(
+      log.warn(
         "[Context-Aware Fix] Error getting existing fixes:",
         err.message,
       );

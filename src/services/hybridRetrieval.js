@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/hybridRetrieval.js
- * Last Sync: 2025-12-25T04:27:56.627Z
+ * Last Sync: 2025-12-25T04:53:21.516Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -169,7 +169,7 @@ class HybridRetrieval {
         rank: index + 1,
       }));
     } catch (error) {
-      console.warn(
+      log.warn(
         "[Hybrid Retrieval] Semantic retrieval failed:",
         error.message,
       );
@@ -199,7 +199,7 @@ class HybridRetrieval {
         rank: index + 1,
       }));
     } catch (error) {
-      console.warn(
+      log.warn(
         "[Hybrid Retrieval] Keyword retrieval failed:",
         error.message,
       );
@@ -252,7 +252,7 @@ class HybridRetrieval {
           rank: index + 1,
         }));
     } catch (error) {
-      console.warn("[Hybrid Retrieval] BM25 retrieval failed:", error.message);
+      log.warn("[Hybrid Retrieval] BM25 retrieval failed:", error.message);
       return [];
     }
   }
@@ -347,7 +347,7 @@ class HybridRetrieval {
         rank: index + 1,
       }));
     } catch (error) {
-      console.warn(
+      log.warn(
         "[Hybrid Retrieval] Pattern retrieval failed:",
         error.message,
       );
@@ -472,7 +472,7 @@ class HybridRetrieval {
       // Sort by re-ranking score
       return reranked.sort((a, b) => b.rerankScore - a.rerankScore);
     } catch (error) {
-      console.warn("[Hybrid Retrieval] Re-ranking failed:", error.message);
+      log.warn("[Hybrid Retrieval] Re-ranking failed:", error.message);
       return results; // Return original if re-ranking fails
     }
   }

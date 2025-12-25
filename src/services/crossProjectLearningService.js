@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/crossProjectLearningService.js
- * Last Sync: 2025-12-25T04:10:02.850Z
+ * Last Sync: 2025-12-25T05:17:15.767Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -16,31 +16,29 @@
  * Critical Missing Feature #4 (Enhanced)
  */
 
-const { createClient } = require("@supabase/supabase-js");
 const config = require("../config");
 const { createLogger } = require("../utils/logger");
 const log = createLogger("CrossProjectLearningService");
 const codebaseSearch = require("./codebaseSearch");
 const { getSupabaseService } = require("../utils/supabaseClient");
+const { getSupabaseClient } = require('../utils/supabaseClient');
 
 class CrossProjectLearningService {
   constructor() {
     // Only create Supabase client if credentials are available
     if (config.getSupabaseService().serviceRoleKey) {
       try {
-        this.supabase = createClient(
-          config.getSupabaseService().url,
-          config.getSupabaseService().serviceRoleKey,
+        this.supabase = getSupabaseClient({ requireService: true }).serviceRoleKey,
         );
       } catch (error) {
-        console.warn(
+        log.warn(
           "[crossProjectLearningService] Supabase not configured:",
           error.message,
         );
         this.supabase = null;
       }
     } else {
-      console.warn(
+      log.warn(
         "[crossProjectLearningService] Supabase credentials not configured. Service will be disabled.",
       );
       this.supabase = null;
@@ -62,7 +60,7 @@ class CrossProjectLearningService {
         const patterns = await this.getProjectPatterns(projectId);
         allPatterns.push(...patterns);
       } catch (err) {
-        console.warn(
+        log.warn(
           `[Cross-Project Learning] Error learning from ${projectId}:`,
           err,
         );
@@ -103,7 +101,7 @@ class CrossProjectLearningService {
       if (error) throw error;
       return data || [];
     } catch (err) {
-      console.warn(
+      log.warn(
         "[Cross-Project Learning] Error getting project patterns:",
         err,
       );
@@ -198,7 +196,7 @@ class CrossProjectLearningService {
         { onConflict: "fingerprint" },
       );
     } catch (err) {
-      console.warn("[Cross-Project Learning] Error applying pattern:", err);
+      log.warn("[Cross-Project Learning] Error applying pattern:", err);
     }
   }
 
@@ -271,7 +269,7 @@ class CrossProjectLearningService {
 
       return similar;
     } catch (err) {
-      console.warn(
+      log.warn(
         "[Cross-Project Learning] Error finding similar fixes:",
         err,
       );
@@ -474,7 +472,7 @@ class CrossProjectLearningService {
             : 0,
       }));
     } catch (error) {
-      console.warn(
+      log.warn(
         "[Cross-Project Learning] Error getting marketplace:",
         error,
       );

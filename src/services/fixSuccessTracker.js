@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/fixSuccessTracker.js
- * Last Sync: 2025-12-25T04:10:02.847Z
+ * Last Sync: 2025-12-25T04:53:21.507Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -36,7 +36,7 @@ class FixSuccessTracker {
       } = fixData;
 
       if (!fix || !error || !filePath) {
-        console.warn("[FixSuccessTracker] Missing required data");
+        log.warn("[FixSuccessTracker] Missing required data");
         return;
       }
 
@@ -82,7 +82,7 @@ class FixSuccessTracker {
             applied: applied,
           });
         } catch (err) {
-          console.warn(
+          log.warn(
             "[FixSuccessTracker] Failed to record success:",
             err.message,
           );

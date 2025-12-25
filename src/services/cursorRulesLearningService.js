@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/cursorRulesLearningService.js
- * Last Sync: 2025-12-25T04:10:02.851Z
+ * Last Sync: 2025-12-25T05:17:15.768Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -18,29 +18,27 @@ const fs = require("fs").promises;
 const path = require("path");
 const { createLogger } = require("../utils/logger");
 const log = createLogger("CursorRulesLearningService");
-const { createClient } = require("@supabase/supabase-js");
 const config = require("../config");
 const llmService = require("./llmService");
 const { getSupabaseService } = require("../utils/supabaseClient");
+const { getSupabaseClient } = require('../utils/supabaseClient');
 
 class CursorRulesLearningService {
   constructor() {
     // Only create Supabase client if credentials are available
     if (config.getSupabaseService().serviceRoleKey) {
       try {
-        this.supabase = createClient(
-          config.getSupabaseService().url,
-          config.getSupabaseService().serviceRoleKey,
+        this.supabase = getSupabaseClient({ requireService: true }).serviceRoleKey,
         );
       } catch (error) {
-        console.warn(
+        log.warn(
           "[cursorRulesLearningService] Supabase not configured:",
           error.message,
         );
         this.supabase = null;
       }
     } else {
-      console.warn(
+      log.warn(
         "[cursorRulesLearningService] Supabase credentials not configured. Service will be disabled.",
       );
       this.supabase = null;
@@ -113,7 +111,7 @@ class CursorRulesLearningService {
       if (error) throw error;
       return data || [];
     } catch (err) {
-      console.warn("[Cursor Rules Learning] Error getting patterns:", err);
+      log.warn("[Cursor Rules Learning] Error getting patterns:", err);
       return [];
     }
   }
@@ -135,7 +133,7 @@ class CursorRulesLearningService {
       if (error) throw error;
       return data || [];
     } catch (err) {
-      console.warn(
+      log.warn(
         "[Cursor Rules Learning] Error getting successful patterns:",
         err,
       );
@@ -174,7 +172,7 @@ class CursorRulesLearningService {
         improving: improvingFiles || [],
       };
     } catch (err) {
-      console.warn("[Cursor Rules Learning] Error getting file insights:", err);
+      log.warn("[Cursor Rules Learning] Error getting file insights:", err);
       return {};
     }
   }
@@ -434,7 +432,7 @@ Return as JSON array:
         },
       });
     } catch (err) {
-      console.warn("[Cursor Rules Learning] Error tracking improvement:", err);
+      log.warn("[Cursor Rules Learning] Error tracking improvement:", err);
     }
   }
 
@@ -490,7 +488,7 @@ Return as JSON array:
           .eq("id", rule.id);
       }
     } catch (err) {
-      console.warn(
+      log.warn(
         "[Cursor Rules Learning] Error tracking effectiveness:",
         err,
       );
@@ -526,7 +524,7 @@ Return as JSON array:
 
       return rules || [];
     } catch (err) {
-      console.warn(
+      log.warn(
         "[Cursor Rules Learning] Error getting recommended rules:",
         err,
       );

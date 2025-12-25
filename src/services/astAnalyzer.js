@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/astAnalyzer.js
- * Last Sync: 2025-12-25T04:10:02.827Z
+ * Last Sync: 2025-12-25T04:53:21.493Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -56,10 +56,10 @@ class ASTAnalyzer {
 
       console.log("[AST Analyzer] Babel parser loaded successfully");
     } catch (err) {
-      console.warn(
+      log.warn(
         "[AST Analyzer] Babel parser not available. Install with: npm install @babel/parser @babel/traverse",
       );
-      console.warn("[AST Analyzer] Falling back to regex-based analysis");
+      log.warn("[AST Analyzer] Falling back to regex-based analysis");
       this.parser = null;
       this.traverse = null;
     }
@@ -96,7 +96,7 @@ class ASTAnalyzer {
 
       return ast;
     } catch (err) {
-      console.warn("[AST Analyzer] Parse error:", err.message);
+      log.warn("[AST Analyzer] Parse error:", err.message);
       return null;
     }
   }

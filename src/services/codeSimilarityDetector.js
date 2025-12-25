@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/codeSimilarityDetector.js
- * Last Sync: 2025-12-25T04:10:02.829Z
+ * Last Sync: 2025-12-25T05:17:15.756Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -17,28 +17,26 @@
 const codebaseSearch = require("./codebaseSearch");
 const { createLogger } = require("../utils/logger");
 const log = createLogger("CodeSimilarityDetector");
-const { createClient } = require("@supabase/supabase-js");
 const config = require("../config");
 const { getSupabaseService } = require("../utils/supabaseClient");
+const { getSupabaseClient } = require('../utils/supabaseClient');
 
 class CodeSimilarityDetector {
   constructor() {
     // Only create Supabase client if credentials are available
     if (config.getSupabaseService().serviceRoleKey) {
       try {
-        this.supabase = createClient(
-          config.getSupabaseService().url,
-          config.getSupabaseService().serviceRoleKey,
+        this.supabase = getSupabaseClient({ requireService: true }).serviceRoleKey,
         );
       } catch (error) {
-        console.warn(
+        log.warn(
           "[codeSimilarityDetector] Supabase not configured:",
           error.message,
         );
         this.supabase = null;
       }
     } else {
-      console.warn(
+      log.warn(
         "[codeSimilarityDetector] Supabase credentials not configured. Service will be disabled.",
       );
       this.supabase = null;
@@ -64,7 +62,7 @@ class CodeSimilarityDetector {
 
       return duplicates.slice(0, 5); // Return top 5 duplicates
     } catch (error) {
-      console.warn("[CodeSimilarityDetector] Error finding duplicates:", error);
+      log.warn("[CodeSimilarityDetector] Error finding duplicates:", error);
       return [];
     }
   }

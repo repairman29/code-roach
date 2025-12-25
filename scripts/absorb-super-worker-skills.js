@@ -9,6 +9,9 @@ const fs = require("fs").promises;
 const path = require("path");
 const agentKnowledgeService = require("../server/services/agentKnowledgeService");
 const { glob } = require("glob");
+const { createLogger } = require('../utils/logger');
+const log = createLogger('absorb-super-worker-skills');
+
 
 const BOT_LEARNING_DIR = path.join(__dirname, "../data/bot-learning");
 
@@ -64,7 +67,7 @@ class SuperWorkerSkillAbsorber {
         experience: experienceFiles.map((f) => path.join(BOT_LEARNING_DIR, f)),
       };
     } catch (err) {
-      console.warn(`⚠️  Error finding files: ${err.message}`);
+      log.warn(`⚠️  Error finding files: ${err.message}`);
       return { knowledge: [], patterns: [], experience: [] };
     }
   }
@@ -85,7 +88,7 @@ class SuperWorkerSkillAbsorber {
       const content = await fs.readFile(filePath, "utf-8");
       return JSON.parse(content);
     } catch (err) {
-      console.warn(`⚠️  Failed to read ${filePath}: ${err.message}`);
+      log.warn(`⚠️  Failed to read ${filePath}: ${err.message}`);
       return null;
     }
   }
@@ -455,7 +458,7 @@ This pattern has been successfully used by the super worker.`,
     const worker2 = this.workerData.get(worker2Id);
 
     if (!worker1 || !worker2) {
-      console.warn(`⚠️  Missing worker data for pair ${pair.name}`);
+      log.warn(`⚠️  Missing worker data for pair ${pair.name}`);
       return;
     }
 

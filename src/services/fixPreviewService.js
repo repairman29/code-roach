@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/fixPreviewService.js
- * Last Sync: 2025-12-25T04:10:02.836Z
+ * Last Sync: 2025-12-25T04:53:21.502Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -97,7 +97,7 @@ class FixPreviewService {
 
       return preview;
     } catch (err) {
-      console.warn(`[Fix Preview] Error generating preview:`, err.message);
+      log.warn(`[Fix Preview] Error generating preview:`, err.message);
       return null;
     }
   }

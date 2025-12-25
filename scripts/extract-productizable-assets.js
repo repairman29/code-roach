@@ -7,6 +7,9 @@
 
 const fs = require("fs").promises;
 const path = require("path");
+const { createLogger } = require('../utils/logger');
+const log = createLogger('extract-productizable-assets');
+
 
 const SERVICES_DIR = path.join(__dirname, "../server/services");
 const ROUTES_DIR = path.join(__dirname, "../server/routes");
@@ -194,7 +197,7 @@ class AssetExtractor {
       const info = await this.extractServiceInfo(filePath);
 
       if (info.error) {
-        console.warn(`⚠️  ${info.filename}: ${info.error}`);
+        log.warn(`⚠️  ${info.filename}: ${info.error}`);
         continue;
       }
 
@@ -229,7 +232,7 @@ class AssetExtractor {
         }
       }
     } catch (err) {
-      console.warn(`⚠️  Error scanning routes: ${err.message}`);
+      log.warn(`⚠️  Error scanning routes: ${err.message}`);
     }
   }
 
@@ -259,7 +262,7 @@ class AssetExtractor {
         }
       }
     } catch (err) {
-      console.warn(`⚠️  Error scanning UI: ${err.message}`);
+      log.warn(`⚠️  Error scanning UI: ${err.message}`);
     }
   }
 

@@ -1,5 +1,5 @@
 {
-  "lastSync": "2025-12-25T04:48:15.830Z",
+  "lastSync": "2025-12-25T04:52:13.789Z",
   "files": [
     {
       "source": "/Users/jeffadkins/Smugglers/smugglers/server/routes/apiKnowledgeBase.js",
@@ -3980,10 +3980,10 @@
   ],
   "stats": {
     "copied": 568,
-    "skipped": 24943,
+    "skipped": 25206,
     "errors": 0
   },
-  "lastSyncTimestamp": 1766638095830,
-  "lastSyncHuman": "12/24/2025, 9:48:15 PM",
-  "syncCount": 97
+  "lastSyncTimestamp": 1766638333789,
+  "lastSyncHuman": "12/24/2025, 9:52:13 PM",
+  "syncCount": 98
 }

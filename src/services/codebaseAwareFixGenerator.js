@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/codebaseAwareFixGenerator.js
- * Last Sync: 2025-12-25T04:10:02.831Z
+ * Last Sync: 2025-12-25T04:53:21.498Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -61,7 +61,7 @@ class CodebaseAwareFixGenerator {
         }
       }
     } catch (err) {
-      console.warn(
+      log.warn(
         "[Codebase-Aware Fix] Failed to calculate file risk:",
         err.message,
       );
@@ -81,7 +81,7 @@ class CodebaseAwareFixGenerator {
         );
       }
     } catch (err) {
-      console.warn(
+      log.warn(
         "[Codebase-Aware Fix] Knowledge base search failed:",
         err.message,
       );
@@ -200,14 +200,14 @@ class CodebaseAwareFixGenerator {
             applied: false, // Will be updated when actually applied
           })
           .catch((err) => {
-            console.warn(
+            log.warn(
               "[Codebase-Aware Fix] Failed to record to knowledge base:",
               err.message,
             );
           });
       }
     } catch (err) {
-      console.warn(
+      log.warn(
         "[Codebase-Aware Fix] Failed to record decision:",
         err.message,
       );
@@ -287,7 +287,7 @@ class CodebaseAwareFixGenerator {
 
       return allResults.slice(0, 10); // Return top 10
     } catch (err) {
-      console.warn("[Codebase-Aware Fix] Error finding similar errors:", err);
+      log.warn("[Codebase-Aware Fix] Error finding similar errors:", err);
       return [];
     }
   }
@@ -336,7 +336,7 @@ class CodebaseAwareFixGenerator {
 
       return allResults.slice(0, 5);
     } catch (err) {
-      console.warn("[Codebase-Aware Fix] Error finding similar code:", err);
+      log.warn("[Codebase-Aware Fix] Error finding similar code:", err);
       return [];
     }
   }
@@ -384,7 +384,7 @@ class CodebaseAwareFixGenerator {
         relatedFiles: context.relatedFiles || [],
       };
     } catch (err) {
-      console.warn("[Codebase-Aware Fix] Error getting context:", err);
+      log.warn("[Codebase-Aware Fix] Error getting context:", err);
       return {};
     }
   }
@@ -434,7 +434,7 @@ class CodebaseAwareFixGenerator {
 
       return allResults.slice(0, 5);
     } catch (err) {
-      console.warn("[Codebase-Aware Fix] Error finding working examples:", err);
+      log.warn("[Codebase-Aware Fix] Error finding working examples:", err);
       return [];
     }
   }
@@ -829,7 +829,7 @@ Return ONLY the fixed code, no explanations, no markdown, just the code.`;
       // Sort by quality (could use metrics from codebase)
       return results.results || [];
     } catch (err) {
-      console.warn("[Codebase-Aware Fix] Error finding patterns:", err);
+      log.warn("[Codebase-Aware Fix] Error finding patterns:", err);
       return [];
     }
   }

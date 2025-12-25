@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/llmService.js
- * Last Sync: 2025-12-25T04:10:02.867Z
+ * Last Sync: 2025-12-25T04:53:21.512Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -40,7 +40,7 @@ let npcDialogueService = null;
 try {
   npcDialogueService = require("./npcDialogueService");
 } catch (err) {
-  console.warn(
+  log.warn(
     "[LLM Service] NPC Dialogue Service not available:",
     err.message,
   );
@@ -484,10 +484,10 @@ class LLMService {
     const totalAvailable = Object.values(available).filter((v) => v).length;
 
     if (totalAvailable === 0) {
-      console.warn(
+      log.warn(
         "⚠️  No LLM API keys configured. LLM narrative generation will not be available.",
       );
-      console.warn(
+      log.warn(
         "   Set OPENAI_API_KEY, ANTHROPIC_API_KEY, GEMINI_API_KEY, MISTRAL_API_KEY, COHERE_API_KEY, or TOGETHER_API_KEY environment variable to enable.",
       );
     } else {
@@ -631,7 +631,7 @@ class LLMService {
           },
         })
         .catch((err) => {
-          console.warn(
+          log.warn(
             "[LLM Service] Failed to track cache metrics:",
             err.message,
           );
@@ -1255,7 +1255,7 @@ class LLMService {
           progressionContext += `If in ${progression.storyStage}, use appropriate pacing and tension.\n`;
         }
       } catch (err) {
-        console.warn(
+        log.warn(
           "[LLM Service] Failed to get enhanced context:",
           err.message,
         );
@@ -1280,7 +1280,7 @@ class LLMService {
             memoryContext = `\n\n[PLAYER MEMORY CONTEXT - Reference these past events naturally in your narrative:]\n${memoryTexts}\n`;
           }
         } catch (fallbackErr) {
-          console.warn(
+          log.warn(
             "[LLM Service] Failed to get fallback memory context:",
             fallbackErr.message,
           );
@@ -1439,7 +1439,7 @@ class LLMService {
             minCSATThreshold,
           );
         if (shouldRetryBeforeGeneration) {
-          console.warn(
+          log.warn(
             `[LLM Service] Low predicted CSAT (${(csatPrediction.predictedCSAT * 100).toFixed(1)}%), will retry after generation`,
           );
         }
@@ -1450,7 +1450,7 @@ class LLMService {
           minQualityThreshold,
         );
         if (shouldRetryBeforeGeneration) {
-          console.warn(
+          log.warn(
             `[LLM Service] Low predicted quality (${(qualityPrediction.predictedQuality * 100).toFixed(1)}%), but proceeding (retry after generation if needed)`,
           );
         }
@@ -1514,7 +1514,7 @@ class LLMService {
           }
         }
       } catch (exemplarErr) {
-        console.warn(
+        log.warn(
           "[LLM Service] Exemplar few-shot error (continuing without):",
           exemplarErr.message,
         );
@@ -1788,7 +1788,7 @@ class LLMService {
             );
           }
         } catch (postProcessError) {
-          console.warn(
+          log.warn(
             "[LLM Service] Post-processing error (using original):",
             postProcessError.message,
           );
@@ -1848,7 +1848,7 @@ class LLMService {
               );
             }
           } catch (dialogueErr) {
-            console.warn(
+            log.warn(
               "[LLM Service] NPC dialogue generation error:",
               dialogueErr.message,
             );
@@ -1865,7 +1865,7 @@ class LLMService {
               npcName,
             );
           } catch (memErr) {
-            console.warn(
+            log.warn(
               "[LLM Service] NPC memory callback error:",
               memErr.message,
             );
@@ -1961,14 +1961,14 @@ class LLMService {
               context: { stat: rollData.statName, location },
             })
             .catch((err) =>
-              console.warn(
+              log.warn(
                 "[LLM Service] NPC memory record error:",
                 err.message,
               ),
             );
         }
       } catch (enhanceError) {
-        console.warn(
+        log.warn(
           "[LLM Service] Enhancement library error:",
           enhanceError.message,
         );
@@ -2053,7 +2053,7 @@ class LLMService {
 
         // If filtered, use fallback
         if (filterResult.filtered && this.fallbackEnabled) {
-          console.warn(
+          log.warn(
             `[LLM Service] Response filtered: ${filterResult.reason}, using fallback`,
           );
           return this.getFallbackResponse(rollData);
@@ -2159,7 +2159,7 @@ class LLMService {
             retryReasonText = `Low quality score (${adjustedQualityScore.toFixed(2)})`;
           }
         }
-        console.warn(
+        log.warn(
           `[LLM Service] ${retryReasonText}, retrying (attempt ${retryCount + 1}/${maxRetries + 1})...`,
         );
 
@@ -2226,7 +2226,7 @@ class LLMService {
 
       // Check quality threshold (fallback if retries exhausted)
       if (adjustedQualityScore < this.minQualityScore && this.fallbackEnabled) {
-        console.warn(
+        log.warn(
           `[LLM Service] Low quality score (${adjustedQualityScore.toFixed(2)}) after ${retryCount} retries, using fallback`,
         );
         return this.getFallbackResponse(rollData);
@@ -2273,7 +2273,7 @@ class LLMService {
         })
         .catch((err) => {
           // Don't block on metrics errors
-          console.warn("[LLM Service] Metrics tracking error:", err.message);
+          log.warn("[LLM Service] Metrics tracking error:", err.message);
         });
 
       // HEAD OF AI: Record A/B test result if experiment is active
@@ -2315,7 +2315,7 @@ class LLMService {
             },
           );
         } catch (err) {
-          console.warn(
+          log.warn(
             "[LLM Service] A/B test result recording error:",
             err.message,
           );
@@ -2363,7 +2363,7 @@ class LLMService {
             });
           explanation = explainResult.explanation;
         } catch (err) {
-          console.warn(
+          log.warn(
             "[LLM Service] Failed to generate explanation:",
             err.message,
           );
@@ -2397,7 +2397,7 @@ class LLMService {
             )
             .catch((err) => {
               // Don't block on event emission errors
-              console.warn(
+              log.warn(
                 "[LLM Service] Failed to emit quality event:",
                 err.message,
               );
@@ -2453,7 +2453,7 @@ class LLMService {
               importance: "normal",
             })
             .catch((err) => {
-              console.warn(
+              log.warn(
                 "[LLM Service] Failed to store narrative memory:",
                 err.message,
               );
@@ -2466,13 +2466,13 @@ class LLMService {
               arcsActive: progressionResult?.arcsActive || 0,
             })
             .catch((err) => {
-              console.warn(
+              log.warn(
                 "[LLM Service] Failed to track progression metrics:",
                 err.message,
               );
             });
         } catch (err) {
-          console.warn(
+          log.warn(
             "[LLM Service] Failed to track progression:",
             err.message,
           );
@@ -2492,7 +2492,7 @@ class LLMService {
               (gameStateContext?.length || 0),
           })
           .catch((err) => {
-            console.warn(
+            log.warn(
               "[LLM Service] Failed to track context metrics:",
               err.message,
             );
@@ -2565,7 +2565,7 @@ class LLMService {
         })
         .catch((err) => {
           // Don't block on training data errors
-          console.warn(
+          log.warn(
             "[LLM Service] Training data capture error:",
             err.message,
           );
@@ -2593,7 +2593,7 @@ class LLMService {
             prompt: enhancedUserPrompt?.substring(0, 500),
           })
           .catch((err) => {
-            console.warn(
+            log.warn(
               "[LLM Service] Exemplar collection error:",
               err.message,
             );
@@ -2670,7 +2670,7 @@ class LLMService {
         })
         .catch((err) => {
           // Don't block on metrics errors
-          console.warn("[LLM Service] Metrics tracking error:", err.message);
+          log.warn("[LLM Service] Metrics tracking error:", err.message);
         });
 
       // Try fallback if enabled
@@ -3035,7 +3035,7 @@ class LLMService {
           // Check if it's a rate limit error - these should be retried with backoff
           if (response.status === 429 || errorMsg.includes("rate limit")) {
             const backoff = Math.min(1000 * Math.pow(2, attempt), 10000); // Up to 10 seconds
-            console.warn(
+            log.warn(
               `[LLM Service] Rate limited, waiting ${backoff}ms before retry ${attempt + 1}/${maxRetries}`,
             );
             await new Promise((r) => setTimeout(r, backoff));
@@ -3051,14 +3051,14 @@ class LLMService {
         lastError = fetchError;
 
         if (fetchError.name === "AbortError") {
-          console.warn(
+          log.warn(
             `[LLM Service] Request timed out (attempt ${attempt}/${maxRetries})`,
           );
         } else if (
           fetchError.code === "ENOTFOUND" ||
           fetchError.code === "ETIMEDOUT"
         ) {
-          console.warn(
+          log.warn(
             `[LLM Service] Network error (attempt ${attempt}/${maxRetries}): ${fetchError.message}`,
           );
         } else {
@@ -3237,7 +3237,7 @@ class LLMService {
             errorMsg.toLowerCase().includes("rate limit")
           ) {
             const backoff = Math.min(1000 * Math.pow(2, attempt), 10000); // Up to 10 seconds
-            console.warn(
+            log.warn(
               `[LLM Service] Mistral rate limited, waiting ${backoff}ms before retry ${attempt + 1}/${maxRetries}`,
             );
             await new Promise((r) => setTimeout(r, backoff));
@@ -3255,14 +3255,14 @@ class LLMService {
         lastError = fetchError;
 
         if (fetchError.name === "AbortError") {
-          console.warn(
+          log.warn(
             `[LLM Service] Mistral request timed out (attempt ${attempt}/${maxRetries})`,
           );
         } else if (
           fetchError.code === "ENOTFOUND" ||
           fetchError.code === "ETIMEDOUT"
         ) {
-          console.warn(
+          log.warn(
             `[LLM Service] Mistral network error (attempt ${attempt}/${maxRetries}): ${fetchError.message}`,
           );
         } else {
@@ -3640,7 +3640,7 @@ class LLMService {
         })
         .catch((err) => {
           // Don't block on tracking errors
-          console.warn("[LLM Service] Failed to track API cost:", err.message);
+          log.warn("[LLM Service] Failed to track API cost:", err.message);
         });
     }
 
@@ -3972,7 +3972,7 @@ class LLMService {
         }
       }
     } catch (err) {
-      console.warn(
+      log.warn(
         "[LLM Service] Could not load historical costs from Supabase:",
         err.message,
       );
@@ -4094,7 +4094,7 @@ class LLMService {
             );
           }
         } catch (error) {
-          console.warn(
+          log.warn(
             "[LLM Service] Error getting scenario context:",
             error.message,
           );
@@ -4116,7 +4116,7 @@ class LLMService {
               );
           }
         } catch (error) {
-          console.warn(
+          log.warn(
             "[LLM Service] Error getting personalization context:",
             error.message,
           );
@@ -4180,7 +4180,7 @@ class LLMService {
               }
             }
           } catch (error) {
-            console.warn(
+            log.warn(
               "[LLM Service] Error using multi-agent system:",
               error.message,
             );
@@ -4196,12 +4196,12 @@ class LLMService {
 
         // Debug logging
         if (!serviceRegistry) {
-          console.warn(
+          log.warn(
             "[LLM Service] WARNING: serviceRegistry is null - services won't be called",
           );
         }
         if (!context.sessionId) {
-          console.warn(
+          log.warn(
             "[LLM Service] WARNING: context.sessionId is missing. Context keys:",
             Object.keys(context || {}),
           );
@@ -4220,7 +4220,7 @@ class LLMService {
               "collaborativeStorytellingService",
             );
             if (!collaborativeStorytellingService) {
-              console.warn(
+              log.warn(
                 "[LLM Service] WARNING: Collaborative Storytelling Service not available in registry",
               );
             } else if (collaborativeStorytellingService && action.userMessage) {
@@ -4279,12 +4279,12 @@ class LLMService {
                       "[LLM Service] ✅ Used collaborative storytelling",
                     );
                   } else {
-                    console.warn(
+                    log.warn(
                       "[LLM Service] ⚠️ Collaborative narrative was empty",
                     );
                   }
                 } else {
-                  console.warn(
+                  log.warn(
                     "[LLM Service] ⚠️ Collaborative conditions not met - intent:",
                     !!intent,
                     "possibilities:",
@@ -4292,18 +4292,18 @@ class LLMService {
                   );
                 }
               } catch (collabError) {
-                console.warn(
+                log.warn(
                   "[LLM Service] Collaborative storytelling error (continuing):",
                   collabError.message,
                 );
-                console.warn(
+                log.warn(
                   "[LLM Service] Stack:",
                   collabError.stack?.substring(0, 200),
                 );
                 // Continue to regular generation
               }
             } else {
-              console.warn(
+              log.warn(
                 "[LLM Service] ⚠️ Collaborative conditions not met - service:",
                 !!collaborativeStorytellingService,
                 "userMessage:",
@@ -4311,7 +4311,7 @@ class LLMService {
               );
             }
           } catch (error) {
-            console.warn(
+            log.warn(
               "[LLM Service] Error using collaborative storytelling:",
               error.message,
             );
@@ -4346,7 +4346,7 @@ class LLMService {
               "surpriseAndDelightService",
             );
             if (!surpriseAndDelightService) {
-              console.warn(
+              log.warn(
                 "[LLM Service] WARNING: Surprise & Delight Service not available in registry",
               );
             } else if (surpriseAndDelightService) {
@@ -4366,7 +4366,7 @@ class LLMService {
               }
             }
           } catch (error) {
-            console.warn(
+            log.warn(
               "[LLM Service] Error generating surprise:",
               error.message,
             );
@@ -4388,7 +4388,7 @@ class LLMService {
               generated.narrative = personalized;
             }
           } catch (error) {
-            console.warn(
+            log.warn(
               "[LLM Service] Error personalizing response:",
               error.message,
             );
@@ -4405,7 +4405,7 @@ class LLMService {
               "personalityVariationService",
             );
             if (!personalityVariationService) {
-              console.warn(
+              log.warn(
                 "[LLM Service] WARNING: Personality Variation Service not available in registry",
               );
             } else if (personalityVariationService && generated.narrative) {
@@ -4446,13 +4446,13 @@ class LLMService {
                   personality.name,
                 );
               } else {
-                console.warn(
+                log.warn(
                   "[LLM Service] ⚠️ No personality available to apply",
                 );
               }
             }
           } catch (error) {
-            console.warn(
+            log.warn(
               "[LLM Service] Error applying personality:",
               error.message,
             );
@@ -4466,7 +4466,7 @@ class LLMService {
               "surpriseAndDelightService",
             );
             if (!surpriseAndDelightService) {
-              console.warn(
+              log.warn(
                 "[LLM Service] WARNING: Surprise & Delight Service not available for delightful details",
               );
             } else if (surpriseAndDelightService && generated.narrative) {
@@ -4478,7 +4478,7 @@ class LLMService {
               generated.narrative = enhanced;
             }
           } catch (error) {
-            console.warn(
+            log.warn(
               "[LLM Service] Error adding delightful details:",
               error.message,
             );
@@ -4503,7 +4503,7 @@ class LLMService {
             );
           }
         } catch (timeoutError) {
-          console.warn(
+          log.warn(
             "[LLM Service] Error using timeout service:",
             timeoutError.message,
           );
@@ -4646,7 +4646,7 @@ class LLMService {
           return response.data[0].embedding;
         }
       } catch (error) {
-        console.warn(
+        log.warn(
           "[LLM Service] OpenAI embedding failed, trying fallback:",
           error.message,
         );
@@ -4671,12 +4671,12 @@ class LLMService {
           return response.embeddings[0];
         }
       } catch (error) {
-        console.warn("[LLM Service] Cohere embedding failed:", error.message);
+        log.warn("[LLM Service] Cohere embedding failed:", error.message);
       }
     }
 
     // Ultimate fallback: Simple hash-based embedding (not semantic, but provides structure)
-    console.warn(
+    log.warn(
       "[LLM Service] Using fallback hash-based embedding (not semantic)",
     );
     const words = text.toLowerCase().split(/\s+/);

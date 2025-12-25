@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/autonomousMode.js
- * Last Sync: 2025-12-25T04:10:02.892Z
+ * Last Sync: 2025-12-25T04:53:21.533Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -139,7 +139,7 @@ class AutonomousMode {
       await this.fileWatcher.start();
       console.log("✅ [Autonomous Mode] File watcher started");
     } catch (err) {
-      console.warn("[Autonomous Mode] File watcher failed:", err.message);
+      log.warn("[Autonomous Mode] File watcher failed:", err.message);
     }
   }
 
@@ -212,13 +212,13 @@ class AutonomousMode {
           }
         } catch (err) {
           // Improvements are optional, don't fail on error
-          console.warn(
+          log.warn(
             `[Autonomous Mode] Improvement analysis skipped: ${err.message}`,
           );
         }
       }
     } catch (err) {
-      console.warn(
+      log.warn(
         `[Autonomous Mode] Error handling file change: ${err.message}`,
       );
     }
@@ -442,7 +442,7 @@ class AutonomousMode {
         await this.fixIssue(issue);
         this.stats.issuesFixed++;
       } catch (err) {
-        console.warn(`[Autonomous Mode] Failed to fix issue: ${err.message}`);
+        log.warn(`[Autonomous Mode] Failed to fix issue: ${err.message}`);
       }
     }
   }

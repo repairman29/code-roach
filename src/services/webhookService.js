@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/webhookService.js
- * Last Sync: 2025-12-25T04:10:02.878Z
+ * Last Sync: 2025-12-25T05:17:15.778Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -15,19 +15,17 @@
  * Supports event subscriptions and delivery.
  */
 
-const { createClient } = require("@supabase/supabase-js");
 const config = require("../config");
 const { createLogger } = require("../utils/logger");
 const log = createLogger("WebhookService");
 const crypto = require("crypto");
 const { getSupabaseService } = require("../utils/supabaseClient");
+const { getSupabaseClient } = require('../utils/supabaseClient');
 
 class WebhookService {
   constructor() {
     if (config.supabase?.url && config.supabase?.serviceRoleKey) {
-      this.supabase = require("@supabase/supabase-js").createClient(
-        config.getSupabaseService().url,
-        config.getSupabaseService().serviceRoleKey,
+      this.supabase = require("@supabase/supabase-js").getSupabaseClient({ requireService: true }).serviceRoleKey,
       );
     } else {
       this.supabase = null;

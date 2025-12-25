@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/expertLearningService.js
- * Last Sync: 2025-12-25T04:10:02.891Z
+ * Last Sync: 2025-12-25T05:17:15.797Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -13,32 +13,30 @@
  * Self-learning system that improves experts based on fix success/failure
  */
 
-const { createClient } = require("@supabase/supabase-js");
 const config = require("../config");
 const { createLogger } = require("../utils/logger");
 const log = createLogger("ExpertLearningService");
 const customerExpertHelper = require("./customerExpertHelper");
 const expertTrainingService = require("./expertTrainingService");
 const { getSupabaseService } = require("../utils/supabaseClient");
+const { getSupabaseClient } = require('../utils/supabaseClient');
 
 class ExpertLearningService {
   constructor() {
     // Only create Supabase client if credentials are available
     if (config.getSupabaseService().serviceRoleKey) {
       try {
-        this.supabase = createClient(
-          config.getSupabaseService().url,
-          config.getSupabaseService().serviceRoleKey,
+        this.supabase = getSupabaseClient({ requireService: true }).serviceRoleKey,
         );
       } catch (error) {
-        console.warn(
+        log.warn(
           "[expertLearningService] Supabase not configured:",
           error.message,
         );
         this.supabase = null;
       }
     } else {
-      console.warn(
+      log.warn(
         "[expertLearningService] Supabase credentials not configured. Service will be disabled.",
       );
       this.supabase = null;
@@ -83,13 +81,13 @@ class ExpertLearningService {
         });
 
       if (error) {
-        console.warn("[Expert Learning] Error recording outcome:", error);
+        log.warn("[Expert Learning] Error recording outcome:", error);
       } else {
         // Trigger learning analysis if we have enough data
         await this.analyzeAndImprove(projectId, expertType);
       }
     } catch (err) {
-      console.warn("[Expert Learning] Error recording fix outcome:", err);
+      log.warn("[Expert Learning] Error recording fix outcome:", err);
     }
   }
 
@@ -131,7 +129,7 @@ class ExpertLearningService {
       // Update expert quality score based on outcomes
       await this.updateExpertQualityScore(projectId, expertType, successRate);
     } catch (err) {
-      console.warn("[Expert Learning] Error analyzing outcomes:", err);
+      log.warn("[Expert Learning] Error analyzing outcomes:", err);
     }
   }
 
@@ -190,7 +188,7 @@ class ExpertLearningService {
         `[Expert Learning] Updated ${expertType} expert (new quality: ${newQualityScore.toFixed(2)})`,
       );
     } catch (err) {
-      console.warn("[Expert Learning] Error updating expert:", err);
+      log.warn("[Expert Learning] Error updating expert:", err);
     }
   }
 
@@ -329,7 +327,7 @@ class ExpertLearningService {
         .eq("project_id", projectId)
         .eq("expert_type", expertType);
     } catch (err) {
-      console.warn("[Expert Learning] Error updating quality score:", err);
+      log.warn("[Expert Learning] Error updating quality score:", err);
     }
   }
 
@@ -387,7 +385,7 @@ class ExpertLearningService {
         byExpertType,
       };
     } catch (err) {
-      console.warn("[Expert Learning] Error getting stats:", err);
+      log.warn("[Expert Learning] Error getting stats:", err);
       return null;
     }
   }

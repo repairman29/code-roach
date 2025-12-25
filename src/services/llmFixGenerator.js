@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/llmFixGenerator.js
- * Last Sync: 2025-12-25T04:10:02.833Z
+ * Last Sync: 2025-12-25T04:53:21.500Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -57,7 +57,7 @@ class LLMFixGenerator {
           }
         }
       } catch (err) {
-        console.warn("[LLM Fix] Failed to calculate file risk:", err.message);
+        log.warn("[LLM Fix] Failed to calculate file risk:", err.message);
       }
 
       // Check cache first
@@ -94,7 +94,7 @@ class LLMFixGenerator {
             );
           }
         } catch (err) {
-          console.warn(
+          log.warn(
             "[LLM Fix Generator] Failed to get customer expert context:",
             err.message,
           );
@@ -188,14 +188,14 @@ class LLMFixGenerator {
               applied: false,
             })
             .catch((err) => {
-              console.warn(
+              log.warn(
                 "[LLM Fix] Failed to record to knowledge base:",
                 err.message,
               );
             });
         }
       } catch (err) {
-        console.warn("[LLM Fix] Failed to record decision:", err.message);
+        log.warn("[LLM Fix] Failed to record decision:", err.message);
       }
 
       this.fixStats.generated++;
@@ -429,7 +429,7 @@ Generate the fix:`;
     try {
       // Ensure response is a string
       if (!response || typeof response !== "string") {
-        console.warn(
+        log.warn(
           "[LLM Fix Generator] Response is not a string:",
           typeof response,
         );
@@ -524,7 +524,7 @@ Generate the fix:`;
 
       return null;
     } catch (err) {
-      console.warn(
+      log.warn(
         "[LLM Fix Generator] Error getting codebase context:",
         err.message,
       );
@@ -568,7 +568,7 @@ Generate the fix:`;
         successRate: p.stats?.successRate || 0,
       }));
     } catch (err) {
-      console.warn(
+      log.warn(
         "[LLM Fix Generator] Error getting similar fixes:",
         err.message,
       );

@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/enhancedFixValidation.js
- * Last Sync: 2025-12-25T04:10:02.838Z
+ * Last Sync: 2025-12-25T04:53:21.504Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -73,7 +73,7 @@ class EnhancedFixValidation {
       if (!results.syntaxValid) {
         results.errors.push("Syntax validation failed - code cannot be parsed");
         results.overall = false;
-        console.warn(
+        log.warn(
           `[Enhanced Validation] Syntax validation failed for ${filePath} (strictness: ${effectiveStrictness})`,
         );
         this.cacheResult(cacheKey, results);
@@ -146,10 +146,10 @@ class EnhancedFixValidation {
           );
         }
       } else {
-        console.warn(
+        log.warn(
           `[Enhanced Validation] ✗ Validation failed for ${filePath} (strictness: ${effectiveStrictness})`,
         );
-        console.warn(
+        log.warn(
           `[Enhanced Validation]   Errors: ${results.errors.length}, Warnings: ${results.warnings.length}`,
         );
       }
@@ -170,7 +170,7 @@ class EnhancedFixValidation {
       } else {
         results.errors.push(`Validation error: ${error.message}`);
         results.overall = false;
-        console.warn(
+        log.warn(
           `[Enhanced Validation] ✗ Validation failed due to exception for ${filePath}`,
         );
       }
@@ -341,7 +341,7 @@ class EnhancedFixValidation {
     } catch (err) {
       // IMPROVED: If validation itself fails, assume valid (don't block fixes)
       // Better to try a fix than reject it due to validation system issues
-      console.warn(
+      log.warn(
         `[Enhanced Validation] Syntax validation error for ${filePath}:`,
         err.message,
       );
@@ -405,7 +405,7 @@ class EnhancedFixValidation {
       return { valid: true, errors: [] };
     } catch (err) {
       // IMPROVED: If AST validation fails, assume valid (don't block fixes)
-      console.warn(
+      log.warn(
         `[Enhanced Validation] AST validation error for ${filePath}:`,
         err.message,
       );

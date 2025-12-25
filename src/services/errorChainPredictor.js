@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/errorChainPredictor.js
- * Last Sync: 2025-12-25T04:10:02.860Z
+ * Last Sync: 2025-12-25T04:53:21.510Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -48,7 +48,7 @@ class ErrorChainPredictor {
 
     // Initialize graph from error history
     this.initializeGraph().catch((err) => {
-      console.warn(
+      log.warn(
         "[Error Chain Predictor] Graph initialization failed:",
         err.message,
       );

@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/fixWorkflowIntegration.js
- * Last Sync: 2025-12-25T04:10:02.836Z
+ * Last Sync: 2025-12-25T04:53:21.503Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -121,7 +121,7 @@ class FixWorkflowIntegration {
         branchName,
       };
     } catch (err) {
-      console.warn(
+      log.warn(
         "[Workflow Integration] Failed to create branch:",
         err.message,
       );
@@ -150,7 +150,7 @@ class FixWorkflowIntegration {
         commitMessage,
       };
     } catch (err) {
-      console.warn("[Workflow Integration] Failed to commit:", err.message);
+      log.warn("[Workflow Integration] Failed to commit:", err.message);
       return {
         success: false,
         error: err.message,
@@ -187,7 +187,7 @@ class FixWorkflowIntegration {
         prUrl: stdout.trim(),
       };
     } catch (err) {
-      console.warn("[Workflow Integration] Failed to create PR:", err.message);
+      log.warn("[Workflow Integration] Failed to create PR:", err.message);
       return {
         success: false,
         error: err.message,

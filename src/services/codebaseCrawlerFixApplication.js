@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/codebaseCrawlerFixApplication.js
- * Last Sync: 2025-12-25T04:10:02.837Z
+ * Last Sync: 2025-12-25T04:53:21.503Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -111,7 +111,7 @@ class CodebaseCrawlerFixApplication {
         };
       } catch (err) {
         // Fallback to basic validation
-        console.warn(
+        log.warn(
           `[Fix Application] Enhanced validation failed, using basic:`,
           err.message,
         );
@@ -279,7 +279,7 @@ class CodebaseCrawlerFixApplication {
           );
         }
       } catch (err) {
-        console.warn(
+        log.warn(
           `[Fix Application] Parallel validation error: ${err.message}`,
         );
       }
@@ -380,7 +380,7 @@ class CodebaseCrawlerFixApplication {
               `[Fix Application] 🔍 Production monitoring started for ${filePath}`,
             );
           } catch (monitorErr) {
-            console.warn(
+            log.warn(
               `[Fix Application] Production monitoring failed: ${monitorErr.message}`,
             );
           }
@@ -466,7 +466,7 @@ class CodebaseCrawlerFixApplication {
           agent: "codebase-crawler",
         })
         .catch((err) => {
-          console.warn(
+          log.warn(
             "[Fix Application] Failed to document fix:",
             err.message,
           );
@@ -549,7 +549,7 @@ class CodebaseCrawlerFixApplication {
           agent: "codebase-crawler",
         })
         .catch((err) => {
-          console.warn(
+          log.warn(
             "[Fix Application] Failed to document failed fix:",
             err.message,
           );

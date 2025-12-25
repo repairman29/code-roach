@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/codebaseSearch.js
- * Last Sync: 2025-12-25T04:47:33.849Z
+ * Last Sync: 2025-12-25T04:59:51.854Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.

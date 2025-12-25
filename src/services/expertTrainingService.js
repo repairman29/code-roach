@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/expertTrainingService.js
- * Last Sync: 2025-12-25T04:10:02.890Z
+ * Last Sync: 2025-12-25T05:17:15.793Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -18,7 +18,6 @@ const fs = require("fs").promises;
 const path = require("path");
 const { createLogger } = require("../utils/logger");
 const log = createLogger("ExpertTrainingService");
-const { createClient } = require("@supabase/supabase-js");
 const config = require("../config");
 const { getSupabaseService } = require("../utils/supabaseClient");
 const llmService = require("./llmService");
@@ -29,19 +28,17 @@ class ExpertTrainingService {
     // Only create Supabase client if credentials are available
     if (config.getSupabaseService().serviceRoleKey) {
       try {
-        this.supabase = createClient(
-          config.getSupabaseService().url,
-          config.getSupabaseService().serviceRoleKey,
+        this.supabase = getSupabaseClient({ requireService: true }).serviceRoleKey,
         );
       } catch (error) {
-        console.warn(
+        log.warn(
           "[expertTrainingService] Supabase not configured:",
           error.message,
         );
         this.supabase = null;
       }
     } else {
-      console.warn(
+      log.warn(
         "[expertTrainingService] Supabase credentials not configured. Service will be disabled.",
       );
       this.supabase = null;
@@ -262,7 +259,7 @@ class ExpertTrainingService {
       // Parse response into structured guide
       return this.parseExpertGuide(responseText, expertType);
     } catch (err) {
-      console.warn(
+      log.warn(
         `[Expert Training Service] LLM generation failed for ${expertType}, using template:`,
         err.message,
       );
@@ -411,7 +408,7 @@ Generate the expert guide now:`;
       // Fallback: parse as markdown
       return this.parseMarkdownGuide(response, expertType);
     } catch (err) {
-      console.warn(
+      log.warn(
         "[Expert Training Service] Error parsing expert guide, using fallback:",
         err,
       );
@@ -545,6 +542,7 @@ Generate the expert guide now:`;
  */
 
 const config = require('../config');
+const { getSupabaseClient } = require('../utils/supabaseClient');
 
 class ${className} {
     constructor() {
@@ -756,14 +754,14 @@ module.exports = new ${className}();
           );
 
         if (error) {
-          console.warn(
+          log.warn(
             `[Expert Training Service] Error storing ${expertType} expert:`,
             error,
           );
         }
       }
     } catch (err) {
-      console.warn("[Expert Training Service] Error storing experts:", err);
+      log.warn("[Expert Training Service] Error storing experts:", err);
     }
   }
 
@@ -789,7 +787,7 @@ module.exports = new ${className}();
 
       if (error) throw error;
     } catch (err) {
-      console.warn(
+      log.warn(
         "[Expert Training Service] Error updating training status:",
         err,
       );
@@ -956,7 +954,7 @@ let serviceInstance;
 try {
   serviceInstance = new ExpertTrainingService();
 } catch (err) {
-  console.warn(
+  log.warn(
     "[expertTrainingService] Failed to initialize, using stub:",
     err.message,
   );

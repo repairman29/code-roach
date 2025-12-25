@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/codeReviewAssistant.js
- * Last Sync: 2025-12-25T04:10:02.831Z
+ * Last Sync: 2025-12-25T04:53:21.497Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -335,7 +335,7 @@ Provide 2-3 specific improvement suggestions. Be concise.`;
         }
       });
     } catch (error) {
-      console.warn("[Code Review] LLM suggestions failed:", error.message);
+      log.warn("[Code Review] LLM suggestions failed:", error.message);
     }
 
     return suggestions;
@@ -457,7 +457,7 @@ Provide 2-3 specific improvement suggestions. Be concise.`;
           }
         }
       } catch (error) {
-        console.warn(`[Code Review] Failed to fix issue:`, error);
+        log.warn(`[Code Review] Failed to fix issue:`, error);
       }
     }
 

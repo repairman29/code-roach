@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/fixConfidenceCalibrationService.js
- * Last Sync: 2025-12-25T04:10:02.886Z
+ * Last Sync: 2025-12-25T05:17:15.786Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -15,10 +15,10 @@
  * Critical Missing Feature #2
  */
 
-const { createClient } = require("@supabase/supabase-js");
 const config = require("../config");
 const { getSupabaseService } = require("../utils/supabaseClient");
 const { createLogger } = require("../utils/logger");
+const { getSupabaseClient } = require('../utils/supabaseClient');
 const log = createLogger("FixConfidenceCalibrationService");
 
 class FixConfidenceCalibrationService {
@@ -26,19 +26,17 @@ class FixConfidenceCalibrationService {
     // Only create Supabase client if credentials are available
     if (config.getSupabaseService().serviceRoleKey) {
       try {
-        this.supabase = createClient(
-          config.getSupabaseService().url,
-          config.getSupabaseService().serviceRoleKey,
+        this.supabase = getSupabaseClient({ requireService: true }).serviceRoleKey,
         );
       } catch (error) {
-        console.warn(
+        log.warn(
           "[fixConfidenceCalibrationService] Supabase not configured:",
           error.message,
         );
         this.supabase = null;
       }
     } else {
-      console.warn(
+      log.warn(
         "[fixConfidenceCalibrationService] Supabase credentials not configured. Service will be disabled.",
       );
       this.supabase = null;
@@ -112,7 +110,7 @@ class FixConfidenceCalibrationService {
         });
 
       if (error) {
-        console.warn(
+        log.warn(
           "[Fix Confidence Calibration] Error recording outcome:",
           error,
         );
@@ -163,7 +161,7 @@ class FixConfidenceCalibrationService {
 
       return calibration;
     } catch (error) {
-      console.warn(
+      log.warn(
         "[Fix Confidence Calibration] Error getting calibration data:",
         error,
       );
@@ -199,7 +197,7 @@ class FixConfidenceCalibrationService {
 
       return data || [];
     } catch (error) {
-      console.warn("[Fix Confidence Calibration] Error querying data:", error);
+      log.warn("[Fix Confidence Calibration] Error querying data:", error);
       return [];
     }
   }

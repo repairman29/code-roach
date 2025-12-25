@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/agentSessionService.js
- * Last Sync: 2025-12-25T04:10:02.841Z
+ * Last Sync: 2025-12-25T05:17:15.765Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -13,10 +13,10 @@
  * Manages persistent agent memory across sessions
  */
 
-const { createClient } = require("@supabase/supabase-js");
 const config = require("../config");
 const { getSupabaseService } = require("../utils/supabaseClient");
 const { createLogger } = require("../utils/logger");
+const { getSupabaseClient } = require('../utils/supabaseClient');
 const log = createLogger("AgentSessionService");
 
 class AgentSessionService {
@@ -24,19 +24,17 @@ class AgentSessionService {
     // Only create Supabase client if credentials are available
     if (config.getSupabaseService().serviceRoleKey) {
       try {
-        this.supabase = createClient(
-          config.getSupabaseService().url,
-          config.getSupabaseService().serviceRoleKey,
+        this.supabase = getSupabaseClient({ requireService: true }).serviceRoleKey,
         );
       } catch (error) {
-        console.warn(
+        log.warn(
           "[AgentSessionService] Supabase not configured:",
           error.message,
         );
         this.supabase = null;
       }
     } else {
-      console.warn(
+      log.warn(
         "[AgentSessionService] Supabase credentials not configured. Agent session service will be disabled.",
       );
       this.supabase = null;
@@ -48,7 +46,7 @@ class AgentSessionService {
    */
   async getOrCreateSession(agentType, sessionId, context = {}) {
     if (!this.supabase) {
-      console.warn(
+      log.warn(
         "[AgentSessionService] Cannot get session: Supabase not configured",
       );
       return null;

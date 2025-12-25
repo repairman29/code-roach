@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/codebaseWatcher.js
- * Last Sync: 2025-12-25T04:27:56.600Z
+ * Last Sync: 2025-12-25T05:17:15.755Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -38,7 +38,7 @@ const log = {
     writeLog("ERROR", args);
   },
   warn: (...args) => {
-    console.warn("[WATCHER WARN]", ...args);
+    log.warn("[WATCHER WARN]", ...args);
     writeLog("WARN", args);
   },
 };
@@ -265,10 +265,7 @@ class CodebaseWatcher {
             log.warn("Supabase not configured, cannot remove from index");
             continue;
           }
-          const { createClient } = require("@supabase/supabase-js");
-          const supabase = createClient(
-            config.getSupabaseService().url,
-            config.getSupabaseService().serviceRoleKey,
+          const supabase = getSupabaseClient({ requireService: true }).serviceRoleKey,
           );
           await supabase
             .from("codebase_index")
@@ -311,6 +308,7 @@ class CodebaseWatcher {
           try {
             const codeReviewAssistant = require("./codeReviewAssistant");
             const { getSupabaseService } = require("../utils/supabaseClient");
+const { getSupabaseClient } = require('../utils/supabaseClient');
             const code = await fs.readFile(fullPath, "utf8");
             const review = await codeReviewAssistant.reviewCode(code, filePath);
 
@@ -340,10 +338,7 @@ class CodebaseWatcher {
         log.warn("Supabase not configured, cannot load indexed files");
         return;
       }
-      const { createClient } = require("@supabase/supabase-js");
-      const supabase = createClient(
-        config.getSupabaseService().url,
-        config.getSupabaseService().serviceRoleKey,
+      const supabase = getSupabaseClient({ requireService: true }).serviceRoleKey,
       );
 
       const { data: chunks } = await supabase
@@ -393,10 +388,7 @@ class CodebaseWatcher {
         log.warn("Supabase not configured, cannot check for changes");
         return;
       }
-      const { createClient } = require("@supabase/supabase-js");
-      const supabase = createClient(
-        config.getSupabaseService().url,
-        config.getSupabaseService().serviceRoleKey,
+      const supabase = getSupabaseClient({ requireService: true }).serviceRoleKey,
       );
 
       // Get all indexed files

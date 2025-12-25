@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/predictiveRefactoringService.js
- * Last Sync: 2025-12-25T04:10:02.865Z
+ * Last Sync: 2025-12-25T05:17:15.770Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -14,31 +14,29 @@
  * IP Innovation #11: Predictive Code Maintenance
  */
 
-const { createClient } = require("@supabase/supabase-js");
 const config = require("../config");
 const { createLogger } = require("../utils/logger");
 const log = createLogger("PredictiveRefactoringService");
 const codeHealthScoring = require("./codeHealthScoring");
 const { getSupabaseService } = require("../utils/supabaseClient");
+const { getSupabaseClient } = require('../utils/supabaseClient');
 
 class PredictiveRefactoringService {
   constructor() {
     // Only create Supabase client if credentials are available
     if (config.getSupabaseService().serviceRoleKey) {
       try {
-        this.supabase = createClient(
-          config.getSupabaseService().url,
-          config.getSupabaseService().serviceRoleKey,
+        this.supabase = getSupabaseClient({ requireService: true }).serviceRoleKey,
         );
       } catch (error) {
-        console.warn(
+        log.warn(
           "[predictiveRefactoringService] Supabase not configured:",
           error.message,
         );
         this.supabase = null;
       }
     } else {
-      console.warn(
+      log.warn(
         "[predictiveRefactoringService] Supabase credentials not configured. Service will be disabled.",
       );
       this.supabase = null;
@@ -120,7 +118,7 @@ class PredictiveRefactoringService {
         olderAvg,
       };
     } catch (err) {
-      console.warn("[Predictive Refactoring] Error analyzing trends:", err);
+      log.warn("[Predictive Refactoring] Error analyzing trends:", err);
       return { trend: "unknown", rate: 0 };
     }
   }
@@ -144,7 +142,7 @@ class PredictiveRefactoringService {
       if (error) throw error;
       return data || [];
     } catch (err) {
-      console.warn(
+      log.warn(
         "[Predictive Refactoring] Error finding similar refactorings:",
         err,
       );
@@ -201,7 +199,7 @@ class PredictiveRefactoringService {
           .length,
       };
     } catch (err) {
-      console.warn(
+      log.warn(
         "[Predictive Refactoring] Error getting issue frequency:",
         err,
       );

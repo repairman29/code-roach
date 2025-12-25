@@ -3,6 +3,9 @@
 
 /**
 const { createLogger } = require('./utils/logger');
+const { createLogger } = require('../utils/logger');
+const log = createLogger('config');
+
 const log = createLogger('Config');
  * Server Configuration
  * Centralized environment variable management
@@ -262,7 +265,7 @@ const config = {
           // Don't throw - services handle missing credentials gracefully
           // throw new Error('SUPABASE_SERVICE_ROLE_KEY is required in production');
         }
-        console.warn(
+        log.warn(
           "⚠️  WARNING: SUPABASE_SERVICE_ROLE_KEY not set. Supabase operations will fail.",
         );
         return null;

@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/fixMonitoringService.js
- * Last Sync: 2025-12-25T04:10:02.887Z
+ * Last Sync: 2025-12-25T05:17:15.788Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -15,13 +15,13 @@
  * Improvement #2: Real-Time Monitoring
  */
 
-const { createClient } = require("@supabase/supabase-js");
 const config = require("../config");
 const { createLogger } = require("../utils/logger");
 const log = createLogger("FixMonitoringService");
 const fixRollbackIntelligenceService = require("./fixRollbackIntelligenceService");
 const codeHealthScoring = require("./codeHealthScoring");
 const { getSupabaseService } = require("../utils/supabaseClient");
+const { getSupabaseClient } = require('../utils/supabaseClient');
 
 class FixMonitoringService {
   constructor() {
@@ -31,19 +31,17 @@ class FixMonitoringService {
     // Only create Supabase client if credentials are available
     if (config.getSupabaseService().serviceRoleKey) {
       try {
-        this.supabase = createClient(
-          config.getSupabaseService().url,
-          config.getSupabaseService().serviceRoleKey,
+        this.supabase = getSupabaseClient({ requireService: true }).serviceRoleKey,
         );
       } catch (error) {
-        console.warn(
+        log.warn(
           "[fixMonitoringService] Supabase not configured:",
           error.message,
         );
         this.supabase = null;
       }
     } else {
-      console.warn(
+      log.warn(
         "[fixMonitoringService] Supabase credentials not configured. Service will be disabled.",
       );
       this.supabase = null;
@@ -225,7 +223,7 @@ class FixMonitoringService {
         line: issue.error_line,
       }));
     } catch (error) {
-      console.warn("[Fix Monitoring] Error checking new errors:", error);
+      log.warn("[Fix Monitoring] Error checking new errors:", error);
       return [];
     }
   }
@@ -347,7 +345,7 @@ class FixMonitoringService {
           })
           .eq("id", fixId);
       } catch (error) {
-        console.warn("[Fix Monitoring] Error storing alert:", error);
+        log.warn("[Fix Monitoring] Error storing alert:", error);
       }
     }
 

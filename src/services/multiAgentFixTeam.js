@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/multiAgentFixTeam.js
- * Last Sync: 2025-12-25T04:10:02.838Z
+ * Last Sync: 2025-12-25T04:53:21.505Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -94,7 +94,7 @@ class MultiAgentFixTeam {
             });
           }
         } catch (err) {
-          console.warn(
+          log.warn(
             `[Multi-Agent Fix Team] Error fixing issue ${issue.type} at line ${issue.line}:`,
             err.message,
           );

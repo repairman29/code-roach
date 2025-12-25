@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/fixRollbackIntelligenceService.js
- * Last Sync: 2025-12-25T04:10:02.886Z
+ * Last Sync: 2025-12-25T05:17:15.787Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -15,32 +15,30 @@
  * Critical Missing Feature #3
  */
 
-const { createClient } = require("@supabase/supabase-js");
 const config = require("../config");
 const { createLogger } = require("../utils/logger");
 const log = createLogger("FixRollbackIntelligenceService");
 const fixVerificationService = require("./fixVerificationService");
 const codebaseSearch = require("./codebaseSearch");
 const { getSupabaseService } = require("../utils/supabaseClient");
+const { getSupabaseClient } = require('../utils/supabaseClient');
 
 class FixRollbackIntelligenceService {
   constructor() {
     // Only create Supabase client if credentials are available
     if (config.getSupabaseService().serviceRoleKey) {
       try {
-        this.supabase = createClient(
-          config.getSupabaseService().url,
-          config.getSupabaseService().serviceRoleKey,
+        this.supabase = getSupabaseClient({ requireService: true }).serviceRoleKey,
         );
       } catch (error) {
-        console.warn(
+        log.warn(
           "[fixRollbackIntelligenceService] Supabase not configured:",
           error.message,
         );
         this.supabase = null;
       }
     } else {
-      console.warn(
+      log.warn(
         "[fixRollbackIntelligenceService] Supabase credentials not configured. Service will be disabled.",
       );
       this.supabase = null;
@@ -195,7 +193,7 @@ class FixRollbackIntelligenceService {
       if (error) throw error;
       return data || [];
     } catch (error) {
-      console.warn(
+      log.warn(
         "[Fix Rollback Intelligence] Error checking new errors:",
         error,
       );
@@ -223,7 +221,7 @@ class FixRollbackIntelligenceService {
       if (error) throw error;
       return data || [];
     } catch (error) {
-      console.warn(
+      log.warn(
         "[Fix Rollback Intelligence] Error checking test failures:",
         error,
       );
@@ -248,7 +246,7 @@ class FixRollbackIntelligenceService {
       if (error) throw error;
       return data || [];
     } catch (error) {
-      console.warn(
+      log.warn(
         "[Fix Rollback Intelligence] Error checking performance:",
         error,
       );
@@ -282,7 +280,7 @@ class FixRollbackIntelligenceService {
       if (error) throw error;
       return data || [];
     } catch (error) {
-      console.warn(
+      log.warn(
         "[Fix Rollback Intelligence] Error checking cascade failures:",
         error,
       );
@@ -314,7 +312,7 @@ class FixRollbackIntelligenceService {
         similarRollbacks: similarRollbacks.length,
       };
     } catch (error) {
-      console.warn(
+      log.warn(
         "[Fix Rollback Intelligence] Error checking patterns:",
         error,
       );
@@ -353,7 +351,7 @@ class FixRollbackIntelligenceService {
 
       return similar;
     } catch (error) {
-      console.warn(
+      log.warn(
         "[Fix Rollback Intelligence] Error finding similar rollbacks:",
         error,
       );
@@ -599,7 +597,7 @@ class FixRollbackIntelligenceService {
 
       this.rollbackPatterns.set(fixId, pattern);
     } catch (error) {
-      console.warn(
+      log.warn(
         "[Fix Rollback Intelligence] Error recording rollback:",
         error,
       );
@@ -673,7 +671,7 @@ class FixRollbackIntelligenceService {
         rollbackRate: total > 0 ? recent / total : 0,
       };
     } catch (error) {
-      console.warn("[Fix Rollback Intelligence] Error getting stats:", error);
+      log.warn("[Fix Rollback Intelligence] Error getting stats:", error);
       return null;
     }
   }

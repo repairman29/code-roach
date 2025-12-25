@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/confidenceCalculator.js
- * Last Sync: 2025-12-25T04:10:02.868Z
+ * Last Sync: 2025-12-25T04:53:21.514Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -59,7 +59,7 @@ class ConfidenceCalculator {
     // Validate weights sum to 1.0 (or close to it)
     const totalWeight = Object.values(this.weights).reduce((a, b) => a + b, 0);
     if (Math.abs(totalWeight - 1.0) > 0.01) {
-      console.warn(
+      log.warn(
         `[Confidence Calculator] Weights sum to ${totalWeight}, not 1.0. Normalizing...`,
       );
       this.normalizeWeights();

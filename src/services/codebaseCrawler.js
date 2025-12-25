@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/codebaseCrawler.js
- * Last Sync: 2025-12-25T04:10:02.826Z
+ * Last Sync: 2025-12-25T05:17:15.753Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -21,7 +21,6 @@ const path = require("path");
 const crypto = require("crypto");
 const { exec } = require("child_process");
 const { promisify } = require("util");
-const { createClient } = require("@supabase/supabase-js");
 const config = require("../config");
 const execAsync = promisify(exec);
 const codeReviewAssistant = require("./codeReviewAssistant");
@@ -72,19 +71,17 @@ class CodebaseCrawler {
     // Only create Supabase client if credentials are available
     if (config.getSupabaseService().serviceRoleKey) {
       try {
-        this.supabase = createClient(
-          config.getSupabaseService().url,
-          config.getSupabaseService().serviceRoleKey,
+        this.supabase = getSupabaseClient({ requireService: true }).serviceRoleKey,
         );
       } catch (error) {
-        console.warn(
+        log.warn(
           "[codebaseCrawler] Supabase not configured:",
           error.message,
         );
         this.supabase = null;
       }
     } else {
-      console.warn(
+      log.warn(
         "[codebaseCrawler] Supabase credentials not configured. Service will be disabled.",
       );
       this.supabase = null;
@@ -92,7 +89,7 @@ class CodebaseCrawler {
 
     // Load persisted stats on initialization
     this.loadStats().catch((err) => {
-      console.warn(
+      log.warn(
         "[Codebase Crawler] Failed to load persisted stats:",
         err.message,
       );
@@ -162,7 +159,7 @@ class CodebaseCrawler {
                 autoFix: options.autoFix !== false,
               });
             } catch (err) {
-              console.warn(
+              log.warn(
                 `[Codebase Crawler] Auto-scan failed for ${filePath}:`,
                 err.message,
               );
@@ -175,7 +172,7 @@ class CodebaseCrawler {
       await this.fileWatcher.start(rootDir, {
         onChange: handleFileChange,
         onError: (err) => {
-          console.warn(`[Codebase Crawler] File watcher error:`, err.message);
+          log.warn(`[Codebase Crawler] File watcher error:`, err.message);
         },
       });
 
@@ -183,7 +180,7 @@ class CodebaseCrawler {
         `[Codebase Crawler] 👁️  Real-time file watching enabled for ${rootDir}`,
       );
     } catch (err) {
-      console.warn(
+      log.warn(
         `[Codebase Crawler] Failed to start file watcher:`,
         err.message,
       );
@@ -201,7 +198,7 @@ class CodebaseCrawler {
         this.watchedFiles.clear();
         console.log(`[Codebase Crawler] 👁️  File watching stopped`);
       } catch (err) {
-        console.warn(
+        log.warn(
           `[Codebase Crawler] Error stopping file watcher:`,
           err.message,
         );
@@ -247,7 +244,7 @@ class CodebaseCrawler {
         "utf8",
       );
     } catch (err) {
-      console.warn("[Codebase Crawler] Failed to save stats:", err.message);
+      log.warn("[Codebase Crawler] Failed to save stats:", err.message);
     }
   }
 
@@ -266,7 +263,7 @@ class CodebaseCrawler {
         .not("file_path", "is", null);
 
       if (error) {
-        console.warn(
+        log.warn(
           "[Codebase Crawler] Error querying pending issues:",
           error.message,
         );
@@ -281,7 +278,7 @@ class CodebaseCrawler {
       );
       return files;
     } catch (err) {
-      console.warn(
+      log.warn(
         "[Codebase Crawler] Failed to get files with pending issues:",
         err.message,
       );
@@ -304,7 +301,7 @@ class CodebaseCrawler {
         .limit(limit);
 
       if (error) {
-        console.warn(
+        log.warn(
           "[Codebase Crawler] Error querying file health:",
           error.message,
         );
@@ -318,7 +315,7 @@ class CodebaseCrawler {
                 <${threshold}) from Supabase`);
       return files;
     } catch (err) {
-      console.warn(
+      log.warn(
         "[Codebase Crawler] Failed to get files with low health scores:",
         err.message,
       );
@@ -337,7 +334,7 @@ class CodebaseCrawler {
 
       // SECURITY: Ensure rootDir is within allowed directory (prevent path traversal)
       if (!safeRootDir.startsWith(allowedRoot)) {
-        console.warn(
+        log.warn(
           "[Security] Attempted path traversal in getGitChangedFiles:",
           rootDir,
         );
@@ -351,7 +348,7 @@ class CodebaseCrawler {
         "",
       );
       if (safeSince !== since) {
-        console.warn(
+        log.warn(
           "[Security] Suspicious characters in git since parameter:",
           since,
         );
@@ -380,7 +377,7 @@ class CodebaseCrawler {
       return allChanged;
     } catch (err) {
       // Git might not be available or not a git repo - that's okay
-      console.warn(
+      log.warn(
         "[Codebase Crawler] Could not get git changed files:",
         err.message,
       );
@@ -398,7 +395,7 @@ class CodebaseCrawler {
         !codebaseSearch ||
         typeof codebaseSearch.semanticSearch !== "function"
       ) {
-        console.warn(
+        log.warn(
           "[Codebase Crawler] Semantic search not available, skipping",
         );
         return [];
@@ -428,7 +425,7 @@ class CodebaseCrawler {
           }
         } catch (err) {
           // Don't fail entire crawl if semantic search fails for one query
-          console.warn(
+          log.warn(
             `[Codebase Crawler] Semantic search failed for "${query}":`,
             err.message,
           );
@@ -444,7 +441,7 @@ class CodebaseCrawler {
       return files;
     } catch (err) {
       // Don't fail entire crawl if semantic search fails
-      console.warn(
+      log.warn(
         "[Codebase Crawler] Semantic search unavailable, continuing without it:",
         err.message,
       );
@@ -467,7 +464,7 @@ class CodebaseCrawler {
         .limit(100);
 
       if (error) {
-        console.warn(
+        log.warn(
           "[Codebase Crawler] Error querying patterns:",
           error.message,
         );
@@ -479,7 +476,7 @@ class CodebaseCrawler {
       );
       return data || [];
     } catch (err) {
-      console.warn(
+      log.warn(
         "[Codebase Crawler] Failed to get known patterns:",
         err.message,
       );
@@ -742,7 +739,7 @@ class CodebaseCrawler {
           return Array.from(semanticGroups.values());
         }
       } catch (err) {
-        console.warn(
+        log.warn(
           `[Codebase Crawler] Semantic grouping failed, using simple grouping:`,
           err.message,
         );
@@ -928,13 +925,13 @@ class CodebaseCrawler {
             );
           }
         } else if (error) {
-          console.warn(
+          log.warn(
             `[Codebase Crawler] Could not load project ${options.projectId}:`,
             error.message,
           );
         }
       } catch (err) {
-        console.warn(
+        log.warn(
           `[Codebase Crawler] Error loading project ${options.projectId}:`,
           err.message,
         );
@@ -1121,7 +1118,7 @@ class CodebaseCrawler {
             `[Codebase Crawler] ✅ Stored ${this.stats.issuesFound} issues in database`,
           );
         } catch (err) {
-          console.warn(
+          log.warn(
             `[Codebase Crawler] Failed to store issues:`,
             err.message,
           );
@@ -1169,7 +1166,7 @@ class CodebaseCrawler {
     } catch (err) {
       // Skip directories we can't read
       if (err.code !== "EACCES" && err.code !== "ENOENT") {
-        console.warn(`[Codebase Crawler] Error reading ${dir}:`, err.message);
+        log.warn(`[Codebase Crawler] Error reading ${dir}:`, err.message);
       }
     }
 
@@ -1230,7 +1227,7 @@ class CodebaseCrawler {
           .upsert(cacheData, { onConflict: "file_path" });
         return;
       } catch (err) {
-        console.warn(
+        log.warn(
           `[Codebase Crawler] Failed to update Supabase cache:`,
           err.message,
         );
@@ -1362,7 +1359,7 @@ class CodebaseCrawler {
         }
       } catch (err) {
         // Don't block scanning if risk check fails
-        console.warn(
+        log.warn(
           `[Codebase Crawler] Risk check failed for ${filePath}:`,
           err.message,
         );
@@ -1401,7 +1398,7 @@ class CodebaseCrawler {
                   return; // Skip full analysis - pattern fix worked
                 }
               } catch (err) {
-                console.warn(
+                log.warn(
                   `[Codebase Crawler] Pattern fix failed: ${err.message}`,
                 );
               }
@@ -1425,7 +1422,7 @@ class CodebaseCrawler {
 
       // Handle both direct review object and nested review structure
       if (!reviewResult || !reviewResult.success) {
-        console.warn(
+        log.warn(
           `[Codebase Crawler] Review failed for ${filePath}:`,
           reviewResult?.error || "Unknown error",
         );
@@ -1486,6 +1483,7 @@ class CodebaseCrawler {
                   // Learn from successful fix
                   try {
                     const patternEvolutionService = require("./patternEvolutionService");
+const { getSupabaseClient } = require('../utils/supabaseClient');
                     const {
                       getSupabaseService,
                     } = require("../utils/supabaseClient");
@@ -1528,7 +1526,7 @@ class CodebaseCrawler {
               // Teams didn't fix anything, fall through to individual processing
             }
           } catch (err) {
-            console.warn(
+            log.warn(
               `[Codebase Crawler] Multi-agent teams failed, falling back to individual processing:`,
               err.message,
             );
@@ -1561,7 +1559,7 @@ class CodebaseCrawler {
                 // Orchestration is now required - no optional flag
                 // DEPRECATED: options.useOrchestration is ignored (orchestration always used)
                 if (options.useOrchestration === false) {
-                  console.warn(
+                  log.warn(
                     `[Codebase Crawler] ⚠️ useOrchestration=false is deprecated - orchestration is now required`,
                   );
                 }
@@ -1614,7 +1612,7 @@ class CodebaseCrawler {
                       continue; // Skip to next issue
                     } else {
                       // Orchestration approved but apply stage failed
-                      console.warn(
+                      log.warn(
                         `[Codebase Crawler] ⚠️ Orchestration approved fix but apply stage failed: ${filePath}:${issue.line}`,
                       );
                       continue; // Skip this issue - don't fall back to legacy
@@ -1630,7 +1628,7 @@ class CodebaseCrawler {
                     continue; // Skip to next issue
                   } else {
                     // Orchestration failed or returned unexpected result
-                    console.warn(
+                    log.warn(
                       `[Codebase Crawler] ⚠️ Orchestration failed or returned unexpected result: ${filePath}:${issue.line} - ${orchestrationResult.error || "Unknown error"}`,
                     );
                     continue; // Skip this issue - don't fall back to legacy
@@ -1801,7 +1799,7 @@ class CodebaseCrawler {
 
       return code;
     } catch (err) {
-      console.warn(
+      log.warn(
         `[Codebase Crawler] Failed to apply pattern fix: ${err.message}`,
       );
       return code;
@@ -2075,7 +2073,7 @@ class CodebaseCrawler {
         openParens !== closeParens ||
         openBrackets !== closeBrackets
       ) {
-        console.warn(
+        log.warn(
           `[Codebase Crawler] Fix validation failed: unbalanced brackets/parens/braces`,
         );
         return false;
@@ -2091,7 +2089,7 @@ class CodebaseCrawler {
 
       for (const pattern of dangerousPatterns) {
         if (pattern.test(fixedCode)) {
-          console.warn(
+          log.warn(
             `[Codebase Crawler] Fix validation failed: dangerous pattern detected`,
           );
           return false;
@@ -2100,7 +2098,7 @@ class CodebaseCrawler {
 
       return true;
     } catch (err) {
-      console.warn(`[Codebase Crawler] Fix validation error:`, err.message);
+      log.warn(`[Codebase Crawler] Fix validation error:`, err.message);
       return false; // Fail safe
     }
   }
@@ -2278,7 +2276,7 @@ class CodebaseCrawler {
 
       return code;
     } catch (err) {
-      console.warn(
+      log.warn(
         `[Codebase Crawler] Failed to apply pattern fix: ${err.message}`,
       );
       return code;

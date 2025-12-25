@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/resourceMonitorService.js
- * Last Sync: 2025-12-25T04:10:02.874Z
+ * Last Sync: 2025-12-25T04:53:21.517Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -116,17 +116,17 @@ class ResourceMonitorService {
 
       // Alert on high resource usage
       if (cpuUsage > 80) {
-        console.warn(
+        log.warn(
           `[ResourceMonitor] ⚠️  High CPU usage: ${cpuUsage.toFixed(1)}%`,
         );
       }
       if (memUsagePercent > 85) {
-        console.warn(
+        log.warn(
           `[ResourceMonitor] ⚠️  High memory usage: ${memUsagePercent.toFixed(1)}%`,
         );
       }
       if (loadAvg[0] > cpus.length * 2) {
-        console.warn(
+        log.warn(
           `[ResourceMonitor] ⚠️  High load average: ${loadAvg[0].toFixed(2)}`,
         );
       }

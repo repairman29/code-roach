@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/batchLearningService.js
- * Last Sync: 2025-12-25T04:10:02.848Z
+ * Last Sync: 2025-12-25T05:17:15.766Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -19,28 +19,26 @@ const { createLogger } = require("../utils/logger");
 const log = createLogger("BatchLearningService");
 const fixLearningSystem = require("./fixLearningSystem");
 const fixSuccessTracker = require("./fixSuccessTracker");
-const { createClient } = require("@supabase/supabase-js");
 const config = require("../config");
 const { getSupabaseService } = require("../utils/supabaseClient");
+const { getSupabaseClient } = require('../utils/supabaseClient');
 
 class BatchLearningService {
   constructor() {
     // Only create Supabase client if credentials are available
     if (config.getSupabaseService().serviceRoleKey) {
       try {
-        this.supabase = createClient(
-          config.getSupabaseService().url,
-          config.getSupabaseService().serviceRoleKey,
+        this.supabase = getSupabaseClient({ requireService: true }).serviceRoleKey,
         );
       } catch (error) {
-        console.warn(
+        log.warn(
           "[batchLearningService] Supabase not configured:",
           error.message,
         );
         this.supabase = null;
       }
     } else {
-      console.warn(
+      log.warn(
         "[batchLearningService] Supabase credentials not configured. Service will be disabled.",
       );
       this.supabase = null;
@@ -152,7 +150,7 @@ class BatchLearningService {
         })
         .eq("id", issue.id || issue.error?.id);
     } catch (err) {
-      console.warn("[BatchLearning] Failed to update Supabase:", err.message);
+      log.warn("[BatchLearning] Failed to update Supabase:", err.message);
     }
   }
 
@@ -239,7 +237,7 @@ This pattern can be used to automatically batch process similar issues.
         JSON.stringify(batchInfo, null, 2),
       );
     } catch (err) {
-      console.warn("[BatchLearning] Failed to record metadata:", err.message);
+      log.warn("[BatchLearning] Failed to record metadata:", err.message);
     }
   }
 

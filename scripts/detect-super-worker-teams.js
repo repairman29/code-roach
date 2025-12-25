@@ -9,6 +9,9 @@ const fs = require("fs").promises;
 const path = require("path");
 const { glob } = require("glob");
 const agentKnowledgeService = require("../server/services/agentKnowledgeService");
+const { createLogger } = require('../utils/logger');
+const log = createLogger('detect-super-worker-teams');
+
 
 const BOT_LEARNING_DIR = path.join(__dirname, "../data/bot-learning");
 
@@ -65,7 +68,7 @@ class TeamDetector {
       );
 
       if (!Array.isArray(knowledgeFiles) || knowledgeFiles.length === 0) {
-        console.warn("⚠️  No knowledge files found");
+        log.warn("⚠️  No knowledge files found");
         return;
       }
 
@@ -101,7 +104,7 @@ class TeamDetector {
             });
           }
         } catch (err) {
-          console.warn(`⚠️  Failed to load ${file}: ${err.message}`);
+          log.warn(`⚠️  Failed to load ${file}: ${err.message}`);
         }
       }
     } catch (err) {
@@ -364,7 +367,7 @@ This team combines the expertise of ${team.workers.length} workers for comprehen
         return true;
       }
     } catch (err) {
-      console.warn(`⚠️  Failed to add team knowledge: ${err.message}`);
+      log.warn(`⚠️  Failed to add team knowledge: ${err.message}`);
     }
 
     return false;

@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/codeSmellDetector.js
- * Last Sync: 2025-12-25T04:10:02.829Z
+ * Last Sync: 2025-12-25T05:17:15.758Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -14,31 +14,29 @@
  * IP Innovation #24: Automated Code Smell Remediation
  */
 
-const { createClient } = require("@supabase/supabase-js");
 const config = require("../config");
 const { createLogger } = require("../utils/logger");
 const log = createLogger("CodeSmellDetector");
 const codebaseSearch = require("./codebaseSearch");
 const { getSupabaseService } = require("../utils/supabaseClient");
+const { getSupabaseClient } = require('../utils/supabaseClient');
 
 class CodeSmellDetector {
   constructor() {
     // Only create Supabase client if credentials are available
     if (config.getSupabaseService().serviceRoleKey) {
       try {
-        this.supabase = createClient(
-          config.getSupabaseService().url,
-          config.getSupabaseService().serviceRoleKey,
+        this.supabase = getSupabaseClient({ requireService: true }).serviceRoleKey,
         );
       } catch (error) {
-        console.warn(
+        log.warn(
           "[codeSmellDetector] Supabase not configured:",
           error.message,
         );
         this.supabase = null;
       }
     } else {
-      console.warn(
+      log.warn(
         "[codeSmellDetector] Supabase credentials not configured. Service will be disabled.",
       );
       this.supabase = null;
@@ -122,7 +120,7 @@ class CodeSmellDetector {
 
       return duplicates;
     } catch (err) {
-      console.warn("[Code Smell Detector] Error detecting duplicates:", err);
+      log.warn("[Code Smell Detector] Error detecting duplicates:", err);
       return [];
     }
   }

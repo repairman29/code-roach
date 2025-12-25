@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/fixLearningSystem.js
- * Last Sync: 2025-12-25T04:10:02.844Z
+ * Last Sync: 2025-12-25T04:53:21.506Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -34,7 +34,7 @@ class FixLearningSystem {
     };
 
     this.loadLearningData().catch((err) => {
-      console.warn("[Fix Learning] Failed to load learning data:", err.message);
+      log.warn("[Fix Learning] Failed to load learning data:", err.message);
     });
   }
 
@@ -115,7 +115,7 @@ class FixLearningSystem {
         await this.saveLearningData();
       }
     } catch (err) {
-      console.warn("[Fix Learning] Error recording fix attempt:", err.message);
+      log.warn("[Fix Learning] Error recording fix attempt:", err.message);
     }
   }
 
@@ -162,7 +162,7 @@ class FixLearningSystem {
         ),
       );
     } catch (err) {
-      console.warn("[Fix Learning] Error saving learning data:", err.message);
+      log.warn("[Fix Learning] Error saving learning data:", err.message);
     }
   }
 }
