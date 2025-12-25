@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/performanceTrackingService.js
- * Last Sync: 2025-12-25T07:02:34.014Z
+ * Last Sync: 2025-12-25T17:28:03.824Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -24,8 +24,7 @@ class PerformanceTrackingService {
     // Only create Supabase client if credentials are available
     if (config.getSupabaseService().serviceRoleKey) {
       try {
-        this.supabase = getSupabaseClient({ requireService: true }).serviceRoleKey,
-        );
+        this.supabase = getSupabaseClient({ requireService: true });
       } catch (error) {
         log.warn(
           "[PerformanceTrackingService] Supabase not configured:",

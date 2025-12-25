@@ -1,7 +1,7 @@
 /**
  * Code Roach Standalone - Synced from Smugglers Project
  * Source: server/services/multiLanguageAST.js
- * Last Sync: 2025-12-25T07:02:33.975Z
+ * Last Sync: 2025-12-25T17:28:03.817Z
  * 
  * NOTE: This file is synced from the Smugglers project.
  * Changes here may be overwritten on next sync.
@@ -10,6 +10,8 @@
 
 /* eslint-disable no-undef */
 /**
+const { createLogger } = require('../utils/logger');
+const log = createLogger('MultiLanguageAST');
  * Multi-Language AST Analyzer Service
  * 
  * Extends AST analysis to support multiple programming languages beyond JavaScript/TypeScript.

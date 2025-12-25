@@ -34,6 +34,7 @@ app.use((req, res, next) => {
 // Initialize enterprise services
 const EnterpriseCodeRoachService = require('./services/enterpriseCodeRoachService');
 const ComplianceService = require('./services/complianceService');
+const quantumAnalysisRouter = require('./routes/quantumAnalysis');
 
 const enterpriseService = new EnterpriseCodeRoachService();
 const complianceService = new ComplianceService();
@@ -116,6 +117,9 @@ app.post('/api/security/breach', authenticate, trackUsage, checkPricing, async (
         res.status(400).json({ error: error.message });
     }
 });
+
+// Quantum analysis endpoints
+app.use('/api/quantum', quantumAnalysisRouter);
 
 // Commercial API endpoints (require authentication)
 app.post('/api/analyze', authenticate, trackUsage, checkPricing, async (req, res) => {
