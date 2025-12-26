@@ -6,7 +6,11 @@
   "scripts": {
     "sync": "node scripts/sync-code-roach-standalone.js",
     "start": "node src/index.js",
-    "test": "jest"
+    "dev": "nodemon src/index.js",
+    "analyze": "node scripts/analyze-code.js",
+    "fix": "node scripts/auto-fix.js",
+    "test": "jest",
+    "health": "node scripts/code-roach-health.js"
   },
   "keywords": [
     "code-quality",
